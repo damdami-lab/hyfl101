@@ -1,70 +1,748 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한영외고 1학년 1반</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nanum Gothic', sans-serif; }
-        body { background-color: #fdf2f8; padding: 20px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1-1 우리반 🌱 | 한영외고</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2d6a4f;
+      --primary-light: #52b788;
+      --primary-pale: #d8f3dc;
+      --accent: #f4a261;
+      --accent2: #e76f51;
+      --bg: #f8fdf9;
+      --card: #ffffff;
+      --text: #1b3a2d;
+      --text-muted: #6b9080;
+      --border: #b7e4c7;
+      --shadow: 0 4px 24px rgba(45,106,79,0.10);
+      --radius: 18px;
+    }
 
-        /* 상단 네비게이션 */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 10px 30px; border-radius: 50px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
-        }
-        .logo { font-weight: 800; color: #333; display: flex; align-items: center; gap: 5px; }
-        .logo span { background: #d596e3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px; }
-        .nav-menu { display: flex; gap: 25px; list-style: none; font-size: 15px; color: #666; font-weight: 700; }
-        .schedule-btn { background: #e384d5; color: white; padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: bold; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 메인 배너 영역 */
-        .main-container {
-            position: relative; width: 100%; height: 500px;
-            border-radius: 40px; overflow: hidden;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                        url('https://images.unsplash.com/photo-1523050853064-80d83b0f4477?q=80&w=2000'); /* 임시 배경이미지 */
-            background-size: cover; background-position: center;
-            display: flex; flex-direction: column; justify-content: flex-end; padding: 50px;
-        }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-        .class-info { background: rgba(255, 255, 255, 0.2); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; width: fit-content; margin-bottom: 15px; backdrop-filter: blur(5px); }
-        .main-text { color: white; font-size: 48px; font-weight: 800; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
-        
-        /* 급훈 영역 */
-        .motto-box {
-            background: rgba(0, 0, 0, 0.5); color: white; padding: 15px 25px;
-            border-radius: 20px; width: fit-content; backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .motto-title { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .motto-sub { font-size: 12px; color: #ccc; margin-top: 5px; }
-    </style>
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 64px;
+    }
+    .nav-logo {
+      font-family: 'Gowun Dodum', sans-serif;
+      font-size: 1.3rem; color: var(--primary); font-weight: 700;
+      letter-spacing: -0.5px; text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links button {
+      background: none; border: none; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.95rem; color: var(--text-muted);
+      padding: 8px 16px; border-radius: 30px;
+      transition: all 0.2s;
+    }
+    .nav-links button:hover, .nav-links button.active {
+      background: var(--primary-pale); color: var(--primary); font-weight: 700;
+    }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; font-size: 1.5rem; }
+
+    /* ── PAGES ── */
+    .page { display: none; padding-top: 64px; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ── HOME ── */
+    .hero {
+      background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #52b788 100%);
+      padding: 80px 32px 60px;
+      text-align: center; color: white; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 30px; padding: 6px 20px; font-size: 0.85rem;
+      margin-bottom: 20px; backdrop-filter: blur(8px);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900;
+      letter-spacing: -1px; margin-bottom: 12px; position: relative;
+    }
+    .hero p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 32px; }
+    .hero-motto {
+      display: inline-block;
+      background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 14px; padding: 16px 32px;
+      font-family: 'Gowun Dodum', sans-serif;
+      font-size: 1.3rem; backdrop-filter: blur(8px);
+    }
+    .hero-motto small { display: block; font-size: 0.78rem; opacity: 0.75; margin-bottom: 4px; }
+
+    /* D-day cards */
+    .dday-strip {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+      padding: 32px 24px; background: white;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .dday-card {
+      background: var(--primary-pale); border-radius: 16px;
+      padding: 20px 28px; text-align: center; min-width: 140px;
+      border: 1.5px solid var(--border);
+    }
+    .dday-card .emoji { font-size: 1.8rem; margin-bottom: 6px; }
+    .dday-card .label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .dday-card .days { font-size: 2rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .dday-card .date { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Quick links */
+    .section { padding: 40px 24px; max-width: 900px; margin: 0 auto; }
+    .section-title {
+      font-size: 1.2rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .quick-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;
+    }
+    .quick-btn {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 24px 16px;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .quick-btn:hover { transform: translateY(-4px); border-color: var(--primary-light); box-shadow: 0 8px 32px rgba(45,106,79,0.15); }
+    .quick-btn .icon { font-size: 2rem; margin-bottom: 10px; }
+    .quick-btn .name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .quick-btn .desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Today checklist */
+    .today-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+    }
+    .checklist { list-style: none; margin-top: 12px; }
+    .checklist li {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--primary-pale);
+      font-size: 0.95rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before { content: '✅'; font-size: 1rem; }
+
+    /* ── SCHEDULE ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      padding: 48px 32px 36px; color: white; text-align: center;
+    }
+    .page-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+    .page-header p { opacity: 0.85; font-size: 0.95rem; }
+
+    .tab-bar {
+      display: flex; gap: 8px; padding: 20px 24px 0;
+      max-width: 900px; margin: 0 auto;
+    }
+    .tab-btn {
+      background: none; border: 1.5px solid var(--border);
+      border-radius: 30px; padding: 8px 20px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; color: var(--text-muted);
+    }
+    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 700; }
+
+    .add-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent); color: white; border: none;
+      border-radius: 30px; padding: 10px 22px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; margin-left: auto;
+    }
+    .add-btn:hover { background: var(--accent2); transform: scale(1.04); }
+
+    .calendar-wrap { max-width: 900px; margin: 0 auto; padding: 20px 24px; }
+    .cal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .cal-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .cal-nav { background: none; border: 1.5px solid var(--border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+    .cal-nav:hover { background: var(--primary-pale); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day-label { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 6px 0; }
+    .cal-day-label:first-child { color: #e63946; }
+    .cal-day-label:last-child { color: #457b9d; }
+    .cal-cell {
+      aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .cal-cell:hover { background: var(--primary-pale); }
+    .cal-cell.today { background: var(--primary); color: white; font-weight: 700; }
+    .cal-cell.has-event::after { content: ''; position: absolute; bottom: 4px; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
+    .cal-cell.empty { cursor: default; }
+    .cal-cell.sun { color: #e63946; }
+    .cal-cell.sat { color: #457b9d; }
+
+    .upcoming { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; }
+    .upcoming h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+    .event-list { display: flex; flex-direction: column; gap: 10px; }
+    .event-item {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .event-date-box {
+      background: var(--primary-pale); border-radius: 10px;
+      padding: 8px 12px; text-align: center; min-width: 52px;
+    }
+    .event-date-box .month { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+    .event-date-box .day { font-size: 1.4rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .event-info .title { font-weight: 700; font-size: 0.95rem; }
+    .event-info .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+    .event-tag {
+      margin-left: auto; background: var(--primary-pale); color: var(--primary);
+      border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+    }
+    .event-tag.exam { background: #fff3e0; color: #e76f51; }
+    .no-events { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
+
+    /* ── COUNSELING ── */
+    .counsel-wrap { max-width: 720px; margin: 0 auto; padding: 32px 24px 60px; }
+    .counsel-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .counsel-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.9rem; background: var(--bg); color: var(--text);
+      transition: border-color 0.2s; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-light); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .submit-btn {
+      width: 100%; background: var(--primary); color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .submit-btn:hover { background: #1b4332; transform: translateY(-2px); }
+    .counsel-info {
+      background: var(--primary-pale); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+    }
+    .counsel-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .counsel-info p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* ── NOTICE ── */
+    .notice-wrap { max-width: 800px; margin: 0 auto; padding: 28px 24px 60px; }
+    .notice-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .notice-top h3 { font-size: 1rem; font-weight: 700; color: var(--primary); }
+    .notice-list { display: flex; flex-direction: column; gap: 12px; }
+    .notice-item {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 20px 24px;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .notice-item:hover { border-color: var(--primary-light); transform: translateX(4px); }
+    .notice-item.pinned { border-color: var(--accent); background: #fff8f2; }
+    .notice-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .notice-pin { background: var(--accent); color: white; border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; }
+    .notice-new { background: var(--primary); color: white; border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; }
+    .notice-title { font-weight: 700; font-size: 0.95rem; }
+    .notice-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+    .notice-body { font-size: 0.88rem; color: var(--text-muted); margin-top: 8px; line-height: 1.6; display: none; }
+    .notice-item.open .notice-body { display: block; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: var(--radius);
+      padding: 32px; width: 100%; max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 24px; }
+    .modal-cancel {
+      flex: 1; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 12px; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+    }
+    .modal-cancel:hover { background: var(--primary-pale); }
+    .modal-save {
+      flex: 2; background: var(--primary); color: white; border: none;
+      border-radius: 10px; padding: 12px; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .modal-save:hover { background: #1b4332; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1b3a2d; color: white; border-radius: 30px;
+      padding: 12px 28px; font-size: 0.9rem; font-weight: 500;
+      z-index: 300; transition: transform 0.3s; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 64px; left: 0; right: 0;
+        background: white; border-bottom: 1.5px solid var(--border);
+        padding: 12px;
+      }
+      .hamburger { display: block; }
+      .hero { padding: 60px 20px 40px; }
+      .dday-strip { padding: 20px 16px; gap: 10px; }
+      .dday-card { min-width: 110px; padding: 14px 16px; }
+      .section { padding: 28px 16px; }
+      .counsel-wrap, .notice-wrap, .calendar-wrap, .upcoming { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo"><span>2-2</span> 우리반 🌸</div>
-        <ul class="nav-menu">
-            <li>🏠 홈</li>
-            <li>👥 우리반</li>
-            <li>📋 활동</li>
-            <li>💬 소통</li>
-        </ul>
-        <a href="#" class="schedule-btn">오늘의 일정 ✨</a>
-    </nav>
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showPage('home')">1·1 우리반 🌱</a>
+  <div class="nav-links" id="navLinks">
+    <button onclick="showPage('home')" class="active" id="nav-home">🏠 홈</button>
+    <button onclick="showPage('schedule')" id="nav-schedule">📅 일정</button>
+    <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
+    <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
+  </div>
+  <button class="hamburger" onclick="toggleNav()">☰</button>
+</nav>
 
-    <div class="main-container">
-        <div class="class-info">2026학년도 한영외국어고등학교 2학년 2반 🌸</div>
-        <div class="main-text">안녕하세요, 우리반! 🌟</div>
-        
-        <div class="motto-box">
-            <div class="motto-title">☀️ Oh, my God! 오 내 신!</div>
-            <div class="motto-sub">우리반 급훈</div>
-        </div>
+<!-- ════════════ HOME ════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-badge">🏫 한영외국어고등학교 2026학년도</div>
+    <h1>1학년 1반 🌱</h1>
+    <p>함께 성장하는 우리들의 공간</p>
+    <div class="hero-motto">
+      <small>🌟 급훈</small>
+      함께라면 못할 게 없어!
     </div>
+  </div>
 
+  <div class="dday-strip">
+    <div class="dday-card">
+      <div class="emoji">🎓</div>
+      <div class="label">수능</div>
+      <div class="days" id="ddaySuneung">—</div>
+      <div class="date">2028-11-17</div>
+    </div>
+    <div class="dday-card">
+      <div class="emoji">📝</div>
+      <div class="label">중간고사</div>
+      <div class="days" id="ddayMidterm">—</div>
+      <div class="date">2026-04-29</div>
+    </div>
+    <div class="dday-card">
+      <div class="emoji">☀️</div>
+      <div class="label">오늘</div>
+      <div class="days" id="todayDate">—</div>
+      <div class="date" id="todayDay">—</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⚡ 빠른 이동</div>
+    <div class="quick-grid">
+      <div class="quick-btn" onclick="showPage('schedule')">
+        <div class="icon">📅</div>
+        <div class="name">일정/수행평가</div>
+        <div class="desc">시험·수행 일정 확인</div>
+      </div>
+      <div class="quick-btn" onclick="showPage('counseling')">
+        <div class="icon">💬</div>
+        <div class="name">상담 신청</div>
+        <div class="desc">선생님과 상담 예약</div>
+      </div>
+      <div class="quick-btn" onclick="showPage('notice')">
+        <div class="icon">📢</div>
+        <div class="name">공지사항</div>
+        <div class="desc">중요 공지 모아보기</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0">
+    <div class="section-title">☀️ 오늘 체크</div>
+    <div class="today-card">
+      <ul class="checklist">
+        <li>수행평가 마감 일정 확인</li>
+        <li>공지사항 새 글 확인</li>
+        <li>상담 신청 필요 여부 확인</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ SCHEDULE ════════════ -->
+<div class="page" id="page-schedule">
+  <div class="page-header">
+    <h2>📅 일정 / 수행평가</h2>
+    <p>1학년 1반 학사 일정을 한눈에 확인해요</p>
+  </div>
+
+  <div class="calendar-wrap">
+    <div class="tab-bar" style="padding:0;margin-bottom:16px">
+      <button class="tab-btn active" onclick="filterEvents('all', this)">전체</button>
+      <button class="tab-btn" onclick="filterEvents('수행평가', this)">수행평가</button>
+      <button class="tab-btn" onclick="filterEvents('고사', this)">고사</button>
+      <button class="tab-btn" onclick="filterEvents('학급일정', this)">학급일정</button>
+      <button class="add-btn" onclick="openEventModal()">+ 일정 등록</button>
+    </div>
+    <div class="cal-header">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <h3 id="calTitle"></h3>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div class="upcoming">
+    <h3>🗓 다가오는 일정</h3>
+    <div class="event-list" id="eventList"></div>
+  </div>
+</div>
+
+<!-- ════════════ COUNSELING ════════════ -->
+<div class="page" id="page-counseling">
+  <div class="page-header">
+    <h2>💬 상담 신청</h2>
+    <p>담임선생님께 상담을 신청해요</p>
+  </div>
+  <div class="counsel-wrap">
+    <div class="counsel-card">
+      <h3>📋 상담 신청서</h3>
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="cName" placeholder="홍길동" />
+      </div>
+      <div class="form-group">
+        <label>상담 유형</label>
+        <select id="cType">
+          <option value="">선택해주세요</option>
+          <option>학업 상담</option>
+          <option>진로 상담</option>
+          <option>교우관계</option>
+          <option>건강·생활</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>희망 날짜</label>
+        <input type="date" id="cDate" />
+      </div>
+      <div class="form-group">
+        <label>상담 내용 (선택)</label>
+        <textarea id="cContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 비공개로 처리됩니다."></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitCounsel()">📨 신청하기</button>
+    </div>
+    <div class="counsel-info">
+      <h4>📌 상담 안내</h4>
+      <p>
+        • 상담 신청 후 선생님께서 확인 후 연락드립니다.<br />
+        • 긴급한 경우 담임선생님께 직접 말씀해 주세요.<br />
+        • 상담 내용은 비밀이 철저히 보장됩니다.<br />
+        • 담임선생님 상담 가능 시간: 점심시간 / 방과 후
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ NOTICE ════════════ -->
+<div class="page" id="page-notice">
+  <div class="page-header">
+    <h2>📢 공지사항</h2>
+    <p>중요한 안내사항을 확인하세요</p>
+  </div>
+  <div class="notice-wrap">
+    <div class="notice-top">
+      <h3>전체 공지</h3>
+      <button class="add-btn" onclick="openNoticeModal()">+ 공지 작성</button>
+    </div>
+    <div class="notice-list" id="noticeList"></div>
+  </div>
+</div>
+
+<!-- ════════════ MODALS ════════════ -->
+<!-- Event Modal -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal">
+    <h3>📅 일정 등록</h3>
+    <div class="form-group">
+      <label>일정 제목</label>
+      <input type="text" id="evTitle" placeholder="예: 영어 수행평가" />
+    </div>
+    <div class="form-group">
+      <label>날짜</label>
+      <input type="date" id="evDate" />
+    </div>
+    <div class="form-group">
+      <label>분류</label>
+      <select id="evType">
+        <option value="수행평가">수행평가</option>
+        <option value="고사">고사</option>
+        <option value="학급일정">학급일정</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>메모 (선택)</label>
+      <input type="text" id="evNote" placeholder="예: 국어실에서 진행" />
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('eventModal')">취소</button>
+      <button class="modal-save" onclick="saveEvent()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice Modal -->
+<div class="modal-overlay" id="noticeModal">
+  <div class="modal">
+    <h3>📢 공지 작성</h3>
+    <div class="form-group">
+      <label>제목</label>
+      <input type="text" id="ntTitle" placeholder="공지 제목을 입력하세요" />
+    </div>
+    <div class="form-group">
+      <label>내용</label>
+      <textarea id="ntBody" placeholder="공지 내용을 입력하세요" style="min-height:100px"></textarea>
+    </div>
+    <div class="form-group">
+      <label>작성자</label>
+      <input type="text" id="ntAuthor" placeholder="담임선생님" />
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('noticeModal')">취소</button>
+      <button class="modal-save" onclick="saveNotice()">등록</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UTILS ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// ── NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + name).classList.add('active');
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo(0, 0);
+  if (name === 'schedule') renderCalendar();
+  if (name === 'notice') renderNotices();
+}
+function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
+
+// ── D-DAY ──
+function calcDday(target) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const t = new Date(target); t.setHours(0,0,0,0);
+  const diff = Math.ceil((t - today) / 86400000);
+  return diff === 0 ? 'D-Day' : diff > 0 ? 'D-' + diff : 'D+' + Math.abs(diff);
+}
+function initDdays() {
+  document.getElementById('ddaySuneung').textContent = calcDday('2028-11-17');
+  document.getElementById('ddayMidterm').textContent = calcDday('2026-04-29');
+  const now = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('todayDate').textContent = (now.getMonth()+1) + '/' + now.getDate();
+  document.getElementById('todayDay').textContent = days[now.getDay()] + '요일';
+}
+initDdays();
+
+// ── EVENTS (localStorage) ──
+function getEvents() { return JSON.parse(localStorage.getItem('events_1_1') || '[]'); }
+function saveEvents(ev) { localStorage.setItem('events_1_1', JSON.stringify(ev)); }
+
+let currentFilter = 'all';
+let calYear, calMonth;
+(function() { const n = new Date(); calYear = n.getFullYear(); calMonth = n.getMonth(); })();
+
+function renderCalendar() {
+  const events = getEvents();
+  const title = calYear + '년 ' + (calMonth+1) + '월';
+  document.getElementById('calTitle').textContent = title;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['일','월','화','수','목','금','토'].forEach((d,i) => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-label';
+    el.textContent = d; grid.appendChild(el);
+  });
+
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const last = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+
+  for (let i=0; i<first; i++) {
+    const el = document.createElement('div'); el.className='cal-cell empty'; grid.appendChild(el);
+  }
+  for (let d=1; d<=last; d++) {
+    const el = document.createElement('div');
+    const dow = (first + d - 1) % 7;
+    el.className = 'cal-cell' + (dow===0?' sun':dow===6?' sat':'');
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    if (isToday) el.classList.add('today');
+    const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    if (events.some(e => e.date === dateStr)) el.classList.add('has-event');
+    el.textContent = d; grid.appendChild(el);
+  }
+  renderEventList();
+}
+
+function changeMonth(dir) { calMonth += dir; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+
+function filterEvents(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEventList();
+}
+
+function renderEventList() {
+  const events = getEvents();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let filtered = events
+    .filter(e => new Date(e.date) >= today)
+    .filter(e => currentFilter==='all' || e.type===currentFilter)
+    .sort((a,b) => new Date(a.date)-new Date(b.date));
+
+  const list = document.getElementById('eventList');
+  if (!filtered.length) { list.innerHTML = '<div class="no-events">📭 등록된 일정이 없어요. 첫 일정을 등록해봐요!</div>'; return; }
+  list.innerHTML = filtered.map(e => {
+    const d = new Date(e.date);
+    const months = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+    return `<div class="event-item">
+      <div class="event-date-box">
+        <div class="month">${months[d.getMonth()]}월</div>
+        <div class="day">${d.getDate()}</div>
+      </div>
+      <div class="event-info">
+        <div class="title">${e.title}</div>
+        ${e.note ? `<div class="sub">${e.note}</div>` : ''}
+      </div>
+      <span class="event-tag ${e.type==='고사'?'exam':''}">${e.type}</span>
+    </div>`;
+  }).join('');
+}
+
+function openEventModal() {
+  document.getElementById('evDate').value = new Date().toISOString().slice(0,10);
+  openModal('eventModal');
+}
+function saveEvent() {
+  const title = document.getElementById('evTitle').value.trim();
+  const date = document.getElementById('evDate').value;
+  if (!title || !date) { showToast('❗ 제목과 날짜를 입력해주세요'); return; }
+  const events = getEvents();
+  events.push({ title, date, type: document.getElementById('evType').value, note: document.getElementById('evNote').value.trim() });
+  saveEvents(events); closeModal('eventModal');
+  document.getElementById('evTitle').value=''; document.getElementById('evNote').value='';
+  renderCalendar(); showToast('✅ 일정이 등록됐어요!');
+}
+
+// ── COUNSEL ──
+function submitCounsel() {
+  const name = document.getElementById('cName').value.trim();
+  const type = document.getElementById('cType').value;
+  const date = document.getElementById('cDate').value;
+  if (!name || !type || !date) { showToast('❗ 이름, 유형, 날짜를 입력해주세요'); return; }
+  document.getElementById('cName').value='';
+  document.getElementById('cType').value='';
+  document.getElementById('cDate').value='';
+  document.getElementById('cContent').value='';
+  showToast('📨 상담 신청이 완료됐어요!');
+}
+
+// ── NOTICES ──
+const defaultNotices = [
+  { id: 1, title: '🌱 입학을 축하합니다!', body: '한영외고 1학년 1반 학급 사이트에 오신 걸 환영해요! 앞으로 공지사항은 이곳에서 확인해주세요.', author: '담임선생님', date: '2026-03-02', pinned: true, isNew: true },
+  { id: 2, title: '자리 배치 안내', body: '자리 배치는 추후 안내될 예정입니다.', author: '담임선생님', date: '2026-03-03', pinned: false, isNew: true },
+  { id: 3, title: '수행평가 일정 안내', body: '수행평가 일정은 교과 선생님께서 별도로 안내해 주실 예정입니다.', author: '담임선생님', date: '2026-03-05', pinned: false, isNew: false },
+];
+function getNotices() {
+  const stored = localStorage.getItem('notices_1_1');
+  return stored ? JSON.parse(stored) : defaultNotices;
+}
+function saveNoticesData(n) { localStorage.setItem('notices_1_1', JSON.stringify(n)); }
+
+function renderNotices() {
+  const notices = getNotices().sort((a,b) => b.pinned-a.pinned || new Date(b.date)-new Date(a.date));
+  const list = document.getElementById('noticeList');
+  list.innerHTML = notices.map(n => `
+    <div class="notice-item ${n.pinned?'pinned':''}" onclick="this.classList.toggle('open')">
+      <div class="notice-top-row">
+        ${n.pinned ? '<span class="notice-pin">📌 고정</span>' : ''}
+        ${n.isNew ? '<span class="notice-new">NEW</span>' : ''}
+      </div>
+      <div class="notice-title">${n.title}</div>
+      <div class="notice-meta">${n.author} · ${n.date}</div>
+      <div class="notice-body">${n.body}</div>
+    </div>`).join('');
+}
+
+function openNoticeModal() { openModal('noticeModal'); }
+function saveNotice() {
+  const title = document.getElementById('ntTitle').value.trim();
+  const body = document.getElementById('ntBody').value.trim();
+  const author = document.getElementById('ntAuthor').value.trim() || '담임선생님';
+  if (!title || !body) { showToast('❗ 제목과 내용을 입력해주세요'); return; }
+  const notices = getNotices();
+  const today = new Date().toISOString().slice(0,10);
+  notices.push({ id: Date.now(), title, body, author, date: today, pinned: false, isNew: true });
+  saveNoticesData(notices); closeModal('noticeModal');
+  document.getElementById('ntTitle').value=''; document.getElementById('ntBody').value=''; document.getElementById('ntAuthor').value='';
+  renderNotices(); showToast('📢 공지가 등록됐어요!');
+}
+
+// init
+renderCalendar();
+</script>
 </body>
 </html>
