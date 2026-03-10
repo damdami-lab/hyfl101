@@ -2,21 +2,69 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>우리 반 아지트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한영외고 2학년 2반</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Nanum Gothic', sans-serif; text-align: center; background-color: #f0f8ff; padding: 50px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; }
-        h1 { color: #4a90e2; }
-        p { color: #666; }
-        .btn { background: #4a90e2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nanum Gothic', sans-serif; }
+        body { background-color: #fdf2f8; padding: 20px; }
+
+        /* 상단 네비게이션 */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 10px 30px; border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
+        }
+        .logo { font-weight: 800; color: #333; display: flex; align-items: center; gap: 5px; }
+        .logo span { background: #d596e3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px; }
+        .nav-menu { display: flex; gap: 25px; list-style: none; font-size: 15px; color: #666; font-weight: 700; }
+        .schedule-btn { background: #e384d5; color: white; padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: bold; }
+
+        /* 메인 배너 영역 */
+        .main-container {
+            position: relative; width: 100%; height: 500px;
+            border-radius: 40px; overflow: hidden;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('https://images.unsplash.com/photo-1523050853064-80d83b0f4477?q=80&w=2000'); /* 임시 배경이미지 */
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 50px;
+        }
+
+        .class-info { background: rgba(255, 255, 255, 0.2); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; width: fit-content; margin-bottom: 15px; backdrop-filter: blur(5px); }
+        .main-text { color: white; font-size: 48px; font-weight: 800; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+        
+        /* 급훈 영역 */
+        .motto-box {
+            background: rgba(0, 0, 0, 0.5); color: white; padding: 15px 25px;
+            border-radius: 20px; width: fit-content; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .motto-title { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .motto-sub { font-size: 12px; color: #ccc; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🏠 우리 반 홈페이지에 오신 걸 환영합니다!</h1>
-        <p>선생님이 직접 코딩해서 만든 우리들의 공간이에요.</p>
-        <br>
-        <a href="#" class="btn">오늘의 알림장 확인하기</a>
+
+    <nav class="navbar">
+        <div class="logo"><span>2-2</span> 우리반 🌸</div>
+        <ul class="nav-menu">
+            <li>🏠 홈</li>
+            <li>👥 우리반</li>
+            <li>📋 활동</li>
+            <li>💬 소통</li>
+        </ul>
+        <a href="#" class="schedule-btn">오늘의 일정 ✨</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="class-info">2026학년도 한영외국어고등학교 2학년 2반 🌸</div>
+        <div class="main-text">안녕하세요, 우리반! 🌟</div>
+        
+        <div class="motto-box">
+            <div class="motto-title">☀️ Oh, my God! 오 내 신!</div>
+            <div class="motto-sub">우리반 급훈</div>
+        </div>
     </div>
+
 </body>
 </html>
