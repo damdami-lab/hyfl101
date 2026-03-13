@@ -250,6 +250,24 @@
     .admin-count { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
     .admin-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
 
+    /* ── 날짜 상세 ── */
+    .day-detail-wrap { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; }
+    .day-detail-inner { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.2s ease; }
+    .day-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--primary); color: white; font-size: 1rem; font-weight: 700; }
+    .day-detail-close { background: none; border: none; color: white; font-size: 1.1rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
+    .day-detail-close:hover { opacity: 1; }
+    .day-detail-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .day-detail-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+    .day-detail-item .det-tag { border-radius: 6px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .day-detail-item .det-tag.exam    { background: #ffeaea; color: #e63946; }
+    .day-detail-item .det-tag.perform { background: #fff3e0; color: #e76f51; }
+    .day-detail-item .det-tag.school  { background: #e8f4fd; color: #457b9d; }
+    .day-detail-item .det-tag.class   { background: #d8f3dc; color: #2d6a4f; }
+    .day-detail-item .det-title { font-size: 0.92rem; font-weight: 600; flex: 1; }
+    .day-detail-item .det-note { font-size: 0.78rem; color: var(--text-muted); }
+    .day-detail-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+    .cal-cell.selected { border-color: var(--primary); background: var(--primary-pale); }
+
     /* ── 사진 보관함 ── */
     .photos-wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
     .photos-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
@@ -368,6 +386,15 @@
       <button class="cal-nav" onclick="changeMonth(1)">›</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div class="day-detail-wrap" id="dayDetail" style="display:none">
+    <div class="day-detail-inner">
+      <div class="day-detail-header">
+        <span id="dayDetailTitle"></span>
+        <button class="day-detail-close" onclick="closeDayDetail()">✕</button>
+      </div>
+      <div class="day-detail-list" id="dayDetailList"></div>
+    </div>
   </div>
 </div>
 
@@ -657,6 +684,8 @@
     renderCalendar();
   }
 
+  let selectedDate = null;
+
   function typeClass(type) {
     return type==='고사'?'exam':type==='수행평가'?'perform':type==='학교일정'?'school':'class';
   }
@@ -679,23 +708,23 @@
       const dow = (first + d - 1) % 7;
       const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
       const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+      const isSelected = selectedDate === dateStr;
 
       const cell = document.createElement('div');
-      cell.className = 'cal-cell' + (dow===0?' sun':dow===6?' sat':'') + (isToday?' today':'');
+      cell.className = 'cal-cell' + (dow===0?' sun':dow===6?' sat':'') + (isToday?' today':'') + (isSelected?' selected':'');
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => selectDay(dateStr, d);
 
-      // 날짜 숫자
       const dateEl = document.createElement('div');
       dateEl.className = 'cal-date';
       dateEl.textContent = d;
       cell.appendChild(dateEl);
 
-      // 해당 날짜 이벤트 필터링
       const dayEvents = allEvents.filter(e => {
         if (e.date !== dateStr) return false;
         return currentFilter === 'all' || e.type === currentFilter;
       });
 
-      // 최대 3개까지 칩으로 표시
       dayEvents.slice(0, 3).forEach(e => {
         const chip = document.createElement('div');
         chip.className = 'cal-event-chip ' + typeClass(e.type);
@@ -712,12 +741,60 @@
 
       grid.appendChild(cell);
     }
+
+    // 선택된 날짜 패널 유지
+    if (selectedDate) renderDayDetail(selectedDate);
+  }
+
+  function selectDay(dateStr, d) {
+    if (selectedDate === dateStr) {
+      // 같은 날 다시 클릭하면 닫기
+      selectedDate = null;
+      closeDayDetail();
+      renderCalendar();
+      return;
+    }
+    selectedDate = dateStr;
+    renderCalendar();
+  }
+
+  function renderDayDetail(dateStr) {
+    const panel = document.getElementById('dayDetail');
+    const d = new Date(dateStr + 'T00:00:00');
+    const days = ['일','월','화','수','목','금','토'];
+    document.getElementById('dayDetailTitle').textContent =
+      `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+
+    const filtered = allEvents.filter(e =>
+      e.date === dateStr && (currentFilter === 'all' || e.type === currentFilter)
+    );
+    const list = document.getElementById('dayDetailList');
+    if (!filtered.length) {
+      list.innerHTML = '<div class="day-detail-empty">📭 이 날은 등록된 일정이 없어요</div>';
+    } else {
+      list.innerHTML = filtered.map(e => `
+        <div class="day-detail-item">
+          <span class="det-tag ${typeClass(e.type)}">${e.type}</span>
+          <span class="det-title">${e.title}</span>
+          ${e.note && e.note !== '학사일정' ? `<span class="det-note">${e.note}</span>` : ''}
+        </div>`).join('');
+    }
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function closeDayDetail() {
+    selectedDate = null;
+    document.getElementById('dayDetail').style.display = 'none';
+    renderCalendar();
   }
 
   function changeMonth(dir) {
     calMonth += dir;
     if (calMonth > 11) { calMonth = 0; calYear++; }
     else if (calMonth < 0) { calMonth = 11; calYear--; }
+    selectedDate = null;
+    document.getElementById('dayDetail').style.display = 'none';
     renderCalendar();
   }
 
