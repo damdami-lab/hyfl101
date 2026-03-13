@@ -250,6 +250,36 @@
     .admin-count { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
     .admin-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
 
+    /* ── 사진 보관함 ── */
+    .photos-wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
+    .photos-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .photos-top h3 { font-size: 1rem; font-weight: 700; color: var(--primary); }
+    .photo-upload-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 24px; background: var(--card); }
+    .photo-upload-area:hover, .photo-upload-area.drag { border-color: var(--primary-light); background: var(--primary-pale); }
+    .photo-upload-area .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .photo-upload-area p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 4px; }
+    .photo-upload-area small { font-size: 0.78rem; color: var(--text-muted); }
+    .photo-upload-input { display: none; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .photo-card { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; background: var(--primary-pale); box-shadow: var(--shadow); cursor: pointer; }
+    .photo-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; display: block; }
+    .photo-card:hover img { transform: scale(1.05); }
+    .photo-card .photo-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.6)); padding: 20px 12px 10px; color: white; opacity: 0; transition: opacity 0.2s; }
+    .photo-card:hover .photo-info { opacity: 1; }
+    .photo-card .photo-name { font-size: 0.8rem; font-weight: 700; }
+    .photo-card .photo-date { font-size: 0.7rem; opacity: 0.85; }
+    .photo-delete { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; }
+    .photo-card:hover .photo-delete { display: flex; }
+    .photo-delete:hover { background: #e63946; }
+    .photo-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 400; display: none; align-items: center; justify-content: center; padding: 24px; }
+    .photo-lightbox.open { display: flex; }
+    .photo-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 12px; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+    .upload-progress { background: var(--primary-pale); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: none; }
+    .upload-progress p { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary-light); border-radius: 3px; transition: width 0.3s; width: 0%; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
       nav { padding: 0 16px; }
@@ -276,6 +306,7 @@
     <button onclick="showPage('roles')" id="nav-roles">🙋 1인1역</button>
     <button onclick="showPage('meeting')" id="nav-meeting">📋 학급회의</button>
     <button onclick="showPage('activity')" id="nav-activity">🌱 자율활동</button>
+    <button onclick="showPage('photos')" id="nav-photos">📷 사진</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
     <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
     <button onclick="showPage('admin')" id="nav-admin">🔐 관리자</button>
@@ -289,7 +320,6 @@
     <div class="hero-badge">🏫 한영외국어고등학교 2026학년도</div>
     <h1>1학년 1반 🌱</h1>
     <p>함께 성장하는 우리들의 공간</p>
-    <div class="hero-motto"><small>🌟 급훈</small>함께라면 못할 게 없어!</div>
   </div>
   <div class="dday-strip">
     <div class="dday-card"><div class="emoji">🎓</div><div class="label">수능</div><div class="days" id="ddaySuneung">—</div><div class="date">2028-11-17</div></div>
@@ -303,6 +333,7 @@
       <div class="quick-btn" onclick="showPage('roles')"><div class="icon">🙋</div><div class="name">1인1역</div><div class="desc">내 역할 확인하기</div></div>
       <div class="quick-btn" onclick="showPage('meeting')"><div class="icon">📋</div><div class="name">학급회의</div><div class="desc">회의록 모아보기</div></div>
       <div class="quick-btn" onclick="showPage('activity')"><div class="icon">🌱</div><div class="name">자율활동</div><div class="desc">학급 활동 기록</div></div>
+      <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
       <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
       <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📢</div><div class="name">공지사항</div><div class="desc">중요 공지 모아보기</div></div>
     </div>
@@ -410,6 +441,32 @@
     <div class="notice-top"><h3>전체 공지</h3><button class="add-btn" onclick="openNoticeModal()">+ 공지 작성</button></div>
     <div class="notice-list" id="noticeList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>
   </div>
+</div>
+
+<!-- ════════════ 사진 보관함 ════════════ -->
+<div class="page" id="page-photos">
+  <div class="page-header"><h2>📷 사진 보관함</h2><p>우리반의 소중한 추억을 모아요</p></div>
+  <div class="photos-wrap">
+    <div class="photo-upload-area" id="uploadArea" onclick="document.getElementById('photoInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropPhoto(event)">
+      <div class="upload-icon">📸</div>
+      <p><strong>클릭</strong>하거나 사진을 여기에 끌어다 놓으세요</p>
+      <small>JPG, PNG, GIF · 최대 10MB</small>
+    </div>
+    <input type="file" id="photoInput" class="photo-upload-input" accept="image/*" multiple onchange="uploadPhotos(this.files)" />
+    <div class="upload-progress" id="uploadProgress">
+      <p id="uploadProgressText">업로드 중...</p>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="photo-grid" id="photoGrid">
+      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 라이트박스 -->
+<div class="photo-lightbox" id="photoLightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
 </div>
 
 <!-- ════════════ ADMIN ════════════ -->
@@ -557,6 +614,7 @@
     roles: loadRoles,
     meeting: loadMeetings,
     activity: loadActivities,
+    photos: loadPhotos,
     admin: initAdminPage
   };
   function showPage(name) {
@@ -915,6 +973,82 @@
     if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
     await loadActivities();
     showToast('🗑️ 활동이 삭제됐어요');
+  }
+
+  // ════════════ 사진 보관함 ════════════
+  const BUCKET = 'class-photos';
+
+  async function loadPhotos() {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.storage.from(BUCKET).list('', { sortBy: { column: 'created_at', order: 'desc' } });
+    if (error) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>사진을 불러오지 못했어요.<br/>Storage 버킷 설정을 확인해주세요.</p></div>'; return; }
+    const photos = (data || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+    if (!photos.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>아직 사진이 없어요.<br/>첫 번째 사진을 올려봐요!</p></div>'; return;
+    }
+    grid.innerHTML = photos.map(f => {
+      const url = sb.storage.from(BUCKET).getPublicUrl(f.name).data.publicUrl;
+      const date = f.created_at ? f.created_at.slice(0,10) : '';
+      return `<div class="photo-card" onclick="openLightbox('${url}')">
+        <img src="${url}" alt="${f.name}" loading="lazy" />
+        <div class="photo-info">
+          <div class="photo-name">${f.name.replace(/^\d+_/, '')}</div>
+          <div class="photo-date">${date}</div>
+        </div>
+        <button class="photo-delete" onclick="deletePhoto('${f.name}', event)" title="삭제">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function uploadPhotos(files) {
+    if (!files || !files.length) return;
+    const progress = document.getElementById('uploadProgress');
+    const fill = document.getElementById('progressFill');
+    const text = document.getElementById('uploadProgressText');
+    progress.style.display = 'block';
+    let done = 0;
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) { showToast(`❗ ${file.name}이 10MB를 초과해요`); continue; }
+      const fileName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_');
+      text.textContent = `업로드 중... (${done+1}/${files.length})`;
+      fill.style.width = (done / files.length * 100) + '%';
+      const { error } = await sb.storage.from(BUCKET).upload(fileName, file, { cacheControl: '3600', upsert: false });
+      if (error) { showToast('❗ 업로드 실패: ' + error.message); }
+      else { done++; }
+    }
+    fill.style.width = '100%';
+    text.textContent = `✅ ${done}개 업로드 완료!`;
+    setTimeout(() => { progress.style.display = 'none'; fill.style.width = '0%'; }, 2000);
+    document.getElementById('photoInput').value = '';
+    await loadPhotos();
+    if (done > 0) showToast(`📷 ${done}개 사진이 업로드됐어요!`);
+  }
+
+  async function deletePhoto(name, e) {
+    e.stopPropagation();
+    if (!confirm('이 사진을 삭제할까요?')) return;
+    const { error } = await sb.storage.from(BUCKET).remove([name]);
+    if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
+    await loadPhotos();
+    showToast('🗑️ 사진이 삭제됐어요');
+  }
+
+  function openLightbox(url) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('photoLightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('photoLightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function dragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('drag'); }
+  function dragLeave() { document.getElementById('uploadArea').classList.remove('drag'); }
+  function dropPhoto(e) {
+    e.preventDefault();
+    document.getElementById('uploadArea').classList.remove('drag');
+    uploadPhotos(e.dataTransfer.files);
   }
 
   // ════════════ 관리자 ════════════
