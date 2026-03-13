@@ -114,6 +114,7 @@
     .event-info .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
     .event-tag { margin-left: auto; background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
     .event-tag.exam { background: #fff3e0; color: #e76f51; }
+    .event-tag.school { background: #e8f4fd; color: #457b9d; }
     .no-events { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
 
     /* ── COUNSELING ── */
@@ -323,8 +324,9 @@
   <div class="calendar-wrap">
     <div class="tab-row">
       <button class="tab-btn active" onclick="filterEvents('all',this)">전체</button>
-      <button class="tab-btn" onclick="filterEvents('수행평가',this)">수행평가</button>
       <button class="tab-btn" onclick="filterEvents('고사',this)">고사</button>
+      <button class="tab-btn" onclick="filterEvents('수행평가',this)">수행평가</button>
+      <button class="tab-btn" onclick="filterEvents('학교일정',this)">학교일정</button>
       <button class="tab-btn" onclick="filterEvents('학급일정',this)">학급일정</button>
       <button class="add-btn" onclick="openEventModal()">+ 일정 등록</button>
     </div>
@@ -449,7 +451,7 @@
     <div class="form-group"><label>일정 제목</label><input type="text" id="evTitle" placeholder="예: 영어 수행평가" /></div>
     <div class="form-group"><label>날짜</label><input type="date" id="evDate" /></div>
     <div class="form-group"><label>분류</label>
-      <select id="evType"><option value="수행평가">수행평가</option><option value="고사">고사</option><option value="학급일정">학급일정</option></select>
+      <select id="evType"><option value="수행평가">수행평가</option><option value="고사">고사</option><option value="학교일정">학교일정</option><option value="학급일정">학급일정</option></select>
     </div>
     <div class="form-group"><label>메모 (선택)</label><input type="text" id="evNote" placeholder="예: 국어실에서 진행" /></div>
     <div class="modal-btns">
@@ -657,7 +659,7 @@
       return `<div class="event-item">
         <div class="event-date-box"><div class="month">${d.getMonth()+1}월</div><div class="day">${d.getDate()}</div></div>
         <div class="event-info"><div class="title">${e.title}</div>${e.note ? `<div class="sub">${e.note}</div>` : ''}</div>
-        <span class="event-tag ${e.type==='고사'?'exam':''}">${e.type}</span>
+        <span class="event-tag ${e.type==='고사'?'exam':e.type==='학교일정'?'school':''}">${e.type}</span>
       </div>`;
     }).join('');
   }
