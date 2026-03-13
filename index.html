@@ -112,9 +112,11 @@
     .event-date-box .day { font-size: 1.4rem; font-weight: 900; color: var(--primary); line-height: 1; }
     .event-info .title { font-weight: 700; font-size: 0.95rem; }
     .event-info .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
-    .event-tag { margin-left: auto; background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-    .event-tag.exam { background: #fff3e0; color: #e76f51; }
-    .event-tag.school { background: #e8f4fd; color: #457b9d; }
+    .event-tag { margin-left: auto; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .event-tag.exam     { background: #ffeaea; color: #e63946; }  /* 고사 - 빨강 */
+    .event-tag.perform  { background: #fff3e0; color: #e76f51; }  /* 수행평가 - 주황 */
+    .event-tag.school   { background: #e8f4fd; color: #457b9d; }  /* 학교일정 - 파랑 */
+    .event-tag.class    { background: #d8f3dc; color: #2d6a4f; }  /* 학급일정 - 초록 */
     .no-events { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
 
     /* ── COUNSELING ── */
@@ -659,7 +661,7 @@
       return `<div class="event-item">
         <div class="event-date-box"><div class="month">${d.getMonth()+1}월</div><div class="day">${d.getDate()}</div></div>
         <div class="event-info"><div class="title">${e.title}</div>${e.note ? `<div class="sub">${e.note}</div>` : ''}</div>
-        <span class="event-tag ${e.type==='고사'?'exam':e.type==='학교일정'?'school':''}">${e.type}</span>
+        <span class="event-tag ${e.type==='고사'?'exam':e.type==='수행평가'?'perform':e.type==='학교일정'?'school':'class'}">${e.type}</span>
       </div>`;
     }).join('');
   }
