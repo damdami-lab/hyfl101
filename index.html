@@ -219,6 +219,35 @@
     .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
     .empty-state p { font-size: 0.95rem; }
 
+    /* ── 관리자 로그인 ── */
+    .admin-lock { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 40px 24px; }
+    .admin-lock-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 40px 36px; width: 100%; max-width: 400px; box-shadow: var(--shadow); text-align: center; }
+    .admin-lock-icon { font-size: 3rem; margin-bottom: 16px; }
+    .admin-lock-card h3 { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .admin-lock-card p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px; }
+    .admin-pw-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; background: var(--bg); color: var(--text); outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; }
+    .admin-pw-input:focus { border-color: var(--primary-light); }
+    .admin-pw-input.error { border-color: #e63946; animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+    .admin-login-btn { width: 100%; margin-top: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; padding: 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .admin-login-btn:hover { background: #1b4332; transform: translateY(-2px); }
+
+    /* ── 관리자 내역 ── */
+    .admin-panel { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+    .admin-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .admin-top h3 { font-size: 1rem; font-weight: 700; color: var(--primary); }
+    .admin-logout-btn { background: none; border: 1.5px solid var(--border); border-radius: 30px; padding: 8px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .admin-logout-btn:hover { background: #fff0f0; border-color: #e63946; color: #e63946; }
+    .counsel-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .counsel-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: left; font-size: 0.88rem; font-weight: 700; }
+    .counsel-table td { padding: 14px 16px; border-bottom: 1px solid var(--primary-pale); font-size: 0.88rem; vertical-align: top; }
+    .counsel-table tr:last-child td { border-bottom: none; }
+    .counsel-table tr:hover td { background: var(--primary-pale); }
+    .counsel-table .content-cell { max-width: 220px; color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; }
+    .counsel-badge { display: inline-block; background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .admin-count { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
+    .admin-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
       nav { padding: 0 16px; }
@@ -247,6 +276,7 @@
     <button onclick="showPage('activity')" id="nav-activity">🌱 자율활동</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
     <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
+    <button onclick="showPage('admin')" id="nav-admin">🔐 관리자</button>
   </div>
   <button class="hamburger" onclick="toggleNav()">☰</button>
 </nav>
@@ -383,7 +413,34 @@
   </div>
 </div>
 
-<!-- ════════════ MODALS ════════════ -->
+<!-- ════════════ ADMIN ════════════ -->
+<div class="page" id="page-admin">
+  <div class="page-header"><h2>🔐 관리자</h2><p>담임선생님 전용 관리 페이지</p></div>
+
+  <!-- 잠금 화면 -->
+  <div class="admin-lock" id="adminLock">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">🔒</div>
+      <h3>관리자 로그인</h3>
+      <p>담임선생님만 접근할 수 있어요.<br/>비밀번호를 입력해주세요.</p>
+      <input class="admin-pw-input" type="password" id="adminPwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter') adminLogin()" />
+      <button class="admin-login-btn" onclick="adminLogin()">🔓 로그인</button>
+    </div>
+  </div>
+
+  <!-- 관리자 내역 (로그인 후 표시) -->
+  <div class="admin-panel" id="adminPanel" style="display:none">
+    <div class="admin-top">
+      <h3>📋 상담 신청 내역 <span class="admin-count" id="counselCount"></span></h3>
+      <button class="admin-logout-btn" onclick="adminLogout()">🔒 로그아웃</button>
+    </div>
+    <div id="counselTableWrap">
+      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+
 
 <!-- 일정 -->
 <div class="modal-overlay" id="eventModal">
@@ -500,7 +557,8 @@
     notice: loadNotices,
     roles: loadRoles,
     meeting: loadMeetings,
-    activity: loadActivities
+    activity: loadActivities,
+    admin: initAdminPage
   };
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -849,6 +907,87 @@
     if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
     await loadActivities();
     showToast('🗑️ 활동이 삭제됐어요');
+  }
+
+  // ════════════ 관리자 ════════════
+  // ⚠️ 비밀번호를 여기서 바꾸세요!
+  const ADMIN_PASSWORD = 'teacher1234';
+
+  let isAdminLoggedIn = false;
+
+  function initAdminPage() {
+    if (isAdminLoggedIn) {
+      showAdminPanel();
+    } else {
+      document.getElementById('adminLock').style.display = 'flex';
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('adminPwInput').value = '';
+      document.getElementById('adminPwInput').classList.remove('error');
+      setTimeout(() => document.getElementById('adminPwInput').focus(), 200);
+    }
+  }
+
+  function adminLogin() {
+    const input = document.getElementById('adminPwInput');
+    if (input.value === ADMIN_PASSWORD) {
+      isAdminLoggedIn = true;
+      input.classList.remove('error');
+      showAdminPanel();
+    } else {
+      input.classList.add('error');
+      input.value = '';
+      setTimeout(() => input.classList.remove('error'), 400);
+      showToast('❗ 비밀번호가 틀렸어요');
+    }
+  }
+
+  function adminLogout() {
+    isAdminLoggedIn = false;
+    document.getElementById('adminLock').style.display = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('adminPwInput').value = '';
+    showToast('🔒 로그아웃 됐어요');
+  }
+
+  async function showAdminPanel() {
+    document.getElementById('adminLock').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    await loadCounselList();
+  }
+
+  async function loadCounselList() {
+    const wrap = document.getElementById('counselTableWrap');
+    wrap.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.from('counseling').select('*').order('created_at', { ascending: false });
+    if (error) { wrap.innerHTML = '<div class="admin-empty">❗ 데이터를 불러오지 못했어요</div>'; return; }
+    document.getElementById('counselCount').textContent = `(총 ${data.length}건)`;
+    if (!data || !data.length) {
+      wrap.innerHTML = '<div class="admin-empty">📭 아직 상담 신청 내역이 없어요</div>'; return;
+    }
+    wrap.innerHTML = `
+      <div style="overflow-x:auto">
+        <table class="counsel-table">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>유형</th>
+              <th>희망 날짜</th>
+              <th>내용</th>
+              <th>신청일</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(c => `
+              <tr>
+                <td><strong>${c.name}</strong></td>
+                <td><span class="counsel-badge">${c.type}</span></td>
+                <td>${c.date || '—'}</td>
+                <td class="content-cell">${c.content || '<span style="color:#ccc">없음</span>'}</td>
+                <td>${c.created_at ? c.created_at.slice(0,10) : '—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
   }
 </script>
 </body>
