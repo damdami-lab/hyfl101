@@ -86,37 +86,36 @@
     .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 700; }
 
     /* ── CALENDAR ── */
-    .calendar-wrap { max-width: 900px; margin: 0 auto; padding: 20px 24px; }
+    .calendar-wrap { max-width: 900px; margin: 0 auto; padding: 20px 24px 40px; }
     .tab-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
     .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .cal-header h3 { font-size: 1.1rem; font-weight: 700; }
     .cal-nav { background: none; border: 1.5px solid var(--border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
     .cal-nav:hover { background: var(--primary-pale); }
-    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
     .cal-day-label { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 6px 0; }
     .cal-day-label:first-child { color: #e63946; }
     .cal-day-label:last-child { color: #457b9d; }
-    .cal-cell { aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .cal-cell { min-height: 80px; border-radius: 10px; padding: 6px 5px; cursor: default; transition: background 0.2s; position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; background: var(--card); border: 1px solid var(--border); }
     .cal-cell:hover { background: var(--primary-pale); }
-    .cal-cell.today { background: var(--primary); color: white; font-weight: 700; }
-    .cal-cell.has-event::after { content: ''; position: absolute; bottom: 4px; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
-    .cal-cell.empty { cursor: default; }
-    .cal-cell.sun { color: #e63946; }
-    .cal-cell.sat { color: #457b9d; }
-    .upcoming { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; }
-    .upcoming h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
-    .event-list { display: flex; flex-direction: column; gap: 10px; }
-    .event-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
-    .event-date-box { background: var(--primary-pale); border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 52px; }
-    .event-date-box .month { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
-    .event-date-box .day { font-size: 1.4rem; font-weight: 900; color: var(--primary); line-height: 1; }
-    .event-info .title { font-weight: 700; font-size: 0.95rem; }
-    .event-info .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+    .cal-cell.today { background: var(--primary-pale); border-color: var(--primary); }
+    .cal-cell.today .cal-date { background: var(--primary); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+    .cal-cell.empty:hover { background: transparent; }
+    .cal-date { font-size: 0.78rem; font-weight: 600; line-height: 22px; padding: 0 2px; color: var(--text); }
+    .cal-cell.sun > .cal-date { color: #e63946; }
+    .cal-cell.sat > .cal-date { color: #457b9d; }
+    .cal-event-chip { font-size: 0.65rem; font-weight: 700; border-radius: 4px; padding: 1px 5px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.6; }
+    .cal-event-chip.exam    { background: #ffeaea; color: #e63946; }
+    .cal-event-chip.perform { background: #fff3e0; color: #e76f51; }
+    .cal-event-chip.school  { background: #e8f4fd; color: #457b9d; }
+    .cal-event-chip.class   { background: #d8f3dc; color: #2d6a4f; }
+    .cal-event-chip.more    { background: var(--primary-pale); color: var(--primary); }
     .event-tag { margin-left: auto; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-    .event-tag.exam     { background: #ffeaea; color: #e63946; }  /* 고사 - 빨강 */
-    .event-tag.perform  { background: #fff3e0; color: #e76f51; }  /* 수행평가 - 주황 */
-    .event-tag.school   { background: #e8f4fd; color: #457b9d; }  /* 학교일정 - 파랑 */
-    .event-tag.class    { background: #d8f3dc; color: #2d6a4f; }  /* 학급일정 - 초록 */
+    .event-tag.exam     { background: #ffeaea; color: #e63946; }
+    .event-tag.perform  { background: #fff3e0; color: #e76f51; }
+    .event-tag.school   { background: #e8f4fd; color: #457b9d; }
+    .event-tag.class    { background: #d8f3dc; color: #2d6a4f; }
     .no-events { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
 
     /* ── COUNSELING ── */
@@ -338,10 +337,6 @@
       <button class="cal-nav" onclick="changeMonth(1)">›</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
-  </div>
-  <div class="upcoming">
-    <h3>🗓 다가오는 일정</h3>
-    <div class="event-list" id="eventList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>
   </div>
 </div>
 
@@ -598,12 +593,14 @@
   let calMonth = new Date().getMonth();
 
   async function loadEvents() {
-    document.getElementById('eventList').innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
     const { data, error } = await sb.from('events').select('*').order('date', { ascending: true });
     if (error) { showToast('❗ 일정을 불러오지 못했어요'); return; }
     allEvents = data || [];
     renderCalendar();
-    renderEventList();
+  }
+
+  function typeClass(type) {
+    return type==='고사'?'exam':type==='수행평가'?'perform':type==='학교일정'?'school':'class';
   }
 
   function renderCalendar() {
@@ -621,15 +618,41 @@
       const el = document.createElement('div'); el.className = 'cal-cell empty'; grid.appendChild(el);
     }
     for (let d = 1; d <= last; d++) {
-      const el = document.createElement('div');
       const dow = (first + d - 1) % 7;
-      el.className = 'cal-cell' + (dow === 0 ? ' sun' : dow === 6 ? ' sat' : '');
-      if (today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d)
-        el.classList.add('today');
-      // 날짜 비교 (시간대 버그 수정)
       const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-      if (allEvents.some(e => e.date === dateStr)) el.classList.add('has-event');
-      el.textContent = d; grid.appendChild(el);
+      const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (dow===0?' sun':dow===6?' sat':'') + (isToday?' today':'');
+
+      // 날짜 숫자
+      const dateEl = document.createElement('div');
+      dateEl.className = 'cal-date';
+      dateEl.textContent = d;
+      cell.appendChild(dateEl);
+
+      // 해당 날짜 이벤트 필터링
+      const dayEvents = allEvents.filter(e => {
+        if (e.date !== dateStr) return false;
+        return currentFilter === 'all' || e.type === currentFilter;
+      });
+
+      // 최대 3개까지 칩으로 표시
+      dayEvents.slice(0, 3).forEach(e => {
+        const chip = document.createElement('div');
+        chip.className = 'cal-event-chip ' + typeClass(e.type);
+        chip.textContent = e.title;
+        chip.title = e.title;
+        cell.appendChild(chip);
+      });
+      if (dayEvents.length > 3) {
+        const more = document.createElement('div');
+        more.className = 'cal-event-chip more';
+        more.textContent = '+' + (dayEvents.length - 3) + '개';
+        cell.appendChild(more);
+      }
+
+      grid.appendChild(cell);
     }
   }
 
@@ -644,26 +667,7 @@
     currentFilter = type;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderEventList();
-  }
-
-  function renderEventList() {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const filtered = allEvents
-      .filter(e => new Date(e.date + 'T00:00:00') >= today)
-      .filter(e => currentFilter === 'all' || e.type === currentFilter);
-    const list = document.getElementById('eventList');
-    if (!filtered.length) {
-      list.innerHTML = '<div class="no-events">📭 등록된 일정이 없어요. 첫 일정을 등록해봐요!</div>'; return;
-    }
-    list.innerHTML = filtered.map(e => {
-      const d = new Date(e.date + 'T00:00:00');
-      return `<div class="event-item">
-        <div class="event-date-box"><div class="month">${d.getMonth()+1}월</div><div class="day">${d.getDate()}</div></div>
-        <div class="event-info"><div class="title">${e.title}</div>${e.note ? `<div class="sub">${e.note}</div>` : ''}</div>
-        <span class="event-tag ${e.type==='고사'?'exam':e.type==='수행평가'?'perform':e.type==='학교일정'?'school':'class'}">${e.type}</span>
-      </div>`;
-    }).join('');
+    renderCalendar();
   }
 
   function openEventModal() {
