@@ -738,7 +738,6 @@
   </div>
 </div>
 
-<!-- 게시판 글쓰기 -->
 <!-- 공지 -->
 <div class="modal-overlay" id="noticeModal" style="display:none" onclick="closeNoticeModal()">
   <div class="modal" id="noticeModalBox" onclick="event.stopPropagation()">
@@ -1169,31 +1168,52 @@
   }
 
   function openNoticeModal() {
-    if (document.getElementById('ntAuthor')) document.getElementById('ntAuthor').value = '';
+    selectedStudentTemp['nt'] = null;
+    if (document.getElementById('ntStudentSearch')) document.getElementById('ntStudentSearch').value = '';
+    if (document.getElementById('ntStudentDropdown')) document.getElementById('ntStudentDropdown').classList.remove('open');
+    if (document.getElementById('ntSelectedBadge')) document.getElementById('ntSelectedBadge').style.display = 'none';
+    if (document.getElementById('ntPwInput')) document.getElementById('ntPwInput').value = '';
     document.getElementById('ntTitle').value = '';
     document.getElementById('ntBody').value = '';
-    document.getElementById('noticeModal').style.display = 'block';
-    document.getElementById('noticeModalBox').style.display = 'block';
+    document.getElementById('noticeModal').style.display = 'flex';
   }
 
   function closeNoticeModal() {
     document.getElementById('noticeModal').style.display = 'none';
-    document.getElementById('noticeModalBox').style.display = 'none';
   }
 
   async function saveNotice() {
-    const author = document.getElementById('ntAuthor').value.trim() || '익명';
+    const student = selectedStudentTemp['nt'];
+    if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+    const pw = document.getElementById('ntPwInput').value;
+    if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
     const title = document.getElementById('ntTitle').value.trim();
     const body = document.getElementById('ntBody').value.trim();
     if (!title || !body) { showToast('❗ 제목과 내용을 입력해주세요'); return; }
+
     const btn = document.getElementById('ntSaveBtn');
-    btn.disabled = true; btn.textContent = '올리는 중...';
-    const { error } = await sb.from('notices').insert([{ title, body, author, pinned: false, is_new: true }]);
-    btn.disabled = false; btn.textContent = '📋 올리기';
-    if (error) { showToast('❗ 등록 실패: ' + error.message); return; }
+    btn.disabled = true; btn.textContent = '확인 중...';
+
+    const { data, error } = await sb.from('students')
+      .select('password').eq('student_num', student.num).maybeSingle();
+    if (error || !data) { btn.disabled = false; btn.textContent = '📢 등록하기'; showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+    if (data.password !== pw) {
+      btn.disabled = false; btn.textContent = '📢 등록하기';
+      const input = document.getElementById('ntPwInput');
+      input.classList.add('error'); input.value = '';
+      setTimeout(() => input.classList.remove('error'), 1000);
+      showToast('❗ 비밀번호가 틀렸어요'); return;
+    }
+
+    btn.textContent = '등록 중...';
+    const { error: insertErr } = await sb.from('notices').insert([{
+      title, body, author: student.name, pinned: false, is_new: true
+    }]);
+    btn.disabled = false; btn.textContent = '📢 등록하기';
+    if (insertErr) { showToast('❗ 등록 실패: ' + insertErr.message); return; }
     closeNoticeModal();
     await loadNotices();
-    showToast('📋 글이 올라갔어요!');
+    showToast('📢 공지가 등록됐어요!');
   }
 
   // ════════════ 1인1역 ════════════
