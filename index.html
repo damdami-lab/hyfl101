@@ -290,6 +290,37 @@
     .slot-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
     .booking-slot-info { background: var(--primary-pale); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 700; }
 
+    /* ── 본인 인증 ── */
+    .auth-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
+    .auth-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .auth-card .auth-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6; }
+    .student-search-wrap { position: relative; margin-bottom: 10px; }
+    .student-search-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
+    .student-search-input:focus { border-color: var(--primary-light); }
+    .student-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); z-index: 50; max-height: 220px; overflow-y: auto; display: none; }
+    .student-dropdown.open { display: block; }
+    .student-option { padding: 11px 16px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+    .student-option:hover { background: var(--primary-pale); }
+    .student-option .stu-num { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+    .student-option .stu-name { font-weight: 700; }
+    .selected-student-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-pale); border: 1.5px solid var(--primary-light); border-radius: 30px; padding: 6px 14px; font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+    .selected-student-badge button { background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); padding: 0; line-height: 1; }
+    .auth-pw-row { display: flex; gap: 10px; }
+    .auth-pw-input { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; letter-spacing: 3px; }
+    .auth-pw-input:focus { border-color: var(--primary-light); }
+    .auth-pw-input.error { border-color: #e63946; animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    .auth-confirm-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 22px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .auth-confirm-btn:hover { background: #1b4332; }
+    .auth-logged-in { background: var(--primary-pale); border: 1.5px solid var(--primary-light); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .auth-logged-in-info { font-size: 0.92rem; font-weight: 700; color: var(--primary); }
+    .auth-logged-in-info span { font-weight: 400; color: var(--text-muted); font-size: 0.82rem; margin-left: 6px; }
+    .auth-logout-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 5px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .auth-logout-btn:hover { background: #fff0f0; border-color: #e63946; color: #e63946; }
+    .change-pw-toggle { font-size: 0.8rem; color: var(--primary); text-decoration: underline; cursor: pointer; background: none; border: none; font-family: 'Noto Sans KR', sans-serif; margin-top: 6px; }
+    .change-pw-box { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 12px; display: none; }
+    .change-pw-box.open { display: block; }
+
     /* ── 설문 ── */
     .survey-wrap { max-width: 600px; margin: 0 auto; padding: 32px 24px 60px; }
     .survey-tab-row { display: flex; gap: 8px; margin-bottom: 20px; background: var(--primary-pale); border-radius: 14px; padding: 6px; }
@@ -507,9 +538,35 @@
   <div class="modal-header"><h3 id="bookingModalTitle">상담 예약</h3><button class="modal-close" onclick="closeBookingModal()">✕</button></div>
   <div class="modal-body">
     <div class="booking-slot-info" id="bookingSlotInfo"></div>
-    <div class="form-group"><label>이름</label><input type="text" id="bkName" placeholder="홍길동" /></div>
-    <div class="form-group"><label>상담 내용 (선택)</label><textarea id="bkContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요." style="min-height:80px"></textarea></div>
-    <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
+
+    <!-- 인증 전 -->
+    <div id="bkAuthSection">
+      <div class="form-group">
+        <label>학생 선택</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="bkStudentSearch" placeholder="이름 또는 학번 입력..." oninput="searchStudents('bk')" autocomplete="off" />
+          <div class="student-dropdown" id="bkStudentDropdown"></div>
+        </div>
+        <div id="bkSelectedBadge" style="display:none"></div>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="auth-pw-row">
+          <input class="auth-pw-input" type="password" id="bkPwInput" placeholder="••••" onkeydown="if(event.key==='Enter') authStudent('bk')" />
+          <button class="auth-confirm-btn" onclick="authStudent('bk')">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인증 후 -->
+    <div id="bkAuthedSection" style="display:none">
+      <div class="auth-logged-in" style="margin-bottom:16px">
+        <div class="auth-logged-in-info" id="bkLoggedInInfo"></div>
+        <button class="auth-logout-btn" onclick="logoutStudent('bk')">다른 학생으로</button>
+      </div>
+      <div class="form-group"><label>상담 내용 (선택)</label><textarea id="bkContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요." style="min-height:80px"></textarea></div>
+      <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
+    </div>
   </div>
 </div>
 
@@ -526,35 +583,75 @@
 <div class="page" id="page-survey">
   <div class="page-header"><h2>📣 건의사항</h2><p>선생님과 학급에 하고 싶은 말을 전해요</p></div>
   <div class="survey-wrap">
-    <div class="survey-card" id="suggestForm">
-      <h3>학급에 하고 싶은 말이 있나요? 💡</h3>
-      <p class="survey-desc">건의사항은 <strong>선생님께만</strong> 보여요. 편하게 써줘요 🔒</p>
-      <div class="form-group">
-        <label>이름 (익명 가능)</label>
-        <input type="text" id="sgName" placeholder="홍길동 또는 익명" />
+
+    <!-- 본인 인증 영역 -->
+    <div class="auth-card" id="sgAuthCard">
+      <h3>🔐 본인 확인</h3>
+      <p class="auth-desc">이름 또는 학번으로 검색하고 비밀번호를 입력해주세요.<br/>초기 비밀번호는 <strong>1234</strong>예요.</p>
+      <div class="form-group" id="sgStudentSelectGroup">
+        <label>학생 선택</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="sgStudentSearch" placeholder="이름 또는 학번 입력..." oninput="searchStudents('sg')" autocomplete="off" />
+          <div class="student-dropdown" id="sgStudentDropdown"></div>
+        </div>
+        <div id="sgSelectedBadge" style="display:none"></div>
       </div>
       <div class="form-group">
-        <label>건의 유형</label>
-        <div class="suggest-type-grid">
-          <div class="suggest-type-btn" onclick="selectSuggestType(this,'학급 규칙')">📋 학급 규칙</div>
-          <div class="suggest-type-btn" onclick="selectSuggestType(this,'환경 개선')">🏫 환경 개선</div>
-          <div class="suggest-type-btn" onclick="selectSuggestType(this,'행사/활동')">🎉 행사/활동</div>
-          <div class="suggest-type-btn" onclick="selectSuggestType(this,'선생님께')">💬 선생님께</div>
-          <div class="suggest-type-btn" onclick="selectSuggestType(this,'기타')">✏️ 기타</div>
+        <label>비밀번호</label>
+        <div class="auth-pw-row">
+          <input class="auth-pw-input" type="password" id="sgPwInput" placeholder="••••" onkeydown="if(event.key==='Enter') authStudent('sg')" />
+          <button class="auth-confirm-btn" onclick="authStudent('sg')">확인</button>
         </div>
       </div>
-      <div class="form-group">
-        <label>건의 내용</label>
-        <textarea id="sgContent" placeholder="자유롭게 써줘요. 선생님만 볼 수 있어요." style="min-height:120px"></textarea>
+    </div>
+
+    <!-- 인증 완료 후 표시 -->
+    <div id="sgAuthedArea" style="display:none">
+      <div class="auth-logged-in">
+        <div class="auth-logged-in-info" id="sgLoggedInInfo"></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <button class="auth-logout-btn" onclick="logoutStudent('sg')">다른 학생으로</button>
+          <button class="change-pw-toggle" onclick="toggleChangePw('sg')">🔑 비밀번호 변경</button>
+        </div>
       </div>
-      <button class="submit-btn" id="sgBtn" onclick="submitSuggestion()">📨 제출하기</button>
+      <div class="change-pw-box" id="sgChangePwBox">
+        <div class="form-group" style="margin-bottom:10px">
+          <label style="font-size:0.82rem">새 비밀번호</label>
+          <div class="auth-pw-row">
+            <input class="auth-pw-input" type="password" id="sgNewPw" placeholder="새 비밀번호" />
+            <input class="auth-pw-input" type="password" id="sgNewPwConfirm" placeholder="확인" />
+            <button class="auth-confirm-btn" onclick="changePassword('sg')">변경</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="survey-card" id="suggestForm">
+        <h3>학급에 하고 싶은 말이 있나요? 💡</h3>
+        <p class="survey-desc">건의사항은 <strong>선생님께만</strong> 보여요 🔒</p>
+        <div class="form-group">
+          <label>건의 유형</label>
+          <div class="suggest-type-grid">
+            <div class="suggest-type-btn" onclick="selectSuggestType(this,'학급 규칙')">📋 학급 규칙</div>
+            <div class="suggest-type-btn" onclick="selectSuggestType(this,'환경 개선')">🏫 환경 개선</div>
+            <div class="suggest-type-btn" onclick="selectSuggestType(this,'행사/활동')">🎉 행사/활동</div>
+            <div class="suggest-type-btn" onclick="selectSuggestType(this,'선생님께')">💬 선생님께</div>
+            <div class="suggest-type-btn" onclick="selectSuggestType(this,'기타')">✏️ 기타</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>건의 내용</label>
+          <textarea id="sgContent" placeholder="자유롭게 써줘요. 선생님만 볼 수 있어요." style="min-height:120px"></textarea>
+        </div>
+        <button class="submit-btn" id="sgBtn" onclick="submitSuggestion()">📨 제출하기</button>
+      </div>
+      <div class="survey-done" id="suggestDone" style="display:none">
+        <div class="done-icon">💚</div>
+        <h3>전달됐어요!</h3>
+        <p>선생님께 잘 전달됐어요.<br/>소중한 의견 고마워요 🌱</p>
+        <button class="submit-btn" style="margin-top:20px; max-width:200px" onclick="resetSuggestion()">다시 쓰기</button>
+      </div>
     </div>
-    <div class="survey-done" id="suggestDone" style="display:none">
-      <div class="done-icon">💚</div>
-      <h3>전달됐어요!</h3>
-      <p>선생님께 잘 전달됐어요.<br/>소중한 의견 고마워요 🌱</p>
-      <button class="submit-btn" style="margin-top:20px; max-width:200px" onclick="resetSuggestion()">다시 쓰기</button>
-    </div>
+
   </div>
 </div>
 
@@ -970,7 +1067,8 @@
     const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${time.slice(0,5)}`;
     document.getElementById('bookingModalTitle').textContent = '상담 예약';
     document.getElementById('bookingSlotInfo').textContent = `🕐 ${dateStr}${label ? ' · ' + label : ''}`;
-    document.getElementById('bkName').value = '';
+    // 인증 초기화
+    logoutStudent('bk');
     document.getElementById('bkContent').value = '';
     document.getElementById('bookingOverlay').style.display = 'block';
     document.getElementById('bookingModal').style.display = 'block';
@@ -985,15 +1083,14 @@
   }
 
   async function submitBooking() {
-    const name = document.getElementById('bkName').value.trim();
-    if (!name) { showToast('❗ 이름을 입력해주세요'); return; }
+    const student = authedStudent['bk'];
+    if (!student) { showToast('❗ 본인 인증이 필요해요'); return; }
     const btn = document.getElementById('bkSubmitBtn');
     btn.disabled = true; btn.textContent = '예약 중...';
-    // 슬롯 선점 (booked_by 업데이트)
     const { error } = await sb.from('counsel_slots').update({
-      booked_by: name,
+      booked_by: student.name,
       booked_content: document.getElementById('bkContent').value.trim() || null
-    }).eq('id', currentSlotId).is('booked_by', null); // 동시 예약 방지
+    }).eq('id', currentSlotId).is('booked_by', null);
     btn.disabled = false; btn.textContent = '📨 예약하기';
     if (error) { showToast('❗ 예약 실패: ' + error.message); return; }
     closeBookingModal();
@@ -1204,6 +1301,138 @@
     showToast('🗑️ 활동이 삭제됐어요');
   }
 
+  // ════════════ 학생 목록 & 본인 인증 ════════════
+  const STUDENTS = [
+    {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
+    {num:'10104',name:'김나후'},{num:'10105',name:'김연우'},{num:'10106',name:'김효정A'},
+    {num:'10107',name:'백세영'},{num:'10108',name:'심연경'},{num:'10109',name:'양연우'},
+    {num:'10110',name:'염서윤'},{num:'10111',name:'이규준'},{num:'10112',name:'이나울'},
+    {num:'10113',name:'이선준'},{num:'10114',name:'이연우'},{num:'10115',name:'이예은'},
+    {num:'10116',name:'이울리'},{num:'10117',name:'이재후'},{num:'10118',name:'정예현'},
+    {num:'10119',name:'조시현'},{num:'10120',name:'주어원'},{num:'10121',name:'최예지'},
+    {num:'10122',name:'최주은'},{num:'10123',name:'한윤화'},{num:'10124',name:'허은'}
+  ];
+
+  // prefix: 'sg' (건의사항) | 'bk' (상담예약)
+  let authedStudent = { sg: null, bk: null }; // { num, name }
+  let selectedStudentTemp = { sg: null, bk: null };
+
+  function searchStudents(prefix) {
+    const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
+    const dropdown = document.getElementById(prefix + 'StudentDropdown');
+    if (!q) { dropdown.classList.remove('open'); return; }
+    const results = STUDENTS.filter(s => s.name.includes(q) || s.num.includes(q));
+    if (!results.length) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = results.map(s =>
+      `<div class="student-option" onclick="selectStudent('${prefix}','${s.num}','${s.name}')">
+        <span class="stu-num">${s.num}</span>
+        <span class="stu-name">${s.name}</span>
+      </div>`
+    ).join('');
+    dropdown.classList.add('open');
+  }
+
+  function selectStudent(prefix, num, name) {
+    selectedStudentTemp[prefix] = { num, name };
+    document.getElementById(prefix + 'StudentSearch').value = '';
+    document.getElementById(prefix + 'StudentDropdown').classList.remove('open');
+    const badge = document.getElementById(prefix + 'SelectedBadge');
+    badge.style.display = 'block';
+    badge.innerHTML = `<div class="selected-student-badge">✅ ${num} ${name} <button onclick="clearSelectedStudent('${prefix}')">✕</button></div>`;
+  }
+
+  function clearSelectedStudent(prefix) {
+    selectedStudentTemp[prefix] = null;
+    document.getElementById(prefix + 'SelectedBadge').style.display = 'none';
+    document.getElementById(prefix + 'StudentSearch').value = '';
+  }
+
+  async function authStudent(prefix) {
+    const student = selectedStudentTemp[prefix];
+    if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+    const pw = document.getElementById(prefix + 'PwInput').value;
+    if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+
+    const { data, error } = await sb.from('students')
+      .select('*').eq('student_num', student.num).maybeSingle();
+
+    if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+    if (data.password !== pw) {
+      const input = document.getElementById(prefix + 'PwInput');
+      input.classList.add('error');
+      input.value = '';
+      setTimeout(() => input.classList.remove('error'), 1000);
+      showToast('❗ 비밀번호가 틀렸어요');
+      return;
+    }
+
+    // 인증 성공
+    authedStudent[prefix] = { num: student.num, name: student.name };
+    document.getElementById(prefix + 'PwInput').value = '';
+
+    if (prefix === 'sg') {
+      document.getElementById('sgAuthCard').style.display = 'none';
+      document.getElementById('sgAuthedArea').style.display = 'block';
+      document.getElementById('sgLoggedInInfo').innerHTML =
+        `${student.name} <span>(${student.num})</span>`;
+    } else {
+      document.getElementById('bkAuthSection').style.display = 'none';
+      document.getElementById('bkAuthedSection').style.display = 'block';
+      document.getElementById('bkLoggedInInfo').innerHTML =
+        `${student.name} <span>(${student.num})</span>`;
+    }
+  }
+
+  function logoutStudent(prefix) {
+    authedStudent[prefix] = null;
+    selectedStudentTemp[prefix] = null;
+    if (prefix === 'sg') {
+      document.getElementById('sgAuthCard').style.display = 'block';
+      document.getElementById('sgAuthedArea').style.display = 'none';
+      document.getElementById('sgSelectedBadge').style.display = 'none';
+      document.getElementById('sgStudentSearch').value = '';
+      document.getElementById('sgPwInput').value = '';
+      resetSuggestion();
+    } else {
+      document.getElementById('bkAuthSection').style.display = 'block';
+      document.getElementById('bkAuthedSection').style.display = 'none';
+      document.getElementById('bkSelectedBadge').style.display = 'none';
+      document.getElementById('bkStudentSearch').value = '';
+      document.getElementById('bkPwInput').value = '';
+    }
+  }
+
+  function toggleChangePw(prefix) {
+    const box = document.getElementById(prefix + 'ChangePwBox');
+    box.classList.toggle('open');
+  }
+
+  async function changePassword(prefix) {
+    const student = authedStudent[prefix];
+    if (!student) return;
+    const newPw = document.getElementById(prefix + 'NewPw').value;
+    const confirm = document.getElementById(prefix + 'NewPwConfirm').value;
+    if (!newPw || newPw.length < 4) { showToast('❗ 비밀번호는 4자리 이상이어야 해요'); return; }
+    if (newPw !== confirm) { showToast('❗ 비밀번호가 일치하지 않아요'); return; }
+    const { error } = await sb.from('students').update({ password: newPw }).eq('student_num', student.num);
+    if (error) { showToast('❗ 변경 실패: ' + error.message); return; }
+    document.getElementById(prefix + 'NewPw').value = '';
+    document.getElementById(prefix + 'NewPwConfirm').value = '';
+    document.getElementById(prefix + 'ChangePwBox').classList.remove('open');
+    showToast('✅ 비밀번호가 변경됐어요!');
+  }
+
+  // 바깥 클릭 시 드롭다운 닫기
+  document.addEventListener('click', e => {
+    ['sg','bk'].forEach(p => {
+      const wrap = document.getElementById(p + 'StudentSearch');
+      const drop = document.getElementById(p + 'StudentDropdown');
+      if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
+        drop.classList.remove('open');
+      }
+    });
+  });
+
   // ════════════ 건의사항 ════════════
   let selectedSuggestType = '';
 
@@ -1216,13 +1445,17 @@
   }
 
   async function submitSuggestion() {
-    const name = document.getElementById('sgName').value.trim() || '익명';
+    const student = authedStudent['sg'];
+    if (!student) { showToast('❗ 본인 인증이 필요해요'); return; }
     const content = document.getElementById('sgContent').value.trim();
     if (!selectedSuggestType) { showToast('❗ 건의 유형을 선택해주세요'); return; }
     if (!content) { showToast('❗ 건의 내용을 입력해주세요'); return; }
     const btn = document.getElementById('sgBtn');
     btn.disabled = true; btn.textContent = '제출 중...';
-    const { error } = await sb.from('suggestions').insert([{ name, type: selectedSuggestType, content }]);
+    const { error } = await sb.from('suggestions').insert([{
+      name: student.name, student_num: student.num,
+      type: selectedSuggestType, content
+    }]);
     btn.disabled = false; btn.textContent = '📨 제출하기';
     if (error) { showToast('❗ 제출 실패: ' + error.message); return; }
     document.getElementById('suggestForm').style.display = 'none';
@@ -1230,12 +1463,13 @@
   }
 
   function resetSuggestion() {
-    document.getElementById('sgName').value = '';
     document.getElementById('sgContent').value = '';
     document.querySelectorAll('.suggest-type-btn').forEach(b => b.classList.remove('selected'));
     selectedSuggestType = '';
-    document.getElementById('suggestForm').style.display = 'block';
-    document.getElementById('suggestDone').style.display = 'none';
+    if (document.getElementById('suggestForm')) {
+      document.getElementById('suggestForm').style.display = 'block';
+      document.getElementById('suggestDone').style.display = 'none';
+    }
   }
 
   // ════════════ 사진 보관함 ════════════
