@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1-1 담임 페이지 🔐</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #2d6a4f;
+      --primary-light: #52b788;
+      --primary-pale: #d8f3dc;
+      --accent: #f4a261;
+      --bg: #f8fdf9;
+      --card: #ffffff;
+      --text: #1b3a2d;
+      --text-muted: #6b9080;
+      --border: #b7e4c7;
+      --shadow: 0 4px 24px rgba(45,106,79,0.10);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 64px;
+    }
+    .nav-logo { font-family: 'Gowun Dodum', sans-serif; font-size: 1.2rem; color: var(--primary); font-weight: 700; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-tab { background: none; border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; color: var(--text-muted); padding: 8px 16px; border-radius: 30px; transition: all 0.2s; }
+    .nav-tab.active { background: var(--primary-pale); color: var(--primary); font-weight: 700; }
+    .logout-btn { background: none; border: 1.5px solid var(--border); border-radius: 30px; padding: 7px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .logout-btn:hover { background: #fff0f0; border-color: #e63946; color: #e63946; }
+
+    /* ── LOGIN ── */
+    .login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .login-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 48px 40px; width: 100%; max-width: 420px; box-shadow: var(--shadow); text-align: center; }
+    .login-icon { font-size: 3rem; margin-bottom: 16px; }
+    .login-card h2 { font-size: 1.4rem; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
+    .login-card p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 28px; }
+    .pw-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; background: var(--bg); color: var(--text); outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 14px; }
+    .pw-input:focus { border-color: var(--primary-light); }
+    .pw-input.error { border-color: #e63946; animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+    .login-btn { width: 100%; background: var(--primary); color: white; border: none; border-radius: 12px; padding: 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .login-btn:hover { background: #1b4332; transform: translateY(-2px); }
+    .login-error { color: #e63946; font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+
+    /* ── MAIN ── */
+    .main { display: none; padding-top: 64px; min-height: 100vh; }
+    .main.visible { display: block; }
+    .page-content { display: none; }
+    .page-content.active { display: block; }
+
+    /* ── 공통 ── */
+    .wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
+    .section-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .section-top h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+    .count-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
+    .refresh-btn { background: none; border: 1.5px solid var(--border); border-radius: 30px; padding: 7px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .refresh-btn:hover { background: var(--primary-pale); border-color: var(--primary-light); color: var(--primary); }
+    .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px; color: var(--text-muted); }
+    .spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── 설문 카드 ── */
+    .survey-grid { display: flex; flex-direction: column; gap: 14px; }
+    .survey-item { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); }
+    .survey-item-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .sv-name { font-weight: 900; font-size: 1rem; }
+    .sv-mood { font-size: 1.3rem; }
+    .sv-mood-label { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; font-weight: 700; }
+    .sv-date { margin-left: auto; font-size: 0.78rem; color: var(--text-muted); }
+    .sv-section { margin-bottom: 10px; }
+    .sv-section-label { font-size: 0.78rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .sv-section-body { font-size: 0.9rem; color: var(--text); line-height: 1.6; background: var(--bg); border-radius: 10px; padding: 10px 14px; }
+    .sv-empty-field { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+
+    /* ── 필터 바 ── */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .filter-input { border: 1.5px solid var(--border); border-radius: 30px; padding: 8px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; outline: none; background: var(--card); color: var(--text); transition: border-color 0.2s; }
+    .filter-input:focus { border-color: var(--primary-light); }
+    .filter-select { border: 1.5px solid var(--border); border-radius: 30px; padding: 8px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; outline: none; background: var(--card); color: var(--text); cursor: pointer; }
+
+    /* ── 상담 테이블 ── */
+    .table-wrap { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .data-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: left; font-size: 0.88rem; font-weight: 700; }
+    .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--primary-pale); font-size: 0.88rem; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--primary-pale); }
+    .data-table .content-cell { max-width: 240px; color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; }
+    .badge { display: inline-block; background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+
+    /* ── 통계 카드 ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 32px; }
+    .stat-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px; text-align: center; box-shadow: var(--shadow); }
+    .stat-card .stat-num { font-size: 2.2rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .stat-card .stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 6px; }
+    .stat-card .stat-icon { font-size: 1.5rem; margin-bottom: 8px; }
+    .mood-bar { display: flex; flex-direction: column; gap: 8px; }
+    .mood-row { display: flex; align-items: center; gap: 10px; }
+    .mood-row .mood-em { font-size: 1.2rem; width: 28px; }
+    .mood-row .mood-name { font-size: 0.82rem; color: var(--text-muted); width: 40px; }
+    .mood-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .mood-fill { height: 100%; background: var(--primary-light); border-radius: 4px; transition: width 0.5s ease; }
+    .mood-cnt { font-size: 0.78rem; color: var(--text-muted); width: 24px; text-align: right; }
+
+    /* ── 슬롯 관리 ── */
+    .slot-form-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 8px; }
+    .slot-form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .slot-form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 120px; }
+    .slot-form-group label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+    .slot-input { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; outline: none; background: var(--bg); color: var(--text); transition: border-color 0.2s; }
+    .slot-input:focus { border-color: var(--primary-light); }
+    .slot-add-btn { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 10px 22px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; align-self: flex-end; }
+    .slot-add-btn:hover { background: #1b4332; }
+    .slot-manage-list { display: flex; flex-direction: column; gap: 10px; }
+    .slot-manage-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); flex-wrap: wrap; }
+    .smi-date { font-weight: 700; font-size: 0.9rem; color: var(--primary); min-width: 80px; }
+    .smi-time { font-size: 1rem; font-weight: 900; }
+    .smi-label { font-size: 0.82rem; color: var(--text-muted); }
+    .smi-status-empty { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
+    .smi-status-booked { background: #ffeaea; color: #e63946; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
+    .smi-booker { font-size: 0.88rem; font-weight: 700; margin-left: auto; }
+    .smi-delete { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.78rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .smi-delete:hover { background: #fff0f0; border-color: #e63946; color: #e63946; }
+
+    /* ── 학생 상세 패널 ── */
+    .student-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; }
+    .student-overlay.open { display: block; }
+    .student-panel { position: fixed; top: 0; right: -520px; width: 100%; max-width: 520px; height: 100vh; background: var(--card); z-index: 201; box-shadow: -8px 0 40px rgba(0,0,0,0.15); transition: right 0.3s ease; overflow-y: auto; display: flex; flex-direction: column; }
+    .student-panel.open { right: 0; }
+    .panel-header { position: sticky; top: 0; background: var(--primary); color: white; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 1; }
+    .panel-header-info h3 { font-size: 1.2rem; font-weight: 900; }
+    .panel-header-info p { font-size: 0.82rem; opacity: 0.85; margin-top: 2px; }
+    .panel-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .panel-close:hover { background: rgba(255,255,255,0.35); }
+    .panel-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+    .panel-section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* 상담 신청 상세 */
+    .counsel-detail-card { background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+    .counsel-detail-row { display: flex; gap: 10px; margin-bottom: 8px; font-size: 0.88rem; }
+    .counsel-detail-row:last-child { margin-bottom: 0; }
+    .counsel-detail-key { color: var(--text-muted); min-width: 72px; font-weight: 500; }
+    .counsel-detail-val { color: var(--text); font-weight: 600; }
+
+    /* 설문 이력 */
+    .survey-history { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+    .survey-history-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
+    .shi-mood { font-size: 1.2rem; flex-shrink: 0; }
+    .shi-body { flex: 1; min-width: 0; }
+    .shi-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .shi-label { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; }
+    .shi-date { font-size: 0.72rem; color: var(--text-muted); margin-left: auto; }
+    .shi-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* 상담 메모 */
+    .memo-area { width: 100%; border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; line-height: 1.7; resize: vertical; min-height: 120px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
+    .memo-area:focus { border-color: var(--primary-light); }
+    .memo-save-btn { background: var(--primary); color: white; border: none; border-radius: 30px; padding: 10px 24px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .memo-save-btn:hover { background: #1b4332; }
+    .memo-save-btn:disabled { opacity: 0.6; cursor: default; }
+    .memo-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
+
+    /* 클릭 가능한 테이블 행 */
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr td:first-child { color: var(--primary); font-weight: 700; text-decoration: underline; text-decoration-style: dotted; }
+
+    /* ── 토스트 ── */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1b3a2d; color: white; border-radius: 30px; padding: 12px 28px; font-size: 0.9rem; font-weight: 500; z-index: 300; transition: transform 0.3s; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .login-card { padding: 32px 24px; }
+      .wrap { padding: 24px 16px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════ 로그인 화면 ════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <h2>담임 전용 페이지</h2>
+    <p>1학년 1반 담임선생님만 접근할 수 있어요</p>
+    <input class="pw-input" type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()" />
+    <button class="login-btn" onclick="login()">로그인</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ════════════ 메인 (로그인 후) ════════════ -->
+<nav id="mainNav" style="display:none">
+  <span class="nav-logo">🌱 1-1 담임 페이지</span>
+  <div class="nav-right">
+    <button class="nav-tab active" id="tab-survey" onclick="showTab('survey')">📝 설문 응답</button>
+    <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 시간 관리</button>
+    <button class="nav-tab" id="tab-counsel" onclick="showTab('counsel')">💬 상담 예약 현황</button>
+    <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+  </div>
+</nav>
+
+<div class="main" id="mainContent">
+
+  <!-- 설문 응답 탭 -->
+  <div class="page-content active" id="page-survey">
+    <div class="wrap">
+      <div class="section-top">
+        <h3>📝 설문 응답 <span class="count-badge" id="surveyCount"></span></h3>
+        <button class="refresh-btn" onclick="loadSurveys()">🔄 새로고침</button>
+      </div>
+      <div class="filter-bar">
+        <input class="filter-input" type="text" id="svSearch" placeholder="🔍 이름 검색..." oninput="renderSurveys()" />
+        <select class="filter-select" id="svMoodFilter" onchange="renderSurveys()">
+          <option value="">전체 기분</option>
+          <option value="최고">😄 최고</option>
+          <option value="좋아">🙂 좋아</option>
+          <option value="보통">😐 보통</option>
+          <option value="별로">😔 별로</option>
+          <option value="힘들어">😞 힘들어</option>
+        </select>
+        <select class="filter-select" id="svDateFilter" onchange="renderSurveys()">
+          <option value="">전체 날짜</option>
+          <option value="today">오늘</option>
+          <option value="week">이번 주</option>
+        </select>
+      </div>
+      <div class="survey-grid" id="surveyList">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상담 시간 관리 탭 -->
+  <div class="page-content" id="page-slots">
+    <div class="wrap">
+      <div class="section-top">
+        <h3>🗓️ 상담 가능 시간 등록</h3>
+      </div>
+      <div class="slot-form-card">
+        <div class="slot-form-row">
+          <div class="slot-form-group">
+            <label>날짜</label>
+            <input type="date" id="newSlotDate" class="slot-input" />
+          </div>
+          <div class="slot-form-group">
+            <label>시간</label>
+            <input type="time" id="newSlotTime" class="slot-input" />
+          </div>
+          <div class="slot-form-group" style="flex:2">
+            <label>메모 (선택)</label>
+            <input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" />
+          </div>
+          <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
+        </div>
+      </div>
+      <div class="section-top" style="margin-top:28px;">
+        <h3>등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
+        <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
+      </div>
+      <div id="slotManageList"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <!-- 상담 예약 현황 탭 -->
+  <div class="page-content" id="page-counsel">
+    <div class="wrap">
+      <div class="section-top">
+        <h3>💬 상담 예약 현황 <span class="count-badge" id="counselCount"></span></h3>
+        <button class="refresh-btn" onclick="loadCounsel()">🔄 새로고침</button>
+      </div>
+      <div class="filter-bar">
+        <input class="filter-input" type="text" id="csSearch" placeholder="🔍 이름 검색..." oninput="renderCounsel()" />
+        <select class="filter-select" id="csStatusFilter" onchange="renderCounsel()">
+          <option value="">전체</option>
+          <option value="booked">예약됨</option>
+          <option value="empty">빈 슬롯</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="counselTable">
+          <thead><tr><th>날짜</th><th>시간</th><th>메모</th><th>예약자</th><th>상담 내용</th><th>관리</th></tr></thead>
+          <tbody id="counselBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 통계 탭 -->
+  <div class="page-content" id="page-stats">
+    <div class="wrap">
+      <div class="section-top">
+        <h3>📊 우리반 현황</h3>
+        <button class="refresh-btn" onclick="loadStats()">🔄 새로고침</button>
+      </div>
+      <div class="stat-grid" id="statGrid">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <h3 style="font-size:1rem; font-weight:700; color:var(--primary); margin-bottom:14px;">😊 기분 분포 (전체)</h3>
+      <div class="mood-bar" id="moodBar" style="background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow);">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════ 학생 상세 패널 ════════════ -->
+<div class="student-overlay" id="studentOverlay" onclick="closePanel()"></div>
+<div class="student-panel" id="studentPanel">
+  <div class="panel-header">
+    <div class="panel-header-info">
+      <h3 id="panelName">—</h3>
+      <p id="panelSub">상담 신청 내역 및 설문 이력</p>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body">
+
+    <!-- 상담 신청 정보 -->
+    <div>
+      <div class="panel-section-title">💬 상담 신청 정보</div>
+      <div class="counsel-detail-card" id="panelCounselDetail">—</div>
+    </div>
+
+    <!-- 선생님 상담 메모 -->
+    <div>
+      <div class="panel-section-title">📝 상담 메모 (선생님 전용)</div>
+      <textarea class="memo-area" id="panelMemo" placeholder="상담 내용, 특이사항, 후속 조치 등을 기록해두세요..."></textarea>
+      <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+        <button class="memo-save-btn" id="memoSaveBtn" onclick="saveMemo()">💾 저장</button>
+        <span class="memo-meta" id="memoMeta"></span>
+      </div>
+    </div>
+
+    <!-- 설문 이력 -->
+    <div>
+      <div class="panel-section-title">📊 설문 이력</div>
+      <div class="survey-history" id="panelSurveyHistory">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://qhvbbctkybegnzpxyefx.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodmJiY3RreWJlZ256cHh5ZWZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMDY3NjIsImV4cCI6MjA4ODY4Mjc2Mn0.vTPkS2haiL_SnRuk5st3kZ7iBnveM65oKe2plQvtS3w'
+  );
+
+  // ⚠️ 비밀번호를 여기서 바꾸세요!
+  const TEACHER_PASSWORD = 'teacher1234';
+
+  let allSurveys = [];
+  let allCounsel = [];
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── 로그인 ──
+  function login() {
+    const pw = document.getElementById('pwInput').value;
+    const input = document.getElementById('pwInput');
+    const err = document.getElementById('loginError');
+    if (pw === TEACHER_PASSWORD) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainNav').style.display = 'flex';
+      document.getElementById('mainContent').classList.add('visible');
+      loadSurveys();
+      loadSlots();
+      loadCounsel();
+      loadStats();
+    } else {
+      input.classList.add('error');
+      input.value = '';
+      err.textContent = '비밀번호가 틀렸어요';
+      setTimeout(() => { input.classList.remove('error'); err.textContent = ''; }, 1500);
+    }
+  }
+
+  function logout() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainNav').style.display = 'none';
+    document.getElementById('mainContent').classList.remove('visible');
+    document.getElementById('pwInput').value = '';
+  }
+
+  // ── 탭 전환 ──
+  function showTab(name) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ── 설문 ──
+  async function loadSurveys() {
+    document.getElementById('surveyList').innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.from('surveys').select('*').order('created_at', { ascending: false });
+    if (error) { showToast('❗ 설문을 불러오지 못했어요'); return; }
+    allSurveys = data || [];
+    renderSurveys();
+  }
+
+  function renderSurveys() {
+    const search = document.getElementById('svSearch').value.trim().toLowerCase();
+    const moodF = document.getElementById('svMoodFilter').value;
+    const dateF = document.getElementById('svDateFilter').value;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+
+    let filtered = allSurveys.filter(s => {
+      if (search && !s.name.toLowerCase().includes(search)) return false;
+      if (moodF && !s.mood.includes(moodF)) return false;
+      if (dateF === 'today') {
+        const d = new Date(s.created_at); d.setHours(0,0,0,0);
+        if (d.getTime() !== today.getTime()) return false;
+      }
+      if (dateF === 'week') {
+        if (new Date(s.created_at) < weekAgo) return false;
+      }
+      return true;
+    });
+
+    document.getElementById('surveyCount').textContent = `(${filtered.length}건)`;
+    const list = document.getElementById('surveyList');
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>해당하는 응답이 없어요</p></div>'; return;
+    }
+    list.innerHTML = filtered.map(s => {
+      const moodParts = s.mood.split(' ');
+      const emoji = moodParts[0] || '';
+      const label = moodParts[1] || '';
+      const date = s.created_at ? s.created_at.slice(0,16).replace('T',' ') : '';
+      return `<div class="survey-item">
+        <div class="survey-item-top">
+          <span class="sv-mood">${emoji}</span>
+          <span class="sv-name">${s.name}</span>
+          <span class="sv-mood-label">${label}</span>
+          <span class="sv-date">${date}</span>
+        </div>
+        ${s.message ? `<div class="sv-section"><div class="sv-section-label">💬 하고 싶은 말</div><div class="sv-section-body">${s.message}</div></div>` : ''}
+        ${s.concern ? `<div class="sv-section"><div class="sv-section-label">🤔 고민 / 건의</div><div class="sv-section-body">${s.concern}</div></div>` : ''}
+        ${!s.message && !s.concern ? `<span class="sv-empty-field">추가 내용 없음</span>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // ── 슬롯 관리 ──
+  let allSlots = [];
+
+  async function loadSlots() {
+    document.getElementById('slotManageList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    const { data, error } = await sb.from('counsel_slots').select('*').order('slot_date').order('slot_time');
+    allSlots = data || [];
+    document.getElementById('slotCount').textContent = `(${allSlots.length}개)`;
+    if (error || !allSlots.length) {
+      document.getElementById('slotManageList').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>등록된 상담 시간이 없어요</p></div>'; return;
+    }
+    const dayNames = ['일','월','화','수','목','금','토'];
+    document.getElementById('slotManageList').innerHTML = `<div class="slot-manage-list">` + allSlots.map(s => {
+      const d = new Date(s.slot_date + 'T00:00:00');
+      const dateLabel = `${d.getMonth()+1}/${d.getDate()}(${dayNames[d.getDay()]})`;
+      const isBooked = !!s.booked_by;
+      return `<div class="slot-manage-item">
+        <span class="smi-date">${dateLabel}</span>
+        <span class="smi-time">🕐 ${s.slot_time.slice(0,5)}</span>
+        ${s.label ? `<span class="smi-label">${s.label}</span>` : ''}
+        ${isBooked
+          ? `<span class="smi-status-booked">예약됨</span><span class="smi-booker">👤 ${s.booked_by}</span>`
+          : `<span class="smi-status-empty">비어있음</span><span class="smi-booker" style="color:transparent">—</span>`}
+        <button class="smi-delete" onclick="deleteSlot(${s.id}, ${isBooked})">${isBooked ? '예약 취소' : '삭제'}</button>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  async function addSlot() {
+    const date = document.getElementById('newSlotDate').value;
+    const time = document.getElementById('newSlotTime').value;
+    const label = document.getElementById('newSlotLabel').value.trim();
+    if (!date || !time) { showToast('❗ 날짜와 시간을 입력해주세요'); return; }
+    const btn = document.querySelector('.slot-add-btn');
+    btn.disabled = true;
+    const { error } = await sb.from('counsel_slots').insert([{ slot_date: date, slot_time: time, label: label || null }]);
+    btn.disabled = false;
+    if (error) { showToast('❗ 추가 실패: ' + error.message); return; }
+    document.getElementById('newSlotDate').value = '';
+    document.getElementById('newSlotTime').value = '';
+    document.getElementById('newSlotLabel').value = '';
+    showToast('✅ 상담 시간이 등록됐어요!');
+    await loadSlots();
+  }
+
+  async function deleteSlot(id, isBooked) {
+    const msg = isBooked ? '이미 예약된 슬롯이에요. 정말 삭제(취소)할까요?' : '이 상담 시간을 삭제할까요?';
+    if (!confirm(msg)) return;
+    const { error } = await sb.from('counsel_slots').delete().eq('id', id);
+    if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
+    showToast('🗑️ 삭제됐어요');
+    await loadSlots();
+    await loadCounsel();
+  }
+
+  // ── 상담 예약 현황 ──
+  async function loadCounsel() {
+    document.getElementById('counselBody').innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>';
+    const { data, error } = await sb.from('counsel_slots').select('*').order('slot_date').order('slot_time');
+    allCounsel = data || [];
+    renderCounsel();
+  }
+
+  function renderCounsel() {
+    const search = document.getElementById('csSearch').value.trim().toLowerCase();
+    const statusF = document.getElementById('csStatusFilter').value;
+    const dayNames = ['일','월','화','수','목','금','토'];
+    let filtered = allCounsel.filter(s => {
+      if (search && !(s.booked_by || '').toLowerCase().includes(search)) return false;
+      if (statusF === 'booked' && !s.booked_by) return false;
+      if (statusF === 'empty' && s.booked_by) return false;
+      return true;
+    });
+    document.getElementById('counselCount').textContent = `(${filtered.length}개)`;
+    const body = document.getElementById('counselBody');
+    if (!filtered.length) {
+      body.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div><p>해당하는 내역이 없어요</p></div></td></tr>'; return;
+    }
+    body.innerHTML = filtered.map(s => {
+      const d = new Date(s.slot_date + 'T00:00:00');
+      const dateLabel = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
+      return `<tr ${s.booked_by ? `onclick="openPanel(${s.id})"` : ''} style="${s.booked_by ? 'cursor:pointer' : ''}">
+        <td>${dateLabel}</td>
+        <td><strong>${s.slot_time.slice(0,5)}</strong></td>
+        <td>${s.label || '<span style="color:#ccc">—</span>'}</td>
+        <td>${s.booked_by ? `<strong>${s.booked_by}</strong>` : '<span style="color:#aaa">미예약</span>'}</td>
+        <td class="content-cell">${s.booked_content || '<span style="color:#ccc">없음</span>'}</td>
+        <td><button class="smi-delete" onclick="event.stopPropagation(); deleteSlot(${s.id}, ${!!s.booked_by})">${s.booked_by ? '취소' : '삭제'}</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── 학생 상세 패널 ──
+  let currentCounselId = null;
+
+  async function openPanel(slotId) {
+    const s = allCounsel.find(x => x.id === slotId);
+    if (!s || !s.booked_by) return;
+    currentCounselId = slotId;
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const d = new Date(s.slot_date + 'T00:00:00');
+    const dateLabel = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${s.slot_time.slice(0,5)}`;
+
+    document.getElementById('panelName').textContent = s.booked_by;
+    document.getElementById('panelSub').textContent = dateLabel;
+    document.getElementById('panelCounselDetail').innerHTML = `
+      <div class="counsel-detail-row"><span class="counsel-detail-key">날짜·시간</span><span class="counsel-detail-val">${dateLabel}</span></div>
+      ${s.label ? `<div class="counsel-detail-row"><span class="counsel-detail-key">메모</span><span class="counsel-detail-val">${s.label}</span></div>` : ''}
+      ${s.booked_content ? `<div class="counsel-detail-row"><span class="counsel-detail-key">학생 내용</span><span class="counsel-detail-val" style="white-space:pre-wrap">${s.booked_content}</span></div>` : ''}
+    `;
+    document.getElementById('panelMemo').value = '';
+    document.getElementById('memoMeta').textContent = '';
+    const { data: memo } = await sb.from('counsel_memos').select('*').eq('counsel_id', slotId).maybeSingle();
+    if (memo) {
+      document.getElementById('panelMemo').value = memo.memo || '';
+      document.getElementById('memoMeta').textContent = memo.updated_at ? `마지막 저장: ${memo.updated_at.slice(0,16).replace('T',' ')}` : '';
+    }
+    const histEl = document.getElementById('panelSurveyHistory');
+    histEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    const { data: surveys } = await sb.from('surveys').select('*').eq('name', s.booked_by).order('created_at', { ascending: false });
+    if (!surveys || !surveys.length) {
+      histEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.88rem;">설문 응답 내역이 없어요</div>';
+    } else {
+      histEl.innerHTML = surveys.map(sv => {
+        const moodParts = sv.mood.split(' ');
+        const emoji = moodParts[0] || '😐'; const label = moodParts[1] || '';
+        const date = sv.created_at ? sv.created_at.slice(0,16).replace('T',' ') : '';
+        const texts = [sv.message && `💬 ${sv.message}`, sv.concern && `🤔 ${sv.concern}`].filter(Boolean).join('<br/>');
+        return `<div class="survey-history-item"><span class="shi-mood">${emoji}</span><div class="shi-body"><div class="shi-top"><span class="shi-label">${label}</span><span class="shi-date">${date}</span></div>${texts ? `<div class="shi-text">${texts}</div>` : ''}</div></div>`;
+      }).join('');
+    }
+    document.getElementById('studentOverlay').classList.add('open');
+    document.getElementById('studentPanel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePanel() {
+    document.getElementById('studentOverlay').classList.remove('open');
+    document.getElementById('studentPanel').classList.remove('open');
+    document.body.style.overflow = '';
+    currentCounselId = null;
+  }
+
+  async function saveMemo() {
+    if (!currentCounselId) return;
+    const memo = document.getElementById('panelMemo').value.trim();
+    const btn = document.getElementById('memoSaveBtn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+    const { error } = await sb.from('counsel_memos').upsert({ counsel_id: currentCounselId, memo, updated_at: new Date().toISOString() }, { onConflict: 'counsel_id' });
+    btn.disabled = false; btn.textContent = '💾 저장';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    document.getElementById('memoMeta').textContent = `마지막 저장: ${new Date().toISOString().slice(0,16).replace('T',' ')}`;
+    showToast('✅ 저장됐어요');
+  }
+
+  // ── 통계 ──
+  async function loadStats() {
+    const [svRes, slotRes] = await Promise.all([
+      sb.from('surveys').select('*'),
+      sb.from('counsel_slots').select('*')
+    ]);
+    const surveys = svRes.data || [];
+    const slots = slotRes.data || [];
+    const bookedSlots = slots.filter(s => !!s.booked_by);
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todaySv = surveys.filter(s => {
+      const d = new Date(s.created_at); d.setHours(0,0,0,0);
+      return d.getTime() === today.getTime();
+    });
+    const needCare = surveys.filter(s => s.mood.includes('별로') || s.mood.includes('힘들어'));
+
+    document.getElementById('statGrid').innerHTML = `
+      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num">${surveys.length}</div><div class="stat-label">전체 설문 응답</div></div>
+      <div class="stat-card"><div class="stat-icon">☀️</div><div class="stat-num">${todaySv.length}</div><div class="stat-label">오늘 응답</div></div>
+      <div class="stat-card"><div class="stat-icon">💬</div><div class="stat-num">${bookedSlots.length}</div><div class="stat-label">상담 예약</div></div>
+      <div class="stat-card" style="border-color:${needCare.length>0?'#e63946':'var(--border)'}"><div class="stat-icon">💛</div><div class="stat-num" style="color:${needCare.length>0?'#e63946':'var(--primary)'}">${needCare.length}</div><div class="stat-label">케어 필요 학생</div></div>
+    `;
+    const moods = [{ key:'최고',emoji:'😄'},{key:'좋아',emoji:'🙂'},{key:'보통',emoji:'😐'},{key:'별로',emoji:'😔'},{key:'힘들어',emoji:'😞'}];
+    const total = surveys.length || 1;
+    document.getElementById('moodBar').innerHTML = moods.map(m => {
+      const cnt = surveys.filter(s => s.mood.includes(m.key)).length;
+      const pct = Math.round(cnt / total * 100);
+      return `<div class="mood-row"><span class="mood-em">${m.emoji}</span><span class="mood-name">${m.key}</span><div class="mood-track"><div class="mood-fill" style="width:${pct}%"></div></div><span class="mood-cnt">${cnt}</span></div>`;
+    }).join('');
+  }
+</script>
+</body>
+</html>
