@@ -543,38 +543,36 @@
 <!-- 상담 예약 모달 -->
 <div class="modal-overlay" id="bookingOverlay" style="display:none" onclick="closeBookingModal()"></div>
 <div class="modal" id="bookingModal" style="display:none">
-  <div class="modal-header"><h3 id="bookingModalTitle">상담 예약</h3><button class="modal-close" onclick="closeBookingModal()">✕</button></div>
+  <div class="modal-header">
+    <h3 id="bookingModalTitle">💬 상담 예약</h3>
+    <button class="modal-close" onclick="closeBookingModal()">✕</button>
+  </div>
   <div class="modal-body">
     <div class="booking-slot-info" id="bookingSlotInfo"></div>
-
-    <!-- 인증 전 -->
-    <div id="bkAuthSection">
-      <div class="form-group">
-        <label>학생 선택</label>
-        <div class="student-search-wrap">
-          <input class="student-search-input" type="text" id="bkStudentSearch" placeholder="이름 또는 학번 입력..." oninput="searchStudents('bk')" autocomplete="off" />
-          <div class="student-dropdown" id="bkStudentDropdown"></div>
-        </div>
-        <div id="bkSelectedBadge" style="display:none"></div>
+    <div class="form-group">
+      <label>학번 또는 이름</label>
+      <div class="student-search-wrap">
+        <input class="student-search-input" type="text" id="bkStudentSearch"
+          placeholder="예: 10101 또는 홍길동"
+          oninput="searchStudents('bk')" autocomplete="off" />
+        <div class="student-dropdown" id="bkStudentDropdown"></div>
       </div>
-      <div class="form-group">
-        <label>비밀번호</label>
-        <div class="auth-pw-row">
-          <input class="auth-pw-input" type="password" id="bkPwInput" placeholder="••••" onkeydown="if(event.key==='Enter') authStudent('bk')" />
-          <button class="auth-confirm-btn" onclick="authStudent('bk')">확인</button>
-        </div>
-      </div>
+      <div id="bkSelectedBadge" style="display:none; margin-top:8px"></div>
     </div>
-
-    <!-- 인증 후 -->
-    <div id="bkAuthedSection" style="display:none">
-      <div class="auth-logged-in" style="margin-bottom:16px">
-        <div class="auth-logged-in-info" id="bkLoggedInInfo"></div>
-        <button class="auth-logout-btn" onclick="logoutStudent('bk')">다른 학생으로</button>
-      </div>
-      <div class="form-group"><label>상담 내용 (선택)</label><textarea id="bkContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요." style="min-height:80px"></textarea></div>
-      <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
+    <div class="form-group">
+      <label>비밀번호</label>
+      <input class="auth-pw-input" type="password" id="bkPwInput"
+        placeholder="초기 비밀번호: 1234"
+        style="width:100%"
+        onkeydown="if(event.key==='Enter') submitBooking()" />
     </div>
+    <div class="form-group">
+      <label>상담 내용 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+      <textarea id="bkContent"
+        placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요."
+        style="min-height:80px"></textarea>
+    </div>
+    <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
   </div>
 </div>
 
@@ -1073,11 +1071,14 @@
     const d = new Date(date + 'T00:00:00');
     const dayNames = ['일','월','화','수','목','금','토'];
     const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${time.slice(0,5)}`;
-    document.getElementById('bookingModalTitle').textContent = '상담 예약';
     document.getElementById('bookingSlotInfo').textContent = `🕐 ${dateStr}${label ? ' · ' + label : ''}`;
-    // 인증 초기화
-    logoutStudent('bk');
+    // 초기화
+    document.getElementById('bkStudentSearch').value = '';
+    document.getElementById('bkStudentDropdown').classList.remove('open');
+    document.getElementById('bkSelectedBadge').style.display = 'none';
+    document.getElementById('bkPwInput').value = '';
     document.getElementById('bkContent').value = '';
+    selectedStudentTemp['bk'] = null;
     document.getElementById('bookingOverlay').style.display = 'block';
     document.getElementById('bookingModal').style.display = 'block';
     document.getElementById('bookingModal').classList.add('open');
@@ -1091,16 +1092,34 @@
   }
 
   async function submitBooking() {
-    const student = authedStudent['bk'];
-    if (!student) { showToast('❗ 본인 인증이 필요해요'); return; }
+    const student = selectedStudentTemp['bk'];
+    if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+    const pw = document.getElementById('bkPwInput').value;
+    if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+
     const btn = document.getElementById('bkSubmitBtn');
-    btn.disabled = true; btn.textContent = '예약 중...';
-    const { error } = await sb.from('counsel_slots').update({
+    btn.disabled = true; btn.textContent = '확인 중...';
+
+    // 비밀번호 검증
+    const { data, error } = await sb.from('students')
+      .select('password').eq('student_num', student.num).maybeSingle();
+    if (error || !data) { btn.disabled = false; btn.textContent = '📨 예약하기'; showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+    if (data.password !== pw) {
+      btn.disabled = false; btn.textContent = '📨 예약하기';
+      const input = document.getElementById('bkPwInput');
+      input.classList.add('error'); input.value = '';
+      setTimeout(() => input.classList.remove('error'), 1000);
+      showToast('❗ 비밀번호가 틀렸어요'); return;
+    }
+
+    // 예약
+    btn.textContent = '예약 중...';
+    const { error: bookErr } = await sb.from('counsel_slots').update({
       booked_by: student.name,
       booked_content: document.getElementById('bkContent').value.trim() || null
     }).eq('id', currentSlotId).is('booked_by', null);
     btn.disabled = false; btn.textContent = '📨 예약하기';
-    if (error) { showToast('❗ 예약 실패: ' + error.message); return; }
+    if (bookErr) { showToast('❗ 예약 실패: ' + bookErr.message); return; }
     closeBookingModal();
     showToast('✅ 상담이 예약됐어요!');
     await loadCounseling();
