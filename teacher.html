@@ -114,6 +114,14 @@
     .mood-fill { height: 100%; background: var(--primary-light); border-radius: 4px; transition: width 0.5s ease; }
     .mood-cnt { font-size: 0.78rem; color: var(--text-muted); width: 24px; text-align: right; }
 
+    /* ── 학생 비밀번호 관리 ── */
+    .student-pw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .student-pw-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+    .spw-info .spw-num { font-size: 0.75rem; color: var(--text-muted); }
+    .spw-info .spw-name { font-size: 0.95rem; font-weight: 700; }
+    .spw-reset-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 5px 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; white-space: nowrap; }
+    .spw-reset-btn:hover { background: #fff3e0; border-color: #e76f51; color: #e76f51; }
+
     /* ── 건의사항 ── */
     .suggest-list { display: flex; flex-direction: column; gap: 12px; }
     .suggest-item { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); transition: border-color 0.2s; }
@@ -220,6 +228,7 @@
   <span class="nav-logo">🌱 1-1 담임 페이지</span>
   <div class="nav-right">
     <button class="nav-tab active" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
+    <button class="nav-tab" id="tab-students" onclick="showTab('students')">🔑 학생 비밀번호</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 시간 관리</button>
     <button class="nav-tab" id="tab-counsel" onclick="showTab('counsel')">💬 상담 예약 현황</button>
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
@@ -254,6 +263,18 @@
       <div class="suggest-list" id="suggestList">
         <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- 학생 비밀번호 관리 탭 -->
+  <div class="page-content" id="page-students">
+    <div class="wrap">
+      <div class="section-top">
+        <h3>🔑 학생 비밀번호 관리</h3>
+        <button class="refresh-btn" onclick="loadStudentPws()">🔄 새로고침</button>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px">비밀번호를 초기화하면 <strong>1234</strong>로 재설정돼요.</p>
+      <div id="studentPwList"><div class="loading"><div class="spinner"></div></div></div>
     </div>
   </div>
 
@@ -395,6 +416,7 @@
       document.getElementById('mainNav').style.display = 'flex';
       document.getElementById('mainContent').classList.add('visible');
       loadSuggestions();
+      loadStudentPws();
       loadSlots();
       loadCounsel();
       loadStats();
@@ -419,6 +441,48 @@
     document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ── 학생 비밀번호 관리 ──
+  const STUDENTS = [
+    {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
+    {num:'10104',name:'김나후'},{num:'10105',name:'김연우'},{num:'10106',name:'김효정A'},
+    {num:'10107',name:'백세영'},{num:'10108',name:'심연경'},{num:'10109',name:'양연우'},
+    {num:'10110',name:'염서윤'},{num:'10111',name:'이규준'},{num:'10112',name:'이나울'},
+    {num:'10113',name:'이선준'},{num:'10114',name:'이연우'},{num:'10115',name:'이예은'},
+    {num:'10116',name:'이울리'},{num:'10117',name:'이재후'},{num:'10118',name:'정예현'},
+    {num:'10119',name:'조시현'},{num:'10120',name:'주어원'},{num:'10121',name:'최예지'},
+    {num:'10122',name:'최주은'},{num:'10123',name:'한윤화'},{num:'10124',name:'허은'}
+  ];
+
+  async function loadStudentPws() {
+    const el = document.getElementById('studentPwList');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    const { data } = await sb.from('students').select('student_num, name, password');
+    const map = {};
+    (data || []).forEach(s => { map[s.student_num] = s; });
+    el.innerHTML = `<div class="student-pw-grid">` + STUDENTS.map(s => {
+      const row = map[s.num];
+      const isDefault = !row || row.password === '1234';
+      return `<div class="student-pw-item">
+        <div class="spw-info">
+          <div class="spw-num">${s.num}</div>
+          <div class="spw-name">${s.name} ${isDefault ? '<span style="font-size:0.72rem;color:#aaa">초기값</span>' : '<span style="font-size:0.72rem;color:var(--primary)">변경됨</span>'}</div>
+        </div>
+        <button class="spw-reset-btn" onclick="resetStudentPw('${s.num}','${s.name}')">초기화</button>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  async function resetStudentPw(num, name) {
+    if (!confirm(`${name}(${num})의 비밀번호를 1234로 초기화할까요?`)) return;
+    const { error } = await sb.from('students').upsert(
+      { student_num: num, name, password: '1234' },
+      { onConflict: 'student_num' }
+    );
+    if (error) { showToast('❗ 초기화 실패: ' + error.message); return; }
+    showToast(`✅ ${name} 비밀번호가 초기화됐어요`);
+    await loadStudentPws();
   }
 
   // ── 건의사항 ──
