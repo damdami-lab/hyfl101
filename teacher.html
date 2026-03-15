@@ -114,6 +114,19 @@
     .mood-fill { height: 100%; background: var(--primary-light); border-radius: 4px; transition: width 0.5s ease; }
     .mood-cnt { font-size: 0.78rem; color: var(--text-muted); width: 24px; text-align: right; }
 
+    /* ── 건의사항 ── */
+    .suggest-list { display: flex; flex-direction: column; gap: 12px; }
+    .suggest-item { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); transition: border-color 0.2s; }
+    .suggest-item.unread { border-left: 4px solid var(--primary-light); }
+    .suggest-item-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .sg-type { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; font-weight: 700; }
+    .sg-name { font-weight: 900; font-size: 0.95rem; }
+    .sg-date { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
+    .sg-unread-dot { width: 8px; height: 8px; background: var(--primary-light); border-radius: 50%; flex-shrink: 0; }
+    .sg-content { font-size: 0.92rem; line-height: 1.7; color: var(--text); background: var(--bg); border-radius: 10px; padding: 12px 14px; }
+    .sg-read-btn { margin-top: 10px; background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.78rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .sg-read-btn:hover { background: var(--primary-pale); border-color: var(--primary-light); color: var(--primary); }
+
     /* ── 슬롯 관리 ── */
     .slot-form-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 8px; }
     .slot-form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
@@ -206,7 +219,7 @@
 <nav id="mainNav" style="display:none">
   <span class="nav-logo">🌱 1-1 담임 페이지</span>
   <div class="nav-right">
-    <button class="nav-tab active" id="tab-survey" onclick="showTab('survey')">📝 설문 응답</button>
+    <button class="nav-tab active" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 시간 관리</button>
     <button class="nav-tab" id="tab-counsel" onclick="showTab('counsel')">💬 상담 예약 현황</button>
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
@@ -216,30 +229,29 @@
 
 <div class="main" id="mainContent">
 
-  <!-- 설문 응답 탭 -->
-  <div class="page-content active" id="page-survey">
+  <!-- 건의사항 탭 -->
+  <div class="page-content active" id="page-suggest">
     <div class="wrap">
       <div class="section-top">
-        <h3>📝 설문 응답 <span class="count-badge" id="surveyCount"></span></h3>
-        <button class="refresh-btn" onclick="loadSurveys()">🔄 새로고침</button>
+        <h3>💡 건의사항 <span class="count-badge" id="suggestCount"></span></h3>
+        <button class="refresh-btn" onclick="loadSuggestions()">🔄 새로고침</button>
       </div>
       <div class="filter-bar">
-        <input class="filter-input" type="text" id="svSearch" placeholder="🔍 이름 검색..." oninput="renderSurveys()" />
-        <select class="filter-select" id="svMoodFilter" onchange="renderSurveys()">
-          <option value="">전체 기분</option>
-          <option value="최고">😄 최고</option>
-          <option value="좋아">🙂 좋아</option>
-          <option value="보통">😐 보통</option>
-          <option value="별로">😔 별로</option>
-          <option value="힘들어">😞 힘들어</option>
+        <select class="filter-select" id="sgTypeFilter" onchange="renderSuggestions()">
+          <option value="">전체 유형</option>
+          <option value="학급 규칙">📋 학급 규칙</option>
+          <option value="환경 개선">🏫 환경 개선</option>
+          <option value="행사/활동">🎉 행사/활동</option>
+          <option value="선생님께">💬 선생님께</option>
+          <option value="기타">✏️ 기타</option>
         </select>
-        <select class="filter-select" id="svDateFilter" onchange="renderSurveys()">
-          <option value="">전체 날짜</option>
-          <option value="today">오늘</option>
-          <option value="week">이번 주</option>
+        <select class="filter-select" id="sgReadFilter" onchange="renderSuggestions()">
+          <option value="">전체</option>
+          <option value="unread">읽지 않음</option>
+          <option value="read">읽음</option>
         </select>
       </div>
-      <div class="survey-grid" id="surveyList">
+      <div class="suggest-list" id="suggestList">
         <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
       </div>
     </div>
@@ -349,13 +361,7 @@
       </div>
     </div>
 
-    <!-- 설문 이력 -->
-    <div>
-      <div class="panel-section-title">📊 설문 이력</div>
-      <div class="survey-history" id="panelSurveyHistory">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-    </div>
+    <!-- 설문 이력 섹션 제거됨 -->
 
   </div>
 </div>
@@ -370,7 +376,7 @@
   // ⚠️ 비밀번호를 여기서 바꾸세요!
   const TEACHER_PASSWORD = 'teacher1234';
 
-  let allSurveys = [];
+  let allSuggestions = [];
   let allCounsel = [];
 
   function showToast(msg) {
@@ -388,7 +394,7 @@
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainNav').style.display = 'flex';
       document.getElementById('mainContent').classList.add('visible');
-      loadSurveys();
+      loadSuggestions();
       loadSlots();
       loadCounsel();
       loadStats();
@@ -415,57 +421,53 @@
     document.getElementById('tab-' + name).classList.add('active');
   }
 
-  // ── 설문 ──
-  async function loadSurveys() {
-    document.getElementById('surveyList').innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
-    const { data, error } = await sb.from('surveys').select('*').order('created_at', { ascending: false });
-    if (error) { showToast('❗ 설문을 불러오지 못했어요'); return; }
-    allSurveys = data || [];
-    renderSurveys();
+  // ── 건의사항 ──
+  let allSuggestions = [];
+
+  async function loadSuggestions() {
+    document.getElementById('suggestList').innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.from('suggestions').select('*').order('created_at', { ascending: false });
+    if (error) { showToast('❗ 건의사항을 불러오지 못했어요'); return; }
+    allSuggestions = data || [];
+    renderSuggestions();
   }
 
-  function renderSurveys() {
-    const search = document.getElementById('svSearch').value.trim().toLowerCase();
-    const moodF = document.getElementById('svMoodFilter').value;
-    const dateF = document.getElementById('svDateFilter').value;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
-
-    let filtered = allSurveys.filter(s => {
-      if (search && !s.name.toLowerCase().includes(search)) return false;
-      if (moodF && !s.mood.includes(moodF)) return false;
-      if (dateF === 'today') {
-        const d = new Date(s.created_at); d.setHours(0,0,0,0);
-        if (d.getTime() !== today.getTime()) return false;
-      }
-      if (dateF === 'week') {
-        if (new Date(s.created_at) < weekAgo) return false;
-      }
+  function renderSuggestions() {
+    const typeF = document.getElementById('sgTypeFilter').value;
+    const readF = document.getElementById('sgReadFilter').value;
+    let filtered = allSuggestions.filter(s => {
+      if (typeF && s.type !== typeF) return false;
+      if (readF === 'unread' && s.is_read) return false;
+      if (readF === 'read' && !s.is_read) return false;
       return true;
     });
-
-    document.getElementById('surveyCount').textContent = `(${filtered.length}건)`;
-    const list = document.getElementById('surveyList');
+    const unreadCnt = allSuggestions.filter(s => !s.is_read).length;
+    document.getElementById('suggestCount').textContent = `(${filtered.length}건${unreadCnt > 0 ? ` · 읽지 않음 ${unreadCnt}` : ''})`;
+    const list = document.getElementById('suggestList');
     if (!filtered.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>해당하는 응답이 없어요</p></div>'; return;
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>건의사항이 없어요</p></div>'; return;
     }
     list.innerHTML = filtered.map(s => {
-      const moodParts = s.mood.split(' ');
-      const emoji = moodParts[0] || '';
-      const label = moodParts[1] || '';
       const date = s.created_at ? s.created_at.slice(0,16).replace('T',' ') : '';
-      return `<div class="survey-item">
-        <div class="survey-item-top">
-          <span class="sv-mood">${emoji}</span>
-          <span class="sv-name">${s.name}</span>
-          <span class="sv-mood-label">${label}</span>
-          <span class="sv-date">${date}</span>
+      return `<div class="suggest-item ${s.is_read ? '' : 'unread'}" id="sg-${s.id}">
+        <div class="suggest-item-top">
+          ${!s.is_read ? '<span class="sg-unread-dot"></span>' : ''}
+          <span class="sg-type">${s.type}</span>
+          <span class="sg-name">${s.name}</span>
+          <span class="sg-date">${date}</span>
         </div>
-        ${s.message ? `<div class="sv-section"><div class="sv-section-label">💬 하고 싶은 말</div><div class="sv-section-body">${s.message}</div></div>` : ''}
-        ${s.concern ? `<div class="sv-section"><div class="sv-section-label">🤔 고민 / 건의</div><div class="sv-section-body">${s.concern}</div></div>` : ''}
-        ${!s.message && !s.concern ? `<span class="sv-empty-field">추가 내용 없음</span>` : ''}
+        <div class="sg-content">${s.content}</div>
+        ${!s.is_read ? `<button class="sg-read-btn" onclick="markRead(${s.id})">✅ 읽음 표시</button>` : '<span style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;display:block">✅ 확인함</span>'}
       </div>`;
     }).join('');
+  }
+
+  async function markRead(id) {
+    const { error } = await sb.from('suggestions').update({ is_read: true }).eq('id', id);
+    if (error) { showToast('❗ 오류: ' + error.message); return; }
+    const item = allSuggestions.find(s => s.id === id);
+    if (item) item.is_read = true;
+    renderSuggestions();
   }
 
   // ── 슬롯 관리 ──
@@ -585,20 +587,6 @@
       document.getElementById('panelMemo').value = memo.memo || '';
       document.getElementById('memoMeta').textContent = memo.updated_at ? `마지막 저장: ${memo.updated_at.slice(0,16).replace('T',' ')}` : '';
     }
-    const histEl = document.getElementById('panelSurveyHistory');
-    histEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    const { data: surveys } = await sb.from('surveys').select('*').eq('name', s.booked_by).order('created_at', { ascending: false });
-    if (!surveys || !surveys.length) {
-      histEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.88rem;">설문 응답 내역이 없어요</div>';
-    } else {
-      histEl.innerHTML = surveys.map(sv => {
-        const moodParts = sv.mood.split(' ');
-        const emoji = moodParts[0] || '😐'; const label = moodParts[1] || '';
-        const date = sv.created_at ? sv.created_at.slice(0,16).replace('T',' ') : '';
-        const texts = [sv.message && `💬 ${sv.message}`, sv.concern && `🤔 ${sv.concern}`].filter(Boolean).join('<br/>');
-        return `<div class="survey-history-item"><span class="shi-mood">${emoji}</span><div class="shi-body"><div class="shi-top"><span class="shi-label">${label}</span><span class="shi-date">${date}</span></div>${texts ? `<div class="shi-text">${texts}</div>` : ''}</div></div>`;
-      }).join('');
-    }
     document.getElementById('studentOverlay').classList.add('open');
     document.getElementById('studentPanel').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -625,33 +613,34 @@
 
   // ── 통계 ──
   async function loadStats() {
-    const [svRes, slotRes] = await Promise.all([
-      sb.from('surveys').select('*'),
+    const [sgRes, slotRes] = await Promise.all([
+      sb.from('suggestions').select('*'),
       sb.from('counsel_slots').select('*')
     ]);
-    const surveys = svRes.data || [];
+    const suggestions = sgRes.data || [];
     const slots = slotRes.data || [];
     const bookedSlots = slots.filter(s => !!s.booked_by);
+    const unread = suggestions.filter(s => !s.is_read);
 
     const today = new Date(); today.setHours(0,0,0,0);
-    const todaySv = surveys.filter(s => {
+    const todaySg = suggestions.filter(s => {
       const d = new Date(s.created_at); d.setHours(0,0,0,0);
       return d.getTime() === today.getTime();
     });
-    const needCare = surveys.filter(s => s.mood.includes('별로') || s.mood.includes('힘들어'));
 
     document.getElementById('statGrid').innerHTML = `
-      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num">${surveys.length}</div><div class="stat-label">전체 설문 응답</div></div>
-      <div class="stat-card"><div class="stat-icon">☀️</div><div class="stat-num">${todaySv.length}</div><div class="stat-label">오늘 응답</div></div>
+      <div class="stat-card"><div class="stat-icon">💡</div><div class="stat-num">${suggestions.length}</div><div class="stat-label">전체 건의사항</div></div>
+      <div class="stat-card"><div class="stat-icon">☀️</div><div class="stat-num">${todaySg.length}</div><div class="stat-label">오늘 건의</div></div>
       <div class="stat-card"><div class="stat-icon">💬</div><div class="stat-num">${bookedSlots.length}</div><div class="stat-label">상담 예약</div></div>
-      <div class="stat-card" style="border-color:${needCare.length>0?'#e63946':'var(--border)'}"><div class="stat-icon">💛</div><div class="stat-num" style="color:${needCare.length>0?'#e63946':'var(--primary)'}">${needCare.length}</div><div class="stat-label">케어 필요 학생</div></div>
+      <div class="stat-card" style="border-color:${unread.length>0?'#e76f51':'var(--border)'}"><div class="stat-icon">📬</div><div class="stat-num" style="color:${unread.length>0?'#e76f51':'var(--primary)'}">${unread.length}</div><div class="stat-label">읽지 않은 건의</div></div>
     `;
-    const moods = [{ key:'최고',emoji:'😄'},{key:'좋아',emoji:'🙂'},{key:'보통',emoji:'😐'},{key:'별로',emoji:'😔'},{key:'힘들어',emoji:'😞'}];
-    const total = surveys.length || 1;
-    document.getElementById('moodBar').innerHTML = moods.map(m => {
-      const cnt = surveys.filter(s => s.mood.includes(m.key)).length;
+    // 유형 분포
+    const types = ['학급 규칙','환경 개선','행사/활동','선생님께','기타'];
+    const total = suggestions.length || 1;
+    document.getElementById('moodBar').innerHTML = types.map(t => {
+      const cnt = suggestions.filter(s => s.type === t).length;
       const pct = Math.round(cnt / total * 100);
-      return `<div class="mood-row"><span class="mood-em">${m.emoji}</span><span class="mood-name">${m.key}</span><div class="mood-track"><div class="mood-fill" style="width:${pct}%"></div></div><span class="mood-cnt">${cnt}</span></div>`;
+      return `<div class="mood-row"><span class="mood-name" style="width:70px;font-size:0.8rem">${t}</span><div class="mood-track"><div class="mood-fill" style="width:${pct}%"></div></div><span class="mood-cnt">${cnt}</span></div>`;
     }).join('');
   }
 </script>
