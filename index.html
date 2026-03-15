@@ -268,6 +268,45 @@
     .day-detail-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
     .cal-cell.selected { border-color: var(--primary); background: var(--primary-pale); }
 
+    /* ── 상담 슬롯 ── */
+    .counsel-wrap { max-width: 700px; margin: 0 auto; padding: 28px 24px 60px; }
+    .slot-info-box { display: flex; align-items: flex-start; gap: 10px; background: var(--primary-pale); border-radius: 14px; padding: 14px 18px; margin-bottom: 24px; }
+    .slot-info-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .slot-info-box p { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+    .slot-list { display: flex; flex-direction: column; gap: 20px; }
+    .slot-date-group {}
+    .slot-date-label { font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; padding-left: 4px; }
+    .slot-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .slot-card { border-radius: 14px; padding: 16px 18px; border: 2px solid var(--border); background: var(--card); cursor: pointer; transition: all 0.2s; }
+    .slot-card:hover:not(.booked) { border-color: var(--primary-light); background: var(--primary-pale); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(45,106,79,0.12); }
+    .slot-card.booked { background: #f5f5f5; border-color: #e0e0e0; cursor: default; opacity: 0.7; }
+    .slot-card .slot-time { font-size: 1.05rem; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+    .slot-card.booked .slot-time { color: var(--text-muted); }
+    .slot-card .slot-label { font-size: 0.78rem; color: var(--text-muted); }
+    .slot-card .slot-booker { font-size: 0.82rem; font-weight: 700; color: #888; margin-top: 6px; }
+    .slot-available-tag { display: inline-block; background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; margin-top: 6px; }
+    .slot-booked-tag { display: inline-block; background: #f0f0f0; color: #aaa; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; margin-top: 6px; }
+    .slot-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .slot-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .booking-slot-info { background: var(--primary-pale); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 700; }
+
+    /* ── 설문 ── */
+    .survey-wrap { max-width: 600px; margin: 0 auto; padding: 32px 24px 60px; }
+    .survey-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
+    .survey-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .survey-card .survey-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px; }
+    .mood-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 8px; }
+    .mood-btn { border: 2px solid var(--border); border-radius: 14px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+    .mood-btn:hover { border-color: var(--primary-light); background: var(--primary-pale); }
+    .mood-btn.selected { border-color: var(--primary); background: var(--primary-pale); }
+    .mood-btn .mood-emoji { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+    .mood-btn .mood-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+    .mood-btn.selected .mood-label { color: var(--primary); }
+    .survey-done { text-align: center; padding: 40px 20px; }
+    .survey-done .done-icon { font-size: 3rem; margin-bottom: 12px; }
+    .survey-done h3 { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .survey-done p { font-size: 0.9rem; color: var(--text-muted); }
+
     /* ── 사진 보관함 ── */
     .photos-wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
     .photos-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
@@ -325,9 +364,9 @@
     <button onclick="showPage('meeting')" id="nav-meeting">📋 학급회의</button>
     <button onclick="showPage('activity')" id="nav-activity">🌱 자율활동</button>
     <button onclick="showPage('photos')" id="nav-photos">📷 사진</button>
+    <button onclick="showPage('survey')" id="nav-survey">📝 오늘의 설문</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
     <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
-    <button onclick="showPage('admin')" id="nav-admin">🔐 관리자</button>
   </div>
   <button class="hamburger" onclick="toggleNav()">☰</button>
 </nav>
@@ -352,6 +391,7 @@
       <div class="quick-btn" onclick="showPage('meeting')"><div class="icon">📋</div><div class="name">학급회의</div><div class="desc">회의록 모아보기</div></div>
       <div class="quick-btn" onclick="showPage('activity')"><div class="icon">🌱</div><div class="name">자율활동</div><div class="desc">학급 활동 기록</div></div>
       <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
+      <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📝</div><div class="name">오늘의 설문</div><div class="desc">오늘 컨디션 알려주기</div></div>
       <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
       <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📢</div><div class="name">공지사항</div><div class="desc">중요 공지 모아보기</div></div>
     </div>
@@ -442,22 +482,27 @@
 
 <!-- ════════════ COUNSELING ════════════ -->
 <div class="page" id="page-counseling">
-  <div class="page-header"><h2>💬 상담 신청</h2><p>담임선생님께 상담을 신청해요</p></div>
+  <div class="page-header"><h2>💬 상담 예약</h2><p>선생님이 열어둔 상담 시간을 골라 예약해요</p></div>
   <div class="counsel-wrap">
-    <div class="counsel-card">
-      <h3>📋 상담 신청서</h3>
-      <div class="form-group"><label>이름</label><input type="text" id="cName" placeholder="홍길동" /></div>
-      <div class="form-group"><label>상담 유형</label>
-        <select id="cType"><option value="">선택해주세요</option><option>학업 상담</option><option>진로 상담</option><option>교우관계</option><option>건강·생활</option><option>기타</option></select>
-      </div>
-      <div class="form-group"><label>희망 날짜</label><input type="date" id="cDate" /></div>
-      <div class="form-group"><label>상담 내용 (선택)</label><textarea id="cContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 비공개로 처리됩니다."></textarea></div>
-      <button class="submit-btn" id="counselBtn" onclick="submitCounsel()">📨 신청하기</button>
+    <div class="slot-info-box">
+      <span class="slot-info-icon">📌</span>
+      <p>원하는 시간을 클릭하면 예약할 수 있어요. 상담 내용은 선생님께만 보여요 🔒</p>
     </div>
-    <div class="counsel-info">
-      <h4>📌 상담 안내</h4>
-      <p>• 상담 신청 후 선생님께서 확인 후 연락드립니다.<br/>• 긴급한 경우 담임선생님께 직접 말씀해 주세요.<br/>• 상담 내용은 비밀이 철저히 보장됩니다.<br/>• 담임선생님 상담 가능 시간: 점심시간 / 방과 후</p>
+    <div class="slot-list" id="slotList">
+      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
     </div>
+  </div>
+</div>
+
+<!-- 상담 예약 모달 -->
+<div class="modal-overlay" id="bookingOverlay" onclick="closeBookingModal()"></div>
+<div class="modal" id="bookingModal">
+  <div class="modal-header"><h3 id="bookingModalTitle">상담 예약</h3><button class="modal-close" onclick="closeBookingModal()">✕</button></div>
+  <div class="modal-body">
+    <div class="booking-slot-info" id="bookingSlotInfo"></div>
+    <div class="form-group"><label>이름</label><input type="text" id="bkName" placeholder="홍길동" /></div>
+    <div class="form-group"><label>상담 내용 (선택)</label><textarea id="bkContent" placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요." style="min-height:80px"></textarea></div>
+    <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
   </div>
 </div>
 
@@ -467,6 +512,37 @@
   <div class="notice-wrap">
     <div class="notice-top"><h3>전체 공지</h3><button class="add-btn" onclick="openNoticeModal()">+ 공지 작성</button></div>
     <div class="notice-list" id="noticeList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ════════════ 설문 ════════════ -->
+<div class="page" id="page-survey">
+  <div class="page-header"><h2>📝 오늘의 설문</h2><p>선생님께 오늘의 나를 알려줘요</p></div>
+  <div class="survey-wrap">
+    <div class="survey-card" id="surveyForm">
+      <h3>오늘 어때요? 😊</h3>
+      <p class="survey-desc">익명이 아니에요! 선생님만 볼 수 있어요 🔒</p>
+      <div class="form-group"><label>이름</label><input type="text" id="svName" placeholder="홍길동" /></div>
+      <div class="form-group">
+        <label>오늘의 기분 / 컨디션</label>
+        <div class="mood-grid">
+          <div class="mood-btn" onclick="selectMood(this,'😄','최고')"><span class="mood-emoji">😄</span><span class="mood-label">최고</span></div>
+          <div class="mood-btn" onclick="selectMood(this,'🙂','좋아')"><span class="mood-emoji">🙂</span><span class="mood-label">좋아</span></div>
+          <div class="mood-btn" onclick="selectMood(this,'😐','보통')"><span class="mood-emoji">😐</span><span class="mood-label">보통</span></div>
+          <div class="mood-btn" onclick="selectMood(this,'😔','별로')"><span class="mood-emoji">😔</span><span class="mood-label">별로</span></div>
+          <div class="mood-btn" onclick="selectMood(this,'😞','힘들어')"><span class="mood-emoji">😞</span><span class="mood-label">힘들어</span></div>
+        </div>
+      </div>
+      <div class="form-group"><label>선생님께 하고 싶은 말 (선택)</label><textarea id="svMessage" placeholder="오늘 있었던 일, 하고 싶은 말을 자유롭게 써줘요 :)" style="min-height:100px"></textarea></div>
+      <div class="form-group"><label>고민 / 건의사항 (선택)</label><textarea id="svConcern" placeholder="선생님께만 보여요. 편하게 써줘요 💚" style="min-height:80px"></textarea></div>
+      <button class="submit-btn" id="svBtn" onclick="submitSurvey()">📨 제출하기</button>
+    </div>
+    <div class="survey-done" id="surveyDone" style="display:none">
+      <div class="done-icon">💚</div>
+      <h3>제출 완료!</h3>
+      <p>선생님께 잘 전달됐어요.<br/>오늘도 수고했어요 🌱</p>
+      <button class="submit-btn" style="margin-top:20px; max-width:200px" onclick="resetSurvey()">다시 제출하기</button>
+    </div>
   </div>
 </div>
 
@@ -642,6 +718,8 @@
     meeting: loadMeetings,
     activity: loadActivities,
     photos: loadPhotos,
+    survey: initSurvey,
+    counseling: loadCounseling,
     admin: initAdminPage
   };
   function showPage(name) {
@@ -830,25 +908,85 @@
     showToast('✅ 일정이 등록됐어요!');
   }
 
-  // ════════════ COUNSELING ════════════
-  async function submitCounsel() {
-    const name = document.getElementById('cName').value.trim();
-    const type = document.getElementById('cType').value;
-    const date = document.getElementById('cDate').value;
-    if (!name || !type || !date) { showToast('❗ 이름, 유형, 날짜를 입력해주세요'); return; }
-    const btn = document.getElementById('counselBtn');
-    btn.disabled = true; btn.textContent = '신청 중...';
-    const { error } = await sb.from('counseling').insert([{
-      name, type, date, content: document.getElementById('cContent').value.trim()
-    }]);
-    btn.disabled = false; btn.textContent = '📨 신청하기';
-    if (error) { showToast('❗ 신청 실패: ' + error.message); return; }
-    document.getElementById('cName').value = '';
-    document.getElementById('cType').value = '';
-    document.getElementById('cDate').value = '';
-    document.getElementById('cContent').value = '';
-    showToast('📨 상담 신청이 완료됐어요!');
+  // ════════════ 상담 슬롯 예약 ════════════
+  let currentSlotId = null;
+
+  async function loadCounseling() {
+    const list = document.getElementById('slotList');
+    list.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.from('counsel_slots').select('*').order('slot_date').order('slot_time');
+    if (error || !data || !data.length) {
+      list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
+      return;
+    }
+    // 날짜별 그룹핑
+    const groups = {};
+    data.forEach(s => {
+      const key = s.slot_date;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(s);
+    });
+    const dayNames = ['일','월','화','수','목','금','토'];
+    list.innerHTML = Object.entries(groups).map(([date, slots]) => {
+      const d = new Date(date + 'T00:00:00');
+      const label = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
+      const cards = slots.map(s => {
+        if (s.booked_by) {
+          return `<div class="slot-card booked">
+            <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
+            ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
+            <span class="slot-booked-tag">예약 완료</span>
+          </div>`;
+        }
+        return `<div class="slot-card" onclick="openBookingModal(${s.id}, '${date}', '${s.slot_time}', '${(s.label||'').replace(/'/g,"\\'")}')">
+          <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
+          ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
+          <span class="slot-available-tag">예약 가능</span>
+        </div>`;
+      }).join('');
+      return `<div class="slot-date-group">
+        <div class="slot-date-label">📅 ${label}</div>
+        <div class="slot-cards">${cards}</div>
+      </div>`;
+    }).join('');
   }
+
+  function openBookingModal(slotId, date, time, label) {
+    currentSlotId = slotId;
+    const d = new Date(date + 'T00:00:00');
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${time.slice(0,5)}`;
+    document.getElementById('bookingModalTitle').textContent = '상담 예약';
+    document.getElementById('bookingSlotInfo').textContent = `🕐 ${dateStr}${label ? ' · ' + label : ''}`;
+    document.getElementById('bkName').value = '';
+    document.getElementById('bkContent').value = '';
+    document.getElementById('bookingOverlay').style.display = 'block';
+    document.getElementById('bookingModal').classList.add('open');
+  }
+
+  function closeBookingModal() {
+    document.getElementById('bookingOverlay').style.display = 'none';
+    document.getElementById('bookingModal').classList.remove('open');
+    currentSlotId = null;
+  }
+
+  async function submitBooking() {
+    const name = document.getElementById('bkName').value.trim();
+    if (!name) { showToast('❗ 이름을 입력해주세요'); return; }
+    const btn = document.getElementById('bkSubmitBtn');
+    btn.disabled = true; btn.textContent = '예약 중...';
+    // 슬롯 선점 (booked_by 업데이트)
+    const { error } = await sb.from('counsel_slots').update({
+      booked_by: name,
+      booked_content: document.getElementById('bkContent').value.trim() || null
+    }).eq('id', currentSlotId).is('booked_by', null); // 동시 예약 방지
+    btn.disabled = false; btn.textContent = '📨 예약하기';
+    if (error) { showToast('❗ 예약 실패: ' + error.message); return; }
+    closeBookingModal();
+    showToast('✅ 상담이 예약됐어요!');
+    await loadCounseling();
+  }
+
 
   // ════════════ NOTICES ════════════
   async function loadNotices() {
@@ -1050,6 +1188,50 @@
     if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
     await loadActivities();
     showToast('🗑️ 활동이 삭제됐어요');
+  }
+
+  // ════════════ 설문 ════════════
+  let selectedMood = '';
+  let selectedMoodLabel = '';
+
+  function initSurvey() {
+    document.getElementById('surveyForm').style.display = 'block';
+    document.getElementById('surveyDone').style.display = 'none';
+  }
+
+  function selectMood(el, emoji, label) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedMood = emoji;
+    selectedMoodLabel = label;
+  }
+
+  async function submitSurvey() {
+    const name = document.getElementById('svName').value.trim();
+    if (!name) { showToast('❗ 이름을 입력해주세요'); return; }
+    if (!selectedMood) { showToast('❗ 기분을 선택해주세요'); return; }
+    const btn = document.getElementById('svBtn');
+    btn.disabled = true; btn.textContent = '제출 중...';
+    const { error } = await sb.from('surveys').insert([{
+      name,
+      mood: selectedMood + ' ' + selectedMoodLabel,
+      message: document.getElementById('svMessage').value.trim() || null,
+      concern: document.getElementById('svConcern').value.trim() || null,
+    }]);
+    btn.disabled = false; btn.textContent = '📨 제출하기';
+    if (error) { showToast('❗ 제출 실패: ' + error.message); return; }
+    document.getElementById('surveyForm').style.display = 'none';
+    document.getElementById('surveyDone').style.display = 'block';
+  }
+
+  function resetSurvey() {
+    document.getElementById('svName').value = '';
+    document.getElementById('svMessage').value = '';
+    document.getElementById('svConcern').value = '';
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    selectedMood = ''; selectedMoodLabel = '';
+    document.getElementById('surveyForm').style.display = 'block';
+    document.getElementById('surveyDone').style.display = 'none';
   }
 
   // ════════════ 사진 보관함 ════════════
