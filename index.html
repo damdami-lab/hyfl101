@@ -495,8 +495,8 @@
 </div>
 
 <!-- 상담 예약 모달 -->
-<div class="modal-overlay" id="bookingOverlay" onclick="closeBookingModal()"></div>
-<div class="modal" id="bookingModal">
+<div class="modal-overlay" id="bookingOverlay" style="display:none" onclick="closeBookingModal()"></div>
+<div class="modal" id="bookingModal" style="display:none">
   <div class="modal-header"><h3 id="bookingModalTitle">상담 예약</h3><button class="modal-close" onclick="closeBookingModal()">✕</button></div>
   <div class="modal-body">
     <div class="booking-slot-info" id="bookingSlotInfo"></div>
@@ -961,11 +961,13 @@
     document.getElementById('bkName').value = '';
     document.getElementById('bkContent').value = '';
     document.getElementById('bookingOverlay').style.display = 'block';
+    document.getElementById('bookingModal').style.display = 'block';
     document.getElementById('bookingModal').classList.add('open');
   }
 
   function closeBookingModal() {
     document.getElementById('bookingOverlay').style.display = 'none';
+    document.getElementById('bookingModal').style.display = 'none';
     document.getElementById('bookingModal').classList.remove('open');
     currentSlotId = null;
   }
