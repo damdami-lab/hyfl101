@@ -293,12 +293,20 @@
     .roles-semester-tab { display: flex; gap: 8px; margin-bottom: 20px; background: var(--primary-pale); border-radius: 14px; padding: 6px; max-width: 240px; }
     .sem-tab { flex: 1; border: none; background: none; border-radius: 10px; padding: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
     .sem-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 8px rgba(45,106,79,0.12); }
-    .role-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 16px; text-align: center; box-shadow: var(--shadow); position: relative; }
-    .role-icon { font-size: 2rem; margin-bottom: 8px; }
-    .role-name { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
-    .role-person { font-size: 0.92rem; font-weight: 900; color: var(--text); margin-bottom: 4px; }
-    .role-num { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
-    .role-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; text-align: left; }
+    .roles-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .roles-table thead tr { background: var(--primary); }
+    .roles-table thead th { color: white; padding: 14px 18px; text-align: left; font-size: 0.88rem; font-weight: 700; }
+    .roles-table tbody tr { border-bottom: 1px solid var(--primary-pale); transition: background 0.15s; }
+    .roles-table tbody tr:last-child { border-bottom: none; }
+    .roles-table tbody tr:hover { background: var(--primary-pale); }
+    .roles-table td { padding: 14px 18px; vertical-align: middle; font-size: 0.9rem; }
+    .td-role { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--primary); }
+    .td-role .role-emoji { font-size: 1.3rem; flex-shrink: 0; }
+    .td-persons { display: flex; flex-direction: column; gap: 4px; }
+    .td-person-row { display: flex; align-items: center; gap: 8px; }
+    .td-person-name { font-weight: 700; font-size: 0.92rem; }
+    .td-person-num { font-size: 0.75rem; color: var(--text-muted); }
+    .td-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
 
     /* ── 본인 인증 ── */
     .auth-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
@@ -494,7 +502,7 @@
       <button class="sem-tab active" id="semTab1" onclick="switchSemester(1)">1학기</button>
       <button class="sem-tab" id="semTab2" onclick="switchSemester(2)">2학기</button>
     </div>
-    <div class="roles-grid" id="rolesList"></div>
+    <div id="rolesList"></div>
   </div>
 </div>
 
@@ -1231,14 +1239,17 @@
 
   async function renderRoles() {
     const container = document.getElementById('rolesList');
-    container.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
 
     if (!rolesCache[currentSemester]) {
       const { data, error } = await sb.from('roles')
         .select('*').eq('semester', currentSemester)
         .order('id', { ascending: true });
-      if (error) { container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❗</div><p>역할을 불러오지 못했어요</p></div>'; return; }
-      // role_name 기준으로 그룹핑
+      if (error) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">❗</div><p>역할을 불러오지 못했어요</p></div>';
+        return;
+      }
+      // role_name 기준 그룹핑
       const grouped = {};
       (data || []).forEach(r => {
         if (!grouped[r.role_name]) grouped[r.role_name] = { icon: r.icon, name: r.role_name, desc: r.description, persons: [] };
@@ -1249,15 +1260,34 @@
 
     const groups = rolesCache[currentSemester];
     if (!groups.length) {
-      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🙋</div><p>2학기 역할은 아직 미정이에요!</p></div>'; return;
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">🙋</div><p>2학기 역할은 아직 미정이에요!</p></div>';
+      return;
     }
-    container.innerHTML = groups.map(r => `
-      <div class="role-card">
-        <div class="role-icon">${r.icon || '🙋'}</div>
-        <div class="role-name">${r.name}</div>
-        ${r.persons.map(p => `<div class="role-person">${p.name}</div><div class="role-num">${p.num}</div>`).join('')}
-        ${r.desc ? `<div class="role-desc">${r.desc}</div>` : ''}
-      </div>`).join('');
+
+    container.innerHTML = `
+      <table class="roles-table">
+        <thead>
+          <tr>
+            <th style="width:22%">역할</th>
+            <th style="width:22%">담당 학생</th>
+            <th>하는 일</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${groups.map(r => `
+            <tr>
+              <td><div class="td-role"><span class="role-emoji">${r.icon||'🙋'}</span>${r.name}</div></td>
+              <td><div class="td-persons">
+                ${r.persons.map(p => `
+                  <div class="td-person-row">
+                    <span class="td-person-name">${p.name}</span>
+                    <span class="td-person-num">${p.num}</span>
+                  </div>`).join('')}
+              </div></td>
+              <td class="td-desc">${r.desc || '—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
   }
 
   // ════════════ 학급회의 ════════════
