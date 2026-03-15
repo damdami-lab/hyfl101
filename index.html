@@ -290,6 +290,16 @@
     .slot-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
     .booking-slot-info { background: var(--primary-pale); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 700; }
 
+    .roles-semester-tab { display: flex; gap: 8px; margin-bottom: 20px; background: var(--primary-pale); border-radius: 14px; padding: 6px; max-width: 240px; }
+    .sem-tab { flex: 1; border: none; background: none; border-radius: 10px; padding: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .sem-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 8px rgba(45,106,79,0.12); }
+    .role-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 16px; text-align: center; box-shadow: var(--shadow); position: relative; }
+    .role-icon { font-size: 2rem; margin-bottom: 8px; }
+    .role-name { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .role-person { font-size: 0.92rem; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+    .role-num { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
+    .role-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; text-align: left; }
+
     /* ── 본인 인증 ── */
     .auth-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
     .auth-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
@@ -480,13 +490,11 @@
 <div class="page" id="page-roles">
   <div class="page-header"><h2>🙋 1인 1역</h2><p>우리반 친구들의 역할을 확인해요</p></div>
   <div class="roles-wrap">
-    <div class="roles-top">
-      <h3>역할 목록</h3>
-      <button class="add-btn" onclick="openRoleModal()">+ 역할 등록</button>
+    <div class="roles-semester-tab">
+      <button class="sem-tab active" id="semTab1" onclick="switchSemester(1)">1학기</button>
+      <button class="sem-tab" id="semTab2" onclick="switchSemester(2)">2학기</button>
     </div>
-    <div class="roles-grid" id="rolesList">
-      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
-    </div>
+    <div class="roles-grid" id="rolesList"></div>
   </div>
 </div>
 
@@ -1141,57 +1149,47 @@
   }
 
   // ════════════ 1인1역 ════════════
-  const DEFAULT_ICONS = ['🙋','📚','🧹','🌿','💡','📋','🎨','🎵','🏃','🖥️','🌸','🔧'];
+  let currentSemester = 1;
+  let rolesCache = {};
 
-  async function loadRoles() {
+  function loadRoles() { renderRoles(); }
+
+  function switchSemester(sem) {
+    currentSemester = sem;
+    document.getElementById('semTab1').classList.toggle('active', sem === 1);
+    document.getElementById('semTab2').classList.toggle('active', sem === 2);
+    renderRoles();
+  }
+
+  async function renderRoles() {
     const container = document.getElementById('rolesList');
-    container.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
-    const { data, error } = await sb.from('roles').select('*').order('created_at', { ascending: true });
-    if (error) { container.innerHTML = '<div class="no-events">❗ 역할을 불러오지 못했어요</div>'; return; }
-    if (!data || !data.length) {
-      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🙋</div><p>아직 등록된 역할이 없어요.<br/>+ 역할 등록 버튼으로 추가해봐요!</p></div>'; return;
+    container.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+
+    if (!rolesCache[currentSemester]) {
+      const { data, error } = await sb.from('roles')
+        .select('*').eq('semester', currentSemester)
+        .order('id', { ascending: true });
+      if (error) { container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❗</div><p>역할을 불러오지 못했어요</p></div>'; return; }
+      // role_name 기준으로 그룹핑
+      const grouped = {};
+      (data || []).forEach(r => {
+        if (!grouped[r.role_name]) grouped[r.role_name] = { icon: r.icon, name: r.role_name, desc: r.description, persons: [] };
+        grouped[r.role_name].persons.push({ num: r.student_num, name: r.student_name });
+      });
+      rolesCache[currentSemester] = Object.values(grouped);
     }
-    container.innerHTML = data.map((r, i) => `
+
+    const groups = rolesCache[currentSemester];
+    if (!groups.length) {
+      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🙋</div><p>2학기 역할은 아직 미정이에요!</p></div>'; return;
+    }
+    container.innerHTML = groups.map(r => `
       <div class="role-card">
-        <button class="role-delete" onclick="deleteRole(${r.id}, event)" title="삭제">✕</button>
-        <div class="role-icon">${r.icon || DEFAULT_ICONS[i % DEFAULT_ICONS.length]}</div>
+        <div class="role-icon">${r.icon || '🙋'}</div>
         <div class="role-name">${r.name}</div>
-        <div class="role-person">👤 ${r.person}</div>
-        ${r.description ? `<div class="role-desc">${r.description}</div>` : ''}
+        ${r.persons.map(p => `<div class="role-person">${p.name}</div><div class="role-num">${p.num}</div>`).join('')}
+        ${r.desc ? `<div class="role-desc">${r.desc}</div>` : ''}
       </div>`).join('');
-  }
-
-  function openRoleModal() { openModal('roleModal'); }
-
-  async function saveRole() {
-    const name = document.getElementById('rlName').value.trim();
-    const person = document.getElementById('rlPerson').value.trim();
-    if (!name || !person) { showToast('❗ 역할 이름과 담당 학생을 입력해주세요'); return; }
-    const btn = document.getElementById('rlSaveBtn');
-    btn.disabled = true; btn.textContent = '저장 중...';
-    const { error } = await sb.from('roles').insert([{
-      name, person,
-      icon: document.getElementById('rlIcon').value.trim() || null,
-      description: document.getElementById('rlDesc').value.trim() || null
-    }]);
-    btn.disabled = false; btn.textContent = '저장';
-    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
-    document.getElementById('rlName').value = '';
-    document.getElementById('rlPerson').value = '';
-    document.getElementById('rlIcon').value = '';
-    document.getElementById('rlDesc').value = '';
-    closeModal('roleModal');
-    await loadRoles();
-    showToast('✅ 역할이 등록됐어요!');
-  }
-
-  async function deleteRole(id, e) {
-    e.stopPropagation();
-    if (!confirm('이 역할을 삭제할까요?')) return;
-    const { error } = await sb.from('roles').delete().eq('id', id);
-    if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
-    await loadRoles();
-    showToast('🗑️ 역할이 삭제됐어요');
   }
 
   // ════════════ 학급회의 ════════════
