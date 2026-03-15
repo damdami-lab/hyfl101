@@ -292,6 +292,13 @@
 
     /* ── 설문 ── */
     .survey-wrap { max-width: 600px; margin: 0 auto; padding: 32px 24px 60px; }
+    .survey-tab-row { display: flex; gap: 8px; margin-bottom: 20px; background: var(--primary-pale); border-radius: 14px; padding: 6px; }
+    .survey-tab { flex: 1; border: none; background: none; border-radius: 10px; padding: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .survey-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 8px rgba(45,106,79,0.12); }
+    .suggest-type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 8px; }
+    .suggest-type-btn { border: 2px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: var(--bg); transition: all 0.2s; }
+    .suggest-type-btn:hover { border-color: var(--primary-light); color: var(--primary); background: var(--primary-pale); }
+    .suggest-type-btn.selected { border-color: var(--primary); color: var(--primary); background: var(--primary-pale); }
     .survey-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
     .survey-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
     .survey-card .survey-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px; }
@@ -364,7 +371,7 @@
     <button onclick="showPage('meeting')" id="nav-meeting">📋 학급회의</button>
     <button onclick="showPage('activity')" id="nav-activity">🌱 자율활동</button>
     <button onclick="showPage('photos')" id="nav-photos">📷 사진</button>
-    <button onclick="showPage('survey')" id="nav-survey">📝 오늘의 설문</button>
+    <button onclick="showPage('survey')" id="nav-survey">📣 건의사항</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
     <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
   </div>
@@ -391,7 +398,7 @@
       <div class="quick-btn" onclick="showPage('meeting')"><div class="icon">📋</div><div class="name">학급회의</div><div class="desc">회의록 모아보기</div></div>
       <div class="quick-btn" onclick="showPage('activity')"><div class="icon">🌱</div><div class="name">자율활동</div><div class="desc">학급 활동 기록</div></div>
       <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
-      <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📝</div><div class="name">오늘의 설문</div><div class="desc">오늘 컨디션 알려주기</div></div>
+      <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📣</div><div class="name">건의사항</div><div class="desc">선생님께 의견 전달하기</div></div>
       <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
       <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📢</div><div class="name">공지사항</div><div class="desc">중요 공지 모아보기</div></div>
     </div>
@@ -515,33 +522,38 @@
   </div>
 </div>
 
-<!-- ════════════ 설문 ════════════ -->
+<!-- ════════════ 건의사항 ════════════ -->
 <div class="page" id="page-survey">
-  <div class="page-header"><h2>📝 오늘의 설문</h2><p>선생님께 오늘의 나를 알려줘요</p></div>
+  <div class="page-header"><h2>📣 건의사항</h2><p>선생님과 학급에 하고 싶은 말을 전해요</p></div>
   <div class="survey-wrap">
-    <div class="survey-card" id="surveyForm">
-      <h3>오늘 어때요? 😊</h3>
-      <p class="survey-desc">익명이 아니에요! 선생님만 볼 수 있어요 🔒</p>
-      <div class="form-group"><label>이름</label><input type="text" id="svName" placeholder="홍길동" /></div>
+    <div class="survey-card" id="suggestForm">
+      <h3>학급에 하고 싶은 말이 있나요? 💡</h3>
+      <p class="survey-desc">건의사항은 <strong>선생님께만</strong> 보여요. 편하게 써줘요 🔒</p>
       <div class="form-group">
-        <label>오늘의 기분 / 컨디션</label>
-        <div class="mood-grid">
-          <div class="mood-btn" onclick="selectMood(this,'😄','최고')"><span class="mood-emoji">😄</span><span class="mood-label">최고</span></div>
-          <div class="mood-btn" onclick="selectMood(this,'🙂','좋아')"><span class="mood-emoji">🙂</span><span class="mood-label">좋아</span></div>
-          <div class="mood-btn" onclick="selectMood(this,'😐','보통')"><span class="mood-emoji">😐</span><span class="mood-label">보통</span></div>
-          <div class="mood-btn" onclick="selectMood(this,'😔','별로')"><span class="mood-emoji">😔</span><span class="mood-label">별로</span></div>
-          <div class="mood-btn" onclick="selectMood(this,'😞','힘들어')"><span class="mood-emoji">😞</span><span class="mood-label">힘들어</span></div>
+        <label>이름 (익명 가능)</label>
+        <input type="text" id="sgName" placeholder="홍길동 또는 익명" />
+      </div>
+      <div class="form-group">
+        <label>건의 유형</label>
+        <div class="suggest-type-grid">
+          <div class="suggest-type-btn" onclick="selectSuggestType(this,'학급 규칙')">📋 학급 규칙</div>
+          <div class="suggest-type-btn" onclick="selectSuggestType(this,'환경 개선')">🏫 환경 개선</div>
+          <div class="suggest-type-btn" onclick="selectSuggestType(this,'행사/활동')">🎉 행사/활동</div>
+          <div class="suggest-type-btn" onclick="selectSuggestType(this,'선생님께')">💬 선생님께</div>
+          <div class="suggest-type-btn" onclick="selectSuggestType(this,'기타')">✏️ 기타</div>
         </div>
       </div>
-      <div class="form-group"><label>선생님께 하고 싶은 말 (선택)</label><textarea id="svMessage" placeholder="오늘 있었던 일, 하고 싶은 말을 자유롭게 써줘요 :)" style="min-height:100px"></textarea></div>
-      <div class="form-group"><label>고민 / 건의사항 (선택)</label><textarea id="svConcern" placeholder="선생님께만 보여요. 편하게 써줘요 💚" style="min-height:80px"></textarea></div>
-      <button class="submit-btn" id="svBtn" onclick="submitSurvey()">📨 제출하기</button>
+      <div class="form-group">
+        <label>건의 내용</label>
+        <textarea id="sgContent" placeholder="자유롭게 써줘요. 선생님만 볼 수 있어요." style="min-height:120px"></textarea>
+      </div>
+      <button class="submit-btn" id="sgBtn" onclick="submitSuggestion()">📨 제출하기</button>
     </div>
-    <div class="survey-done" id="surveyDone" style="display:none">
+    <div class="survey-done" id="suggestDone" style="display:none">
       <div class="done-icon">💚</div>
-      <h3>제출 완료!</h3>
-      <p>선생님께 잘 전달됐어요.<br/>오늘도 수고했어요 🌱</p>
-      <button class="submit-btn" style="margin-top:20px; max-width:200px" onclick="resetSurvey()">다시 제출하기</button>
+      <h3>전달됐어요!</h3>
+      <p>선생님께 잘 전달됐어요.<br/>소중한 의견 고마워요 🌱</p>
+      <button class="submit-btn" style="margin-top:20px; max-width:200px" onclick="resetSuggestion()">다시 쓰기</button>
     </div>
   </div>
 </div>
@@ -1192,48 +1204,38 @@
     showToast('🗑️ 활동이 삭제됐어요');
   }
 
-  // ════════════ 설문 ════════════
-  let selectedMood = '';
-  let selectedMoodLabel = '';
+  // ════════════ 건의사항 ════════════
+  let selectedSuggestType = '';
 
-  function initSurvey() {
-    document.getElementById('surveyForm').style.display = 'block';
-    document.getElementById('surveyDone').style.display = 'none';
-  }
+  function initSurvey() { resetSuggestion(); }
 
-  function selectMood(el, emoji, label) {
-    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  function selectSuggestType(el, type) {
+    document.querySelectorAll('.suggest-type-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
-    selectedMood = emoji;
-    selectedMoodLabel = label;
+    selectedSuggestType = type;
   }
 
-  async function submitSurvey() {
-    const name = document.getElementById('svName').value.trim();
-    if (!name) { showToast('❗ 이름을 입력해주세요'); return; }
-    if (!selectedMood) { showToast('❗ 기분을 선택해주세요'); return; }
-    const btn = document.getElementById('svBtn');
+  async function submitSuggestion() {
+    const name = document.getElementById('sgName').value.trim() || '익명';
+    const content = document.getElementById('sgContent').value.trim();
+    if (!selectedSuggestType) { showToast('❗ 건의 유형을 선택해주세요'); return; }
+    if (!content) { showToast('❗ 건의 내용을 입력해주세요'); return; }
+    const btn = document.getElementById('sgBtn');
     btn.disabled = true; btn.textContent = '제출 중...';
-    const { error } = await sb.from('surveys').insert([{
-      name,
-      mood: selectedMood + ' ' + selectedMoodLabel,
-      message: document.getElementById('svMessage').value.trim() || null,
-      concern: document.getElementById('svConcern').value.trim() || null,
-    }]);
+    const { error } = await sb.from('suggestions').insert([{ name, type: selectedSuggestType, content }]);
     btn.disabled = false; btn.textContent = '📨 제출하기';
     if (error) { showToast('❗ 제출 실패: ' + error.message); return; }
-    document.getElementById('surveyForm').style.display = 'none';
-    document.getElementById('surveyDone').style.display = 'block';
+    document.getElementById('suggestForm').style.display = 'none';
+    document.getElementById('suggestDone').style.display = 'block';
   }
 
-  function resetSurvey() {
-    document.getElementById('svName').value = '';
-    document.getElementById('svMessage').value = '';
-    document.getElementById('svConcern').value = '';
-    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-    selectedMood = ''; selectedMoodLabel = '';
-    document.getElementById('surveyForm').style.display = 'block';
-    document.getElementById('surveyDone').style.display = 'none';
+  function resetSuggestion() {
+    document.getElementById('sgName').value = '';
+    document.getElementById('sgContent').value = '';
+    document.querySelectorAll('.suggest-type-btn').forEach(b => b.classList.remove('selected'));
+    selectedSuggestType = '';
+    document.getElementById('suggestForm').style.display = 'block';
+    document.getElementById('suggestDone').style.display = 'none';
   }
 
   // ════════════ 사진 보관함 ════════════
