@@ -57,7 +57,7 @@
     .main.visible { display: block; }
 
     /* dashboard만 2:8 flex */
-    #page-dashboard { display: none; padding: 0 !important; }
+    #page-dashboard { display: none; padding: 0 !important; height: calc(100vh - 64px); }
     #page-dashboard.active { display: flex !important; }
 
     /* 나머지 탭은 일반 block */
@@ -654,9 +654,13 @@
     const { data } = await sb.from('student_info').select('*').eq('student_num', num).maybeSingle();
     const v = data || {};
     document.getElementById('infoGrid').innerHTML = `
-      <div class="info-field"><label>학부모 이름</label><input class="info-input" id="info_parent" value="${v.parent_name||''}" placeholder="홍부모" /></div>
-      <div class="info-field"><label>학부모 연락처</label><input class="info-input" id="info_phone" value="${v.parent_phone||''}" placeholder="010-0000-0000" /></div>
+      <div class="info-field"><label>어머니 성함</label><input class="info-input" id="info_mom_name" value="${v.mom_name||''}" placeholder="홍어머니" /></div>
+      <div class="info-field"><label>어머니 연락처</label><input class="info-input" id="info_mom_phone" value="${v.mom_phone||''}" placeholder="010-0000-0000" /></div>
+      <div class="info-field"><label>아버지 성함</label><input class="info-input" id="info_dad_name" value="${v.dad_name||''}" placeholder="홍아버지" /></div>
+      <div class="info-field"><label>아버지 연락처</label><input class="info-input" id="info_dad_phone" value="${v.dad_phone||''}" placeholder="010-0000-0000" /></div>
       <div class="info-field"><label>학생 연락처</label><input class="info-input" id="info_student_phone" value="${v.student_phone||''}" placeholder="010-0000-0000" /></div>
+      <div class="info-field"><label>생년월일</label><input class="info-input" id="info_birth_date" type="date" value="${v.birth_date||''}" /></div>
+      <div class="info-field"><label>출신 중학교</label><input class="info-input" id="info_middle_school" value="${v.middle_school||''}" placeholder="○○중학교" /></div>
       <div class="info-field"><label>MBTI</label><input class="info-input" id="info_mbti" value="${v.mbti||''}" placeholder="예: INFP" style="text-transform:uppercase" /></div>
       <div class="info-field" style="grid-column:1/-1"><label>특이사항 / 메모</label><textarea class="info-input dash-memo-area" id="info_memo" placeholder="알레르기, 건강 상태, 특이사항 등..." style="min-height:80px">${v.memo||''}</textarea></div>`;
   }
@@ -666,9 +670,13 @@
     const payload = {
       student_num: dashStudent.num,
       student_name: dashStudent.name,
-      parent_name: document.getElementById('info_parent').value.trim(),
-      parent_phone: document.getElementById('info_phone').value.trim(),
+      mom_name: document.getElementById('info_mom_name').value.trim(),
+      mom_phone: document.getElementById('info_mom_phone').value.trim(),
+      dad_name: document.getElementById('info_dad_name').value.trim(),
+      dad_phone: document.getElementById('info_dad_phone').value.trim(),
       student_phone: document.getElementById('info_student_phone').value.trim(),
+      birth_date: document.getElementById('info_birth_date').value || null,
+      middle_school: document.getElementById('info_middle_school').value.trim(),
       mbti: document.getElementById('info_mbti').value.trim().toUpperCase(),
       memo: document.getElementById('info_memo').value.trim()
     };
