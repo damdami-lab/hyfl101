@@ -53,19 +53,12 @@
     .login-error { color: #e63946; font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
 
     /* ── MAIN ── */
-    .main { display: none; padding-top: 64px; min-height: 100vh; }
-    .main.visible { display: block; }
+    .main { display: none; padding-top: 64px; height: 100vh; }
+    .main.visible { display: flex; }
 
-    /* dashboard만 2:8 flex */
-    #page-dashboard { display: none; padding: 0 !important; height: calc(100vh - 64px); }
-    #page-dashboard.active { display: flex !important; }
-
-    /* 나머지 탭은 일반 block */
-    .page-content { display: none; padding: 32px 40px 60px; max-width: 960px; margin: 0 auto; }
-    .page-content.active { display: block; }
-
-    /* 사이드바 (dashboard 전용) */
-    .sidebar { width: 220px; flex-shrink: 0; background: var(--card); border-right: 1.5px solid var(--border); height: calc(100vh - 64px); position: sticky; top: 64px; overflow-y: auto; display: flex; flex-direction: column; }
+    /* 사이드바 — dashboard 탭에서만 보임 */
+    .sidebar { width: 220px; flex-shrink: 0; background: var(--card); border-right: 1.5px solid var(--border); height: calc(100vh - 64px); position: sticky; top: 64px; overflow-y: auto; display: none; flex-direction: column; }
+    .sidebar.visible { display: flex; }
     .sidebar-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 20px 16px 8px; letter-spacing: 0.05em; }
     .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; font-size: 0.9rem; }
     .sidebar-item:hover { background: var(--primary-pale); }
@@ -74,7 +67,15 @@
     .sidebar-item .si-name { font-weight: 600; }
     .sidebar-item.active .si-name { color: var(--primary); }
     .sidebar-item .si-role { font-size: 0.68rem; color: var(--primary-light); }
+
+    /* 콘텐츠 영역 — 항상 나머지 너비 전부 */
     .content-area { flex: 1; min-width: 0; overflow-y: auto; height: calc(100vh - 64px); }
+
+    /* 각 페이지 탭 */
+    .page-content { display: none; }
+    .page-content.active { display: block; }
+    #page-dashboard { padding: 0; }
+    .page-fullwrap { padding: 32px 40px 60px; max-width: 960px; margin: 0 auto; }
     .section-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .section-top h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
     .count-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
@@ -325,97 +326,106 @@
 
 <div class="main" id="mainContent">
 
-  <!-- ── 학생 현황: 2:8 레이아웃 ── -->
-  <div class="page-content active" id="page-dashboard">
-    <!-- 왼쪽 명렬 사이드바 -->
-    <div class="sidebar" id="studentSidebar">
-      <div class="sidebar-title">1학년 1반 · 24명</div>
-      <!-- JS로 렌더링 -->
-    </div>
-    <!-- 오른쪽 학생 상세 -->
-    <div class="content-area" id="dashContent">
-      <div class="dash-placeholder">
-        <div class="ph-icon">👈</div>
-        <p>왼쪽 명렬에서 학생을 선택해주세요</p>
+  <!-- 왼쪽 명렬 사이드바 (dashboard 탭에서만 보임) -->
+  <div class="sidebar" id="studentSidebar">
+    <div class="sidebar-title">1학년 1반 · 24명</div>
+  </div>
+
+  <!-- 오른쪽 콘텐츠 전체 -->
+  <div class="content-area" id="mainContentArea">
+
+    <!-- 학생 현황 탭 -->
+    <div class="page-content active" id="page-dashboard">
+      <div id="dashContent">
+        <div class="dash-placeholder">
+          <div class="ph-icon">👈</div>
+          <p>왼쪽 명렬에서 학생을 선택해주세요</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 건의사항 탭 -->
-  <div class="page-content" id="page-suggest">
-    <div class="section-top">
-      <h3>💡 건의사항 <span class="count-badge" id="suggestCount"></span></h3>
-      <button class="refresh-btn" onclick="loadSuggestions()">🔄 새로고침</button>
-    </div>
-    <div class="filter-bar">
-      <select class="filter-select" id="sgTypeFilter" onchange="renderSuggestions()">
-        <option value="">전체 유형</option>
-        <option value="학급 규칙">📋 학급 규칙</option>
-        <option value="환경 개선">🏫 환경 개선</option>
-        <option value="행사/활동">🎉 행사/활동</option>
-        <option value="선생님께">💬 선생님께</option>
-        <option value="기타">✏️ 기타</option>
-      </select>
-      <select class="filter-select" id="sgReadFilter" onchange="renderSuggestions()">
-        <option value="">전체</option>
-        <option value="unread">읽지 않음</option>
-        <option value="read">읽음</option>
-      </select>
-    </div>
-    <div class="suggest-list" id="suggestList">
-      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
-    </div>
-  </div>
-
-  <!-- 상담 관리 탭 -->
-  <div class="page-content" id="page-slots">
-    <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:20px">🗓️ 상담 가능 시간 등록</h3>
-    <div class="slot-form-card">
-      <div class="slot-form-row">
-        <div class="slot-form-group"><label>날짜</label><input type="date" id="newSlotDate" class="slot-input" /></div>
-        <div class="slot-form-group"><label>시간</label><input type="time" id="newSlotTime" class="slot-input" /></div>
-        <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
-        <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
+    <!-- 건의사항 탭 -->
+    <div class="page-content" id="page-suggest">
+      <div class="page-fullwrap">
+        <div class="section-top">
+          <h3>💡 건의사항 <span class="count-badge" id="suggestCount"></span></h3>
+          <button class="refresh-btn" onclick="loadSuggestions()">🔄 새로고침</button>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="sgTypeFilter" onchange="renderSuggestions()">
+            <option value="">전체 유형</option>
+            <option value="학급 규칙">📋 학급 규칙</option>
+            <option value="환경 개선">🏫 환경 개선</option>
+            <option value="행사/활동">🎉 행사/활동</option>
+            <option value="선생님께">💬 선생님께</option>
+            <option value="기타">✏️ 기타</option>
+          </select>
+          <select class="filter-select" id="sgReadFilter" onchange="renderSuggestions()">
+            <option value="">전체</option>
+            <option value="unread">읽지 않음</option>
+            <option value="read">읽음</option>
+          </select>
+        </div>
+        <div class="suggest-list" id="suggestList">
+          <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+        </div>
       </div>
     </div>
-    <div class="section-top" style="margin-top:28px;">
-      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
-      <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
-    </div>
-    <div id="slotManageList"><div class="loading"><div class="spinner"></div></div></div>
-    <div class="section-top" style="margin-top:32px;">
-      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">💬 상담 예약 현황 <span class="count-badge" id="counselCount"></span></h3>
-      <button class="refresh-btn" onclick="loadCounsel()">🔄 새로고침</button>
-    </div>
-    <div class="filter-bar">
-      <input class="filter-input" type="text" id="csSearch" placeholder="🔍 이름 검색..." oninput="renderCounsel()" />
-      <select class="filter-select" id="csStatusFilter" onchange="renderCounsel()">
-        <option value="">전체</option>
-        <option value="booked">예약됨</option>
-        <option value="empty">빈 슬롯</option>
-      </select>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>날짜</th><th>시간</th><th>메모</th><th>예약자</th><th>상담 내용</th><th>관리</th></tr></thead>
-        <tbody id="counselBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- 통계 탭 -->
-  <div class="page-content" id="page-stats">
-    <div class="section-top">
-      <h3>📊 우리반 현황</h3>
-      <button class="refresh-btn" onclick="loadStats()">🔄 새로고침</button>
+    <!-- 상담 관리 탭 -->
+    <div class="page-content" id="page-slots">
+      <div class="page-fullwrap">
+        <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:20px">🗓️ 상담 가능 시간 등록</h3>
+        <div class="slot-form-card">
+          <div class="slot-form-row">
+            <div class="slot-form-group"><label>날짜</label><input type="date" id="newSlotDate" class="slot-input" /></div>
+            <div class="slot-form-group"><label>시간</label><input type="time" id="newSlotTime" class="slot-input" /></div>
+            <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
+            <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
+          </div>
+        </div>
+        <div class="section-top" style="margin-top:28px;">
+          <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
+          <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
+        </div>
+        <div id="slotManageList"><div class="loading"><div class="spinner"></div></div></div>
+        <div class="section-top" style="margin-top:32px;">
+          <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">💬 상담 예약 현황 <span class="count-badge" id="counselCount"></span></h3>
+          <button class="refresh-btn" onclick="loadCounsel()">🔄 새로고침</button>
+        </div>
+        <div class="filter-bar">
+          <input class="filter-input" type="text" id="csSearch" placeholder="🔍 이름 검색..." oninput="renderCounsel()" />
+          <select class="filter-select" id="csStatusFilter" onchange="renderCounsel()">
+            <option value="">전체</option>
+            <option value="booked">예약됨</option>
+            <option value="empty">빈 슬롯</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>날짜</th><th>시간</th><th>메모</th><th>예약자</th><th>상담 내용</th><th>관리</th></tr></thead>
+            <tbody id="counselBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="stat-grid" id="statGrid"><div class="loading"><div class="spinner"></div></div></div>
-    <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin:24px 0 14px">💡 건의사항 유형 분포</h3>
-    <div class="mood-bar" id="moodBar" style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);">
-      <div class="loading"><div class="spinner"></div></div>
-    </div>
-  </div>
 
+    <!-- 통계 탭 -->
+    <div class="page-content" id="page-stats">
+      <div class="page-fullwrap">
+        <div class="section-top">
+          <h3>📊 우리반 현황</h3>
+          <button class="refresh-btn" onclick="loadStats()">🔄 새로고침</button>
+        </div>
+        <div class="stat-grid" id="statGrid"><div class="loading"><div class="spinner"></div></div></div>
+        <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin:24px 0 14px">💡 건의사항 유형 분포</h3>
+        <div class="mood-bar" id="moodBar" style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content-area -->
 </div>
 
 <div class="toast" id="toast"></div>
@@ -505,7 +515,14 @@
     document.getElementById('page-' + name).classList.add('active');
     const tab = document.getElementById('tab-' + name);
     if (tab) tab.classList.add('active');
-    if (name === 'dashboard') renderStudentDashboard();
+    // dashboard일 때만 사이드바 표시
+    const sidebar = document.getElementById('studentSidebar');
+    if (name === 'dashboard') {
+      sidebar.classList.add('visible');
+      renderStudentDashboard();
+    } else {
+      sidebar.classList.remove('visible');
+    }
   }
 
   // ── 학생 대시보드 ──
