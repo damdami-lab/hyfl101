@@ -52,14 +52,33 @@
     .login-btn:hover { background: #1b4332; transform: translateY(-2px); }
     .login-error { color: #e63946; font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
 
-    /* ── MAIN ── */
+    /* ── MAIN 2:8 레이아웃 ── */
     .main { display: none; padding-top: 64px; min-height: 100vh; }
-    .main.visible { display: block; }
-    .page-content { display: none; }
-    .page-content.active { display: block; }
+    .main.visible { display: flex; }
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--card); border-right: 1.5px solid var(--border);
+      height: calc(100vh - 64px); position: sticky; top: 64px;
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .sidebar-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 20px 16px 8px; letter-spacing: 0.05em; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; cursor: pointer; transition: all 0.15s;
+      border-left: 3px solid transparent; font-size: 0.9rem;
+    }
+    .sidebar-item:hover { background: var(--primary-pale); }
+    .sidebar-item.active { background: var(--primary-pale); border-left-color: var(--primary); font-weight: 700; color: var(--primary); }
+    .sidebar-item .si-num { font-size: 0.72rem; color: var(--text-muted); }
+    .sidebar-item .si-name { font-weight: 600; }
+    .sidebar-item.active .si-name { color: var(--primary); }
+    .sidebar-item .si-role { font-size: 0.68rem; color: var(--primary-light); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 6px 12px; }
 
-    /* ── 공통 ── */
-    .wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
+    .content-area { flex: 1; min-width: 0; overflow-y: auto; height: calc(100vh - 64px); }
+    .page-content { display: none; padding: 32px 32px 60px; }
+    .page-content.active { display: block; }
+    .wrap { max-width: 860px; }
     .section-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .section-top h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
     .count-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-left: 8px; }
@@ -114,49 +133,26 @@
     .mood-fill { height: 100%; background: var(--primary-light); border-radius: 4px; transition: width 0.5s ease; }
     .mood-cnt { font-size: 0.78rem; color: var(--text-muted); width: 24px; text-align: right; }
 
-    /* ── 학생 대시보드 ── */
-    .student-dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-    .student-dash-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 18px 14px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
-    .student-dash-card:hover { border-color: var(--primary-light); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(45,106,79,0.15); }
-    .sdc-num { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
-    .sdc-name { font-size: 1rem; font-weight: 900; color: var(--text); margin-bottom: 10px; }
-    .sdc-badges { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-    .sdc-badge { font-size: 0.68rem; border-radius: 20px; padding: 2px 8px; font-weight: 700; }
-    .sdc-badge.counsel { background: #e8f4fd; color: #457b9d; }
-    .sdc-badge.suggest { background: #fff3e0; color: #e76f51; }
-    .sdc-badge.role { background: var(--primary-pale); color: var(--primary); }
-
-    /* ── 학생 상세 사이드패널 ── */
-    .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; }
-    .dash-overlay.open { display: block; }
-    .dash-panel { position: fixed; top: 0; right: -580px; width: 100%; max-width: 580px; height: 100vh; background: var(--card); z-index: 201; box-shadow: -8px 0 40px rgba(0,0,0,0.15); transition: right 0.3s ease; overflow-y: auto; display: flex; flex-direction: column; }
-    .dash-panel.open { right: 0; }
-    .dash-panel-header { position: sticky; top: 0; background: var(--primary); color: white; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 1; }
-    .dash-panel-header h3 { font-size: 1.2rem; font-weight: 900; }
-    .dash-panel-header p { font-size: 0.82rem; opacity: 0.85; margin-top: 2px; }
-    .dash-panel-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .dash-panel-close:hover { background: rgba(255,255,255,0.35); }
-    .dash-panel-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+    /* ── 학생 대시보드 인라인 패널 ── */
+    .dash-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--text-muted); gap: 12px; }
+    .dash-placeholder .ph-icon { font-size: 3rem; }
+    .dash-placeholder p { font-size: 0.9rem; }
     .dash-section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
     .dash-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .dash-empty { font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 16px; }
-    .dash-role-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-pale); border: 1.5px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 0.88rem; margin: 4px; }
-    .dash-role-chip .chip-icon { font-size: 1.1rem; }
-    .dash-role-chip .chip-name { font-weight: 700; color: var(--primary); }
-    .dash-role-chip .chip-sem { font-size: 0.72rem; color: var(--text-muted); }
-    .dash-counsel-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .dash-empty { font-size: 0.85rem; color: var(--text-muted); padding: 12px; }
+    .dash-counsel-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
     .dash-counsel-item .dci-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .dash-counsel-item .dci-date { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
     .dash-counsel-item .dci-time { font-size: 0.8rem; color: var(--text-muted); }
     .dash-counsel-item .dci-content { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
-    .dash-suggest-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .dash-suggest-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
     .dash-suggest-item .dsi-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
     .dash-suggest-item .dsi-type { background: #fff3e0; color: #e76f51; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; }
     .dash-suggest-item .dsi-date { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
     .dash-suggest-item .dsi-content { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
     .dash-memo-area { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; line-height: 1.7; resize: vertical; min-height: 100px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
     .dash-memo-area:focus { border-color: var(--primary-light); }
-    .dash-save-btn { background: var(--primary); color: white; border: none; border-radius: 30px; padding: 9px 22px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+    .dash-save-btn { background: var(--primary); color: white; border: none; border-radius: 30px; padding: 9px 22px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .dash-save-btn:hover { background: #1b4332; }
     .dash-reset-pw-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 6px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
     .dash-reset-pw-btn:hover { background: #fff3e0; border-color: #e76f51; color: #e76f51; }
@@ -274,11 +270,9 @@
 <nav id="mainNav" style="display:none">
   <span class="nav-logo">🌱 1-1 담임 페이지</span>
   <div class="nav-right">
-    <button class="nav-tab active" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
-    <button class="nav-tab" id="tab-dashboard" onclick="showTab('dashboard')">👥 학생 현황</button>
-    <button class="nav-tab" id="tab-students" onclick="showTab('students')">🔑 학생 비밀번호</button>
-    <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 시간 관리</button>
-    <button class="nav-tab" id="tab-counsel" onclick="showTab('counsel')">💬 상담 예약 현황</button>
+    <button class="nav-tab active" id="tab-dashboard" onclick="showTab('dashboard')">👥 학생 현황</button>
+    <button class="nav-tab" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
+    <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
   </div>
@@ -286,127 +280,94 @@
 
 <div class="main" id="mainContent">
 
+  <!-- ── 학생 현황: 2:8 레이아웃 ── -->
+  <div class="page-content active" id="page-dashboard" style="padding:0; display:none">
+    <!-- 왼쪽 명렬 사이드바 -->
+    <div class="sidebar" id="studentSidebar">
+      <div class="sidebar-title">1학년 1반 · 24명</div>
+      <!-- JS로 렌더링 -->
+    </div>
+    <!-- 오른쪽 학생 상세 -->
+    <div class="content-area" id="dashContent">
+      <div class="dash-placeholder">
+        <div class="ph-icon">👈</div>
+        <p>왼쪽 명렬에서 학생을 선택해주세요</p>
+      </div>
+    </div>
+  </div>
+
   <!-- 건의사항 탭 -->
-  <div class="page-content active" id="page-suggest">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>💡 건의사항 <span class="count-badge" id="suggestCount"></span></h3>
-        <button class="refresh-btn" onclick="loadSuggestions()">🔄 새로고침</button>
-      </div>
-      <div class="filter-bar">
-        <select class="filter-select" id="sgTypeFilter" onchange="renderSuggestions()">
-          <option value="">전체 유형</option>
-          <option value="학급 규칙">📋 학급 규칙</option>
-          <option value="환경 개선">🏫 환경 개선</option>
-          <option value="행사/활동">🎉 행사/활동</option>
-          <option value="선생님께">💬 선생님께</option>
-          <option value="기타">✏️ 기타</option>
-        </select>
-        <select class="filter-select" id="sgReadFilter" onchange="renderSuggestions()">
-          <option value="">전체</option>
-          <option value="unread">읽지 않음</option>
-          <option value="read">읽음</option>
-        </select>
-      </div>
-      <div class="suggest-list" id="suggestList">
-        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
-      </div>
+  <div class="page-content" id="page-suggest">
+    <div class="section-top">
+      <h3>💡 건의사항 <span class="count-badge" id="suggestCount"></span></h3>
+      <button class="refresh-btn" onclick="loadSuggestions()">🔄 새로고침</button>
+    </div>
+    <div class="filter-bar">
+      <select class="filter-select" id="sgTypeFilter" onchange="renderSuggestions()">
+        <option value="">전체 유형</option>
+        <option value="학급 규칙">📋 학급 규칙</option>
+        <option value="환경 개선">🏫 환경 개선</option>
+        <option value="행사/활동">🎉 행사/활동</option>
+        <option value="선생님께">💬 선생님께</option>
+        <option value="기타">✏️ 기타</option>
+      </select>
+      <select class="filter-select" id="sgReadFilter" onchange="renderSuggestions()">
+        <option value="">전체</option>
+        <option value="unread">읽지 않음</option>
+        <option value="read">읽음</option>
+      </select>
+    </div>
+    <div class="suggest-list" id="suggestList">
+      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
     </div>
   </div>
 
-  <!-- 학생 현황 대시보드 탭 -->
-  <div class="page-content" id="page-dashboard">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>👥 학생 현황</h3>
-      </div>
-      <div class="student-dash-grid" id="studentDashGrid">
-        <!-- JS로 렌더링 -->
-      </div>
-    </div>
-  </div>
-
-  <!-- 학생 비밀번호 관리 탭 -->
-  <div class="page-content" id="page-students">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>🔑 학생 비밀번호 관리</h3>
-        <button class="refresh-btn" onclick="loadStudentPws()">🔄 새로고침</button>
-      </div>
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px">비밀번호를 초기화하면 <strong>1234</strong>로 재설정돼요.</p>
-      <div id="studentPwList"><div class="loading"><div class="spinner"></div></div></div>
-    </div>
-  </div>
-
-  <!-- 상담 시간 관리 탭 -->
+  <!-- 상담 관리 탭 -->
   <div class="page-content" id="page-slots">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>🗓️ 상담 가능 시간 등록</h3>
+    <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:20px">🗓️ 상담 가능 시간 등록</h3>
+    <div class="slot-form-card">
+      <div class="slot-form-row">
+        <div class="slot-form-group"><label>날짜</label><input type="date" id="newSlotDate" class="slot-input" /></div>
+        <div class="slot-form-group"><label>시간</label><input type="time" id="newSlotTime" class="slot-input" /></div>
+        <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
+        <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
       </div>
-      <div class="slot-form-card">
-        <div class="slot-form-row">
-          <div class="slot-form-group">
-            <label>날짜</label>
-            <input type="date" id="newSlotDate" class="slot-input" />
-          </div>
-          <div class="slot-form-group">
-            <label>시간</label>
-            <input type="time" id="newSlotTime" class="slot-input" />
-          </div>
-          <div class="slot-form-group" style="flex:2">
-            <label>메모 (선택)</label>
-            <input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" />
-          </div>
-          <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
-        </div>
-      </div>
-      <div class="section-top" style="margin-top:28px;">
-        <h3>등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
-        <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
-      </div>
-      <div id="slotManageList"><div class="loading"><div class="spinner"></div></div></div>
     </div>
-  </div>
-
-  <!-- 상담 예약 현황 탭 -->
-  <div class="page-content" id="page-counsel">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>💬 상담 예약 현황 <span class="count-badge" id="counselCount"></span></h3>
-        <button class="refresh-btn" onclick="loadCounsel()">🔄 새로고침</button>
-      </div>
-      <div class="filter-bar">
-        <input class="filter-input" type="text" id="csSearch" placeholder="🔍 이름 검색..." oninput="renderCounsel()" />
-        <select class="filter-select" id="csStatusFilter" onchange="renderCounsel()">
-          <option value="">전체</option>
-          <option value="booked">예약됨</option>
-          <option value="empty">빈 슬롯</option>
-        </select>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table" id="counselTable">
-          <thead><tr><th>날짜</th><th>시간</th><th>메모</th><th>예약자</th><th>상담 내용</th><th>관리</th></tr></thead>
-          <tbody id="counselBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></td></tr></tbody>
-        </table>
-      </div>
+    <div class="section-top" style="margin-top:28px;">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
+      <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
+    </div>
+    <div id="slotManageList"><div class="loading"><div class="spinner"></div></div></div>
+    <div class="section-top" style="margin-top:32px;">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">💬 상담 예약 현황 <span class="count-badge" id="counselCount"></span></h3>
+      <button class="refresh-btn" onclick="loadCounsel()">🔄 새로고침</button>
+    </div>
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="csSearch" placeholder="🔍 이름 검색..." oninput="renderCounsel()" />
+      <select class="filter-select" id="csStatusFilter" onchange="renderCounsel()">
+        <option value="">전체</option>
+        <option value="booked">예약됨</option>
+        <option value="empty">빈 슬롯</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>날짜</th><th>시간</th><th>메모</th><th>예약자</th><th>상담 내용</th><th>관리</th></tr></thead>
+        <tbody id="counselBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+      </table>
     </div>
   </div>
 
   <!-- 통계 탭 -->
   <div class="page-content" id="page-stats">
-    <div class="wrap">
-      <div class="section-top">
-        <h3>📊 우리반 현황</h3>
-        <button class="refresh-btn" onclick="loadStats()">🔄 새로고침</button>
-      </div>
-      <div class="stat-grid" id="statGrid">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-      <h3 style="font-size:1rem; font-weight:700; color:var(--primary); margin-bottom:14px;">😊 기분 분포 (전체)</h3>
-      <div class="mood-bar" id="moodBar" style="background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow);">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
+    <div class="section-top">
+      <h3>📊 우리반 현황</h3>
+      <button class="refresh-btn" onclick="loadStats()">🔄 새로고침</button>
+    </div>
+    <div class="stat-grid" id="statGrid"><div class="loading"><div class="spinner"></div></div></div>
+    <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin:24px 0 14px">💡 건의사항 유형 분포</h3>
+    <div class="mood-bar" id="moodBar" style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);">
+      <div class="loading"><div class="spinner"></div></div>
     </div>
   </div>
 
@@ -414,85 +375,29 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ════════════ 학생 상세 패널 ════════════ -->
-<div class="dash-overlay" id="dashOverlay" onclick="closeDashPanel()"></div>
-<div class="dash-panel" id="dashPanel">
-  <div class="dash-panel-header">
-    <div>
-      <h3 id="dashPanelName">—</h3>
-      <p id="dashPanelNum">—</p>
-    </div>
-    <button class="dash-panel-close" onclick="closeDashPanel()">✕</button>
-  </div>
-  <div class="dash-panel-body">
-
-    <!-- 1인1역 -->
-    <div>
-      <div class="dash-section-title">🙋 1인 1역</div>
-      <div id="dashRoles"></div>
-    </div>
-
-    <!-- 상담 예약 내역 -->
-    <div>
-      <div class="dash-section-title">💬 상담 예약 내역</div>
-      <div id="dashCounsel"></div>
-    </div>
-
-    <!-- 건의사항 -->
-    <div>
-      <div class="dash-section-title">💡 건의사항</div>
-      <div id="dashSuggest"></div>
-    </div>
-
-    <!-- 담임 메모 -->
-    <div>
-      <div class="dash-section-title">📝 담임 메모</div>
-      <textarea class="dash-memo-area" id="dashMemo" placeholder="이 학생에 대한 메모를 자유롭게 기록해두세요..."></textarea>
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="dash-save-btn" onclick="saveDashMemo()">💾 저장</button>
-        <span style="font-size:0.75rem;color:var(--text-muted)" id="dashMemoMeta"></span>
-      </div>
-    </div>
-
-    <!-- 비밀번호 초기화 -->
-    <div>
-      <div class="dash-section-title">🔑 비밀번호</div>
-      <button class="dash-reset-pw-btn" id="dashResetPwBtn" onclick="dashResetPw()">🔄 비밀번호 1234로 초기화</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ════════════ 학생 상세 패널 ════════════ -->
+<!-- ════════════ 학생 상세 패널 (상담 예약 현황용 슬라이드) ════════════ -->
 <div class="student-overlay" id="studentOverlay" onclick="closePanel()"></div>
 <div class="student-panel" id="studentPanel">
   <div class="panel-header">
     <div class="panel-header-info">
       <h3 id="panelName">—</h3>
-      <p id="panelSub">상담 신청 내역 및 설문 이력</p>
+      <p id="panelSub">상담 예약 정보</p>
     </div>
     <button class="panel-close" onclick="closePanel()">✕</button>
   </div>
   <div class="panel-body">
-
-    <!-- 상담 신청 정보 -->
     <div>
-      <div class="panel-section-title">💬 상담 신청 정보</div>
+      <div class="panel-section-title">💬 상담 예약 정보</div>
       <div class="counsel-detail-card" id="panelCounselDetail">—</div>
     </div>
-
-    <!-- 선생님 상담 메모 -->
     <div>
-      <div class="panel-section-title">📝 상담 메모 (선생님 전용)</div>
+      <div class="panel-section-title">📝 상담 메모</div>
       <textarea class="memo-area" id="panelMemo" placeholder="상담 내용, 특이사항, 후속 조치 등을 기록해두세요..."></textarea>
-      <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
         <button class="memo-save-btn" id="memoSaveBtn" onclick="saveMemo()">💾 저장</button>
         <span class="memo-meta" id="memoMeta"></span>
       </div>
     </div>
-
-    <!-- 설문 이력 섹션 제거됨 -->
-
   </div>
 </div>
 
@@ -523,9 +428,8 @@
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainNav').style.display = 'flex';
       document.getElementById('mainContent').classList.add('visible');
+      showTab('dashboard');
       loadSuggestions();
-      renderStudentDashboard();
-      loadStudentPws();
       loadSlots();
       loadCounsel();
       loadStats();
@@ -544,12 +448,23 @@
     document.getElementById('pwInput').value = '';
   }
 
-  // ── 탭 전환 ──
   function showTab(name) {
-    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page-content').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
     document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    document.getElementById('tab-' + name).classList.add('active');
+    const page = document.getElementById('page-' + name);
+    if (name === 'dashboard') {
+      page.style.display = 'flex';
+      page.classList.add('active');
+      renderStudentDashboard();
+    } else {
+      page.style.display = 'block';
+      page.classList.add('active');
+    }
+    const tab = document.getElementById('tab-' + name);
+    if (tab) tab.classList.add('active');
   }
 
   // ── 학생 대시보드 ──
@@ -564,91 +479,105 @@
   }
 
   async function renderStudentDashboard() {
-    const grid = document.getElementById('studentDashGrid');
-    grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+    const sidebar = document.getElementById('studentSidebar');
+    if (!sidebar) return;
     const allRoles = await getRolesAll();
-    grid.innerHTML = STUDENTS.map(s => {
-      const myRoles = allRoles.filter(r => r.student_num === s.num && r.semester === 1);
-      return `<div class="student-dash-card" onclick="openDashPanel('${s.num}','${s.name}')">
-        <div class="sdc-num">${s.num}</div>
-        <div class="sdc-name">${s.name}</div>
-        <div class="sdc-badges">
-          ${myRoles.length ? `<span class="sdc-badge role">🙋 ${myRoles.map(r=>r.role_name).join(' · ')}</span>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+    sidebar.innerHTML = '<div class="sidebar-title">1학년 1반 · 24명</div>' +
+      STUDENTS.map(s => {
+        const myRoles = allRoles.filter(r => r.student_num === s.num && r.semester === 1);
+        const roleText = myRoles.length ? myRoles[0].role_name + (myRoles.length > 1 ? ' 외' : '') : '';
+        const isActive = dashStudent && dashStudent.num === s.num;
+        return `<div class="sidebar-item${isActive ? ' active' : ''}" onclick="openDashPanel('${s.num}','${s.name}')">
+          <div>
+            <div class="si-num">${s.num}</div>
+            <div class="si-name">${s.name}</div>
+            ${roleText ? `<div class="si-role">${roleText}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
   }
 
   async function openDashPanel(num, name) {
     dashStudent = { num, name };
-    document.getElementById('dashPanelName').textContent = name;
-    document.getElementById('dashPanelNum').textContent = num;
-    document.getElementById('dashOverlay').classList.add('open');
-    document.getElementById('dashPanel').classList.add('open');
-    document.body.style.overflow = 'hidden';
 
-    // 1인1역 (DB)
+    // 사이드바 active 업데이트
+    document.querySelectorAll('.sidebar-item').forEach(el => {
+      el.classList.toggle('active', el.querySelector('.si-num')?.textContent === num);
+    });
+
+    const content = document.getElementById('dashContent');
+    content.innerHTML = `
+      <div style="padding:28px 32px 60px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:1.4rem;font-weight:900;color:var(--primary)">${name}</div>
+            <div style="font-size:0.85rem;color:var(--text-muted)">${num}</div>
+          </div>
+          <button class="dash-reset-pw-btn" onclick="dashResetPw()">🔄 비밀번호 초기화</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div style="grid-column:1/-1">
+            <div class="dash-section-title">🙋 1인 1역</div>
+            <div id="dashRoles"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+          <div>
+            <div class="dash-section-title">💬 상담 예약 내역</div>
+            <div id="dashCounsel"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+          <div>
+            <div class="dash-section-title">💡 건의사항</div>
+            <div id="dashSuggest"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+          <div style="grid-column:1/-1">
+            <div class="dash-section-title">📝 담임 메모</div>
+            <textarea class="dash-memo-area" id="dashMemo" placeholder="이 학생에 대한 메모를 기록해두세요..."></textarea>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+              <button class="dash-save-btn" onclick="saveDashMemo()">💾 저장</button>
+              <span style="font-size:0.75rem;color:var(--text-muted)" id="dashMemoMeta"></span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    const dayNames = ['일','월','화','수','목','금','토'];
     const allRoles = await getRolesAll();
     const myRoles = allRoles.filter(r => r.student_num === num);
-    const rolesEl = document.getElementById('dashRoles');
-    if (!myRoles.length) {
-      rolesEl.innerHTML = '<div class="dash-empty">없음</div>';
-    } else {
-      rolesEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px">` +
-        myRoles.map(r => `<div class="dash-role-chip">
-          <span class="chip-icon">${r.icon || '🙋'}</span>
-          <span class="chip-name">${r.role_name}</span>
-          <span class="chip-sem">${r.semester}학기</span>
-        </div>`).join('') + `</div>`;
-    }
 
-    // 상담 예약
-    const counselEl = document.getElementById('dashCounsel');
-    counselEl.innerHTML = '<div class="dash-empty">불러오는 중...</div>';
+    document.getElementById('dashRoles').innerHTML = myRoles.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:6px">` + myRoles.map(r =>
+          `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--primary-pale);border:1.5px solid var(--border);border-radius:12px;padding:7px 14px;font-size:0.88rem">
+            ${r.icon||'🙋'} <strong style="color:var(--primary)">${r.role_name}</strong>
+            <span style="font-size:0.72rem;color:var(--text-muted)">${r.semester}학기</span>
+          </span>`).join('') + `</div>`
+      : '<div class="dash-empty">없음</div>';
+
     const { data: slots } = await sb.from('counsel_slots').select('*').eq('booked_by', name).order('slot_date');
-    if (!slots || !slots.length) {
-      counselEl.innerHTML = '<div class="dash-empty">상담 예약 내역 없음</div>';
-    } else {
-      const dayNames = ['일','월','화','수','목','금','토'];
-      counselEl.innerHTML = slots.map(s => {
-        const d = new Date(s.slot_date + 'T00:00:00');
-        const dateLabel = `${d.getMonth()+1}/${d.getDate()}(${dayNames[d.getDay()]})`;
-        return `<div class="dash-counsel-item">
-          <div class="dci-top"><span class="dci-date">${dateLabel}</span><span class="dci-time">🕐 ${s.slot_time.slice(0,5)}</span>${s.label?`<span style="font-size:0.78rem;color:var(--text-muted)">${s.label}</span>`:''}</div>
-          ${s.booked_content ? `<div class="dci-content">${s.booked_content}</div>` : ''}
-        </div>`;
-      }).join('');
-    }
+    document.getElementById('dashCounsel').innerHTML = (!slots||!slots.length) ? '<div class="dash-empty">없음</div>'
+      : slots.map(s => {
+          const d = new Date(s.slot_date+'T00:00:00');
+          return `<div class="dash-counsel-item">
+            <div class="dci-top">
+              <span class="dci-date">${d.getMonth()+1}/${d.getDate()}(${dayNames[d.getDay()]})</span>
+              <span class="dci-time">🕐 ${s.slot_time.slice(0,5)}</span>
+              ${s.label?`<span style="font-size:0.78rem;color:var(--text-muted)">${s.label}</span>`:''}
+            </div>
+            ${s.booked_content?`<div class="dci-content">${s.booked_content}</div>`:''}
+          </div>`;
+        }).join('');
 
-    // 건의사항
-    const suggestEl = document.getElementById('dashSuggest');
-    suggestEl.innerHTML = '<div class="dash-empty">불러오는 중...</div>';
-    const { data: sgs } = await sb.from('suggestions').select('*').eq('student_num', num).order('created_at', { ascending: false });
-    if (!sgs || !sgs.length) {
-      suggestEl.innerHTML = '<div class="dash-empty">건의사항 없음</div>';
-    } else {
-      suggestEl.innerHTML = sgs.map(s => `
-        <div class="dash-suggest-item">
-          <div class="dsi-top"><span class="dsi-type">${s.type}</span><span class="dsi-date">${s.created_at ? s.created_at.slice(0,10) : ''}</span></div>
-          <div class="dsi-content">${s.content}</div>
-        </div>`).join('');
-    }
+    const { data: sgs } = await sb.from('suggestions').select('*').eq('student_num', num).order('created_at',{ascending:false});
+    document.getElementById('dashSuggest').innerHTML = (!sgs||!sgs.length) ? '<div class="dash-empty">없음</div>'
+      : sgs.map(s => `
+          <div class="dash-suggest-item">
+            <div class="dsi-top"><span class="dsi-type">${s.type}</span><span class="dsi-date">${s.created_at?s.created_at.slice(0,10):''}</span></div>
+            <div class="dsi-content">${s.content}</div>
+          </div>`).join('');
 
-    // 담임 메모 (학생별)
-    document.getElementById('dashMemo').value = '';
-    document.getElementById('dashMemoMeta').textContent = '';
     const { data: memo } = await sb.from('student_memos').select('*').eq('student_num', num).maybeSingle();
     if (memo) {
       document.getElementById('dashMemo').value = memo.memo || '';
       document.getElementById('dashMemoMeta').textContent = memo.updated_at ? `저장: ${memo.updated_at.slice(0,16).replace('T',' ')}` : '';
     }
-  }
-
-  function closeDashPanel() {
-    document.getElementById('dashOverlay').classList.remove('open');
-    document.getElementById('dashPanel').classList.remove('open');
-    document.body.style.overflow = '';
-    dashStudent = null;
   }
 
   async function saveDashMemo() {
@@ -661,9 +590,9 @@
       { onConflict: 'student_num' }
     );
     btn.disabled = false; btn.textContent = '💾 저장';
-    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    if (error) { showToast('❗ 저장 실패'); return; }
     document.getElementById('dashMemoMeta').textContent = `저장: ${new Date().toISOString().slice(0,16).replace('T',' ')}`;
-    showToast('✅ 메모가 저장됐어요');
+    showToast('✅ 메모 저장됨');
   }
 
   async function dashResetPw() {
@@ -673,7 +602,7 @@
       { student_num: dashStudent.num, name: dashStudent.name, password: '1234' },
       { onConflict: 'student_num' }
     );
-    if (error) { showToast('❗ 실패: ' + error.message); return; }
+    if (error) { showToast('❗ 실패'); return; }
     showToast(`✅ ${dashStudent.name} 비밀번호 초기화됨`);
   }
 
