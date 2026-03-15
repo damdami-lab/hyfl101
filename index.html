@@ -414,7 +414,7 @@
     <button onclick="showPage('photos')" id="nav-photos">📷 사진</button>
     <button onclick="showPage('survey')" id="nav-survey">📣 건의사항</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
-    <button onclick="showPage('notice')" id="nav-notice">📢 공지</button>
+    <button onclick="showPage('notice')" id="nav-notice">📋 게시판</button>
   </div>
   <button class="hamburger" onclick="toggleNav()">☰</button>
 </nav>
@@ -441,7 +441,7 @@
       <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
       <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📣</div><div class="name">건의사항</div><div class="desc">선생님께 의견 전달하기</div></div>
       <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
-      <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📢</div><div class="name">공지사항</div><div class="desc">중요 공지 모아보기</div></div>
+      <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📋</div><div class="name">게시판</div><div class="desc">자유롭게 글 올리기</div></div>
     </div>
   </div>
   <div class="section" style="padding-top:0">
@@ -541,46 +541,51 @@
 </div>
 
 <!-- 상담 예약 모달 -->
-<div class="modal-overlay" id="bookingOverlay" style="display:none" onclick="closeBookingModal()"></div>
-<div class="modal" id="bookingModal" style="display:none">
-  <div class="modal-header">
-    <h3 id="bookingModalTitle">💬 상담 예약</h3>
-    <button class="modal-close" onclick="closeBookingModal()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="booking-slot-info" id="bookingSlotInfo"></div>
-    <div class="form-group">
-      <label>학번 또는 이름</label>
-      <div class="student-search-wrap">
-        <input class="student-search-input" type="text" id="bkStudentSearch"
-          placeholder="예: 10101 또는 홍길동"
-          oninput="searchStudents('bk')" autocomplete="off" />
-        <div class="student-dropdown" id="bkStudentDropdown"></div>
+<div class="modal-overlay" id="bookingOverlay" style="display:none" onclick="closeBookingModal()">
+  <div class="modal" id="bookingModal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>💬 상담 예약</h3>
+      <button class="modal-close" onclick="closeBookingModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="booking-slot-info" id="bookingSlotInfo"></div>
+      <div class="form-group">
+        <label>학번 또는 이름</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="bkStudentSearch"
+            placeholder="예: 10101 또는 홍길동"
+            oninput="searchStudents('bk')" autocomplete="off" />
+          <div class="student-dropdown" id="bkStudentDropdown"></div>
+        </div>
+        <div id="bkSelectedBadge" style="display:none; margin-top:8px"></div>
       </div>
-      <div id="bkSelectedBadge" style="display:none; margin-top:8px"></div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input class="auth-pw-input" type="password" id="bkPwInput"
+          placeholder="초기 비밀번호: 1234"
+          style="width:100%"
+          onkeydown="if(event.key==='Enter') submitBooking()" />
+      </div>
+      <div class="form-group">
+        <label>상담 내용 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+        <textarea id="bkContent"
+          placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요."
+          style="min-height:80px"></textarea>
+      </div>
+      <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
     </div>
-    <div class="form-group">
-      <label>비밀번호</label>
-      <input class="auth-pw-input" type="password" id="bkPwInput"
-        placeholder="초기 비밀번호: 1234"
-        style="width:100%"
-        onkeydown="if(event.key==='Enter') submitBooking()" />
-    </div>
-    <div class="form-group">
-      <label>상담 내용 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
-      <textarea id="bkContent"
-        placeholder="미리 알려주실 내용이 있으면 적어주세요. 선생님께만 보여요."
-        style="min-height:80px"></textarea>
-    </div>
-    <button class="submit-btn" id="bkSubmitBtn" onclick="submitBooking()">📨 예약하기</button>
   </div>
 </div>
 
 <!-- ════════════ NOTICE ════════════ -->
+<!-- ════════════ 게시판 ════════════ -->
 <div class="page" id="page-notice">
-  <div class="page-header"><h2>📢 공지사항</h2><p>중요한 안내사항을 확인하세요</p></div>
+  <div class="page-header"><h2>📋 게시판</h2><p>우리반 누구나 자유롭게 글을 올릴 수 있어요</p></div>
   <div class="notice-wrap">
-    <div class="notice-top"><h3>전체 공지</h3><button class="add-btn" onclick="openNoticeModal()">+ 공지 작성</button></div>
+    <div class="notice-top">
+      <h3>전체 글</h3>
+      <button class="add-btn" onclick="openNoticeModal()">✏️ 글 쓰기</button>
+    </div>
     <div class="notice-list" id="noticeList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>
   </div>
 </div>
@@ -733,16 +738,39 @@
   </div>
 </div>
 
+<!-- 게시판 글쓰기 -->
 <!-- 공지 -->
-<div class="modal-overlay" id="noticeModal">
-  <div class="modal">
-    <h3>📢 공지 작성</h3>
-    <div class="form-group"><label>제목</label><input type="text" id="ntTitle" placeholder="공지 제목을 입력하세요" /></div>
-    <div class="form-group"><label>내용</label><textarea id="ntBody" placeholder="공지 내용을 입력하세요" style="min-height:100px"></textarea></div>
-    <div class="form-group"><label>작성자</label><input type="text" id="ntAuthor" placeholder="담임선생님" /></div>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeModal('noticeModal')">취소</button>
-      <button class="modal-save" id="ntSaveBtn" onclick="saveNotice()">등록</button>
+<div class="modal-overlay" id="noticeModal" style="display:none" onclick="closeNoticeModal()">
+  <div class="modal" id="noticeModalBox" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📢 공지 작성</h3>
+      <button class="modal-close" onclick="closeNoticeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>학번 또는 이름</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="ntStudentSearch"
+            placeholder="예: 10101 또는 홍길동"
+            oninput="searchStudents('nt')" autocomplete="off" />
+          <div class="student-dropdown" id="ntStudentDropdown"></div>
+        </div>
+        <div id="ntSelectedBadge" style="display:none; margin-top:8px"></div>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input class="auth-pw-input" type="password" id="ntPwInput"
+          placeholder="초기 비밀번호: 1234" style="width:100%" />
+      </div>
+      <div class="form-group">
+        <label>제목</label>
+        <input type="text" id="ntTitle" placeholder="공지 제목을 입력하세요" />
+      </div>
+      <div class="form-group">
+        <label>내용</label>
+        <textarea id="ntBody" placeholder="공지 내용을 입력하세요" style="min-height:100px"></textarea>
+      </div>
+      <button class="submit-btn" id="ntSaveBtn" onclick="saveNotice()">📢 등록하기</button>
     </div>
   </div>
 </div>
@@ -1079,15 +1107,11 @@
     document.getElementById('bkPwInput').value = '';
     document.getElementById('bkContent').value = '';
     selectedStudentTemp['bk'] = null;
-    document.getElementById('bookingOverlay').style.display = 'block';
-    document.getElementById('bookingModal').style.display = 'block';
-    document.getElementById('bookingModal').classList.add('open');
+    document.getElementById('bookingOverlay').style.display = 'flex';
   }
 
   function closeBookingModal() {
     document.getElementById('bookingOverlay').style.display = 'none';
-    document.getElementById('bookingModal').style.display = 'none';
-    document.getElementById('bookingModal').classList.remove('open');
     currentSlotId = null;
   }
 
@@ -1126,45 +1150,50 @@
   }
 
 
-  // ════════════ NOTICES ════════════
+  // ════════════ 게시판 ════════════
   async function loadNotices() {
     const list = document.getElementById('noticeList');
     list.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
     const { data, error } = await sb.from('notices').select('*')
-      .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
-    if (error) { list.innerHTML = '<div class="no-events">❗ 공지를 불러오지 못했어요</div>'; return; }
-    if (!data || !data.length) { list.innerHTML = '<div class="no-events">📭 등록된 공지가 없어요</div>'; return; }
+    if (error) { list.innerHTML = '<div class="no-events">❗ 글을 불러오지 못했어요</div>'; return; }
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>아직 글이 없어요.<br/>첫 번째 글을 올려봐요!</p></div>'; return;
+    }
     list.innerHTML = data.map(n => `
-      <div class="notice-item ${n.pinned ? 'pinned' : ''}" onclick="this.classList.toggle('open')">
-        <div class="notice-top-row">
-          ${n.pinned ? '<span class="notice-pin">📌 고정</span>' : ''}
-          ${n.is_new ? '<span class="notice-new">NEW</span>' : ''}
-        </div>
+      <div class="notice-item" onclick="this.classList.toggle('open')">
         <div class="notice-title">${n.title}</div>
-        <div class="notice-meta">${n.author} · ${n.created_at ? n.created_at.slice(0,10) : ''}</div>
+        <div class="notice-meta">${n.author || '익명'} · ${n.created_at ? n.created_at.slice(0,10) : ''}</div>
         <div class="notice-body">${n.body}</div>
       </div>`).join('');
   }
 
-  function openNoticeModal() { openModal('noticeModal'); }
-
-  async function saveNotice() {
-    const title = document.getElementById('ntTitle').value.trim();
-    const body = document.getElementById('ntBody').value.trim();
-    const author = document.getElementById('ntAuthor').value.trim() || '담임선생님';
-    if (!title || !body) { showToast('❗ 제목과 내용을 입력해주세요'); return; }
-    const btn = document.getElementById('ntSaveBtn');
-    btn.disabled = true; btn.textContent = '등록 중...';
-    const { error } = await sb.from('notices').insert([{ title, body, author, pinned: false, is_new: true }]);
-    btn.disabled = false; btn.textContent = '등록';
-    if (error) { showToast('❗ 등록 실패: ' + error.message); return; }
+  function openNoticeModal() {
+    if (document.getElementById('ntAuthor')) document.getElementById('ntAuthor').value = '';
     document.getElementById('ntTitle').value = '';
     document.getElementById('ntBody').value = '';
-    document.getElementById('ntAuthor').value = '';
-    closeModal('noticeModal');
+    document.getElementById('noticeModal').style.display = 'block';
+    document.getElementById('noticeModalBox').style.display = 'block';
+  }
+
+  function closeNoticeModal() {
+    document.getElementById('noticeModal').style.display = 'none';
+    document.getElementById('noticeModalBox').style.display = 'none';
+  }
+
+  async function saveNotice() {
+    const author = document.getElementById('ntAuthor').value.trim() || '익명';
+    const title = document.getElementById('ntTitle').value.trim();
+    const body = document.getElementById('ntBody').value.trim();
+    if (!title || !body) { showToast('❗ 제목과 내용을 입력해주세요'); return; }
+    const btn = document.getElementById('ntSaveBtn');
+    btn.disabled = true; btn.textContent = '올리는 중...';
+    const { error } = await sb.from('notices').insert([{ title, body, author, pinned: false, is_new: true }]);
+    btn.disabled = false; btn.textContent = '📋 올리기';
+    if (error) { showToast('❗ 등록 실패: ' + error.message); return; }
+    closeNoticeModal();
     await loadNotices();
-    showToast('📢 공지가 등록됐어요!');
+    showToast('📋 글이 올라갔어요!');
   }
 
   // ════════════ 1인1역 ════════════
@@ -1332,8 +1361,8 @@
   ];
 
   // prefix: 'sg' (건의사항) | 'bk' (상담예약)
-  let authedStudent = { sg: null, bk: null }; // { num, name }
-  let selectedStudentTemp = { sg: null, bk: null };
+  let authedStudent = { sg: null, bk: null };
+  let selectedStudentTemp = { sg: null, bk: null, nt: null };
 
   function searchStudents(prefix) {
     const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
