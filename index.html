@@ -183,6 +183,15 @@
     .meeting-chevron { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); transition: transform 0.2s; }
     .meeting-item.open .meeting-chevron { transform: rotate(180deg); }
 
+    /* ── 자율활동 선생님 공지 배너 ── */
+    .act-teacher-notice { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; }
+    .act-teacher-notice .atn-label { font-size: 0.72rem; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+    .act-teacher-notice .atn-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .act-teacher-notice .atn-content { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 8px; white-space: pre-wrap; }
+    .act-teacher-notice .atn-files { display: flex; flex-wrap: wrap; gap: 6px; }
+    .act-teacher-notice .atn-file { display: inline-flex; align-items: center; gap: 5px; background: white; border: 1.5px solid #fcd34d; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 700; color: #92400e; text-decoration: none; }
+    .act-teacher-notice .atn-file:hover { background: #fef3c7; }
+
     /* ── 자율활동 소주제 탭 ── */
     .act-subtab-row { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
     .act-subtab { background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; padding: 10px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
@@ -1511,6 +1520,10 @@
   async function loadCmRecords() {
     const el = document.getElementById('cmList');
     el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+
+    // 선생님 공지 로드
+    await loadActNoticeBanner('change', 'cmNotice');
+
     let query = sb.from('cm_records').select('*').order('date', { ascending: false });
     if (currentCmGroup > 0) query = query.eq('group_num', currentCmGroup);
     const { data, error } = await query;
@@ -1527,6 +1540,31 @@
         <div class="cm-date">📅 ${r.date || ''}</div>
         ${r.content ? `<div class="cm-content">${r.content}</div>` : ''}
         ${imgs.length ? `<div class="cm-imgs">${imgs.map(u=>`<img src="${u}" onclick="openGradeImgLightbox('${u}')" />`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  async function loadActNoticeBanner(type, containerId) {
+    // 컨테이너가 없으면 삽입
+    let container = document.getElementById(containerId);
+    if (!container) {
+      const panel = document.getElementById('actPanel-' + (type === 'change' ? 'change' : 'journal'));
+      container = document.createElement('div');
+      container.id = containerId;
+      panel.insertBefore(container, panel.firstChild);
+    }
+    const { data } = await sb.from('activity_notices').select('*')
+      .eq('activity_type', type).order('created_at', { ascending: false });
+    const list = data || [];
+    if (!list.length) { container.innerHTML = ''; return; }
+    container.innerHTML = list.map(n => {
+      const files = n.file_urls ? JSON.parse(n.file_urls) : [];
+      return `<div class="act-teacher-notice">
+        <div class="atn-label">📢 선생님 공지</div>
+        <div class="atn-title">${n.title}</div>
+        ${n.content ? `<div class="atn-content">${n.content}</div>` : ''}
+        ${files.length ? `<div class="atn-files">${files.map(f =>
+          `<a href="${f.url}" target="_blank" class="atn-file">📎 ${f.name}</a>`).join('')}</div>` : ''}
       </div>`;
     }).join('');
   }
@@ -1604,6 +1642,10 @@
   async function loadJournalRecords() {
     const el = document.getElementById('journalList');
     el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+
+    // 선생님 공지 로드
+    await loadActNoticeBanner('journal', 'journalNotice');
+
     const { data, error } = await sb.from('journal_records').select('*').order('date', { ascending: false });
     if (error || !data || !data.length) {
       el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📰</div><p>아직 저널 기록이 없어요!<br/>+ 기록 추가 버튼으로 남겨봐요</p></div>'; return;
