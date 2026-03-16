@@ -183,6 +183,35 @@
     .meeting-chevron { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); transition: transform 0.2s; }
     .meeting-item.open .meeting-chevron { transform: rotate(180deg); }
 
+    /* ── 자율활동 소주제 탭 ── */
+    .act-subtab-row { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+    .act-subtab { background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; padding: 10px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .act-subtab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .act-group-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .act-group-btn { background: var(--bg); border: 1.5px solid var(--border); border-radius: 20px; padding: 6px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .act-group-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+    .act-group-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .cm-group-select { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .cm-gs-btn { border: 2px solid var(--border); border-radius: 12px; padding: 8px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--text-muted); background: var(--bg); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    .cm-gs-btn.selected { border-color: var(--primary); background: var(--primary-pale); color: var(--primary); }
+    .cm-gs-members { font-size: 0.68rem; font-weight: 400; color: var(--text-muted); line-height: 1.4; white-space: normal; text-align: left; }
+    .cm-gs-btn.selected .cm-gs-members { color: var(--primary); }
+    .cm-img-upload { border: 2px dashed var(--border); border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; color: var(--text-muted); font-size: 0.88rem; transition: all 0.2s; }
+    .cm-img-upload:hover { border-color: var(--primary-light); background: var(--primary-pale); }
+    .cm-preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1.5px solid var(--border); }
+    /* 체인지 메이커 카드 */
+    .cm-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); position: relative; transition: all 0.2s; }
+    .cm-card:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+    .cm-card .cm-group-badge { display: inline-block; background: var(--primary); color: white; border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }
+    .cm-card .cm-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .cm-card .cm-date { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+    .cm-card .cm-content { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+    .cm-card .cm-imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .cm-card .cm-imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1.5px solid var(--border); transition: transform 0.2s; }
+    .cm-card .cm-imgs img:hover { transform: scale(1.05); }
+    .cm-del { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 0.8rem; color: var(--text-muted); opacity: 0.5; }
+    .cm-del:hover { opacity: 1; color: #e63946; }
+
     /* ── 자율활동 ── */
     .activity-wrap { max-width: 900px; margin: 0 auto; padding: 28px 24px 60px; }
     .activity-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -524,12 +553,107 @@
 <div class="page" id="page-activity">
   <div class="page-header"><h2>🌱 학급 자율활동</h2><p>우리반의 다양한 활동을 기록해요</p></div>
   <div class="activity-wrap">
-    <div class="activity-top">
-      <h3>활동 기록</h3>
-      <button class="add-btn" onclick="openActivityModal()">+ 활동 등록</button>
+
+    <!-- 소주제 탭 -->
+    <div class="act-subtab-row">
+      <button class="act-subtab active" id="asubtab-change" onclick="switchActTab('change')">🔥 체인지 메이커</button>
+      <button class="act-subtab" id="asubtab-journal" onclick="switchActTab('journal')">📰 클래스 저널</button>
+      <button class="act-subtab" id="asubtab-general" onclick="switchActTab('general')">🌱 기타 활동</button>
     </div>
-    <div class="activity-grid" id="activityList">
-      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+
+    <!-- 체인지 메이커 -->
+    <div id="actPanel-change">
+      <div class="act-group-row" id="cmGroupRow">
+        <button class="act-group-btn active" onclick="selectCmGroup(this,0)">전체</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,1)">1조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,2)">2조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,3)">3조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,4)">4조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,5)">5조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,6)">6조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,7)">7조</button>
+        <button class="add-btn" style="margin-left:auto" onclick="openCmModal()">+ 기록 추가</button>
+      </div>
+      <div class="activity-grid" id="cmList">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 클래스 저널 -->
+    <div id="actPanel-journal" style="display:none">
+      <div class="activity-top">
+        <h3>클래스 저널 제작</h3>
+        <button class="add-btn" onclick="openJournalModal()">+ 기록 추가</button>
+      </div>
+      <div class="activity-grid" id="journalList">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 기타 활동 -->
+    <div id="actPanel-general" style="display:none">
+      <div class="activity-top">
+        <h3>활동 기록</h3>
+        <button class="add-btn" onclick="openActivityModal()">+ 활동 등록</button>
+      </div>
+      <div class="activity-grid" id="activityList">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 체인지 메이커 작성 모달 -->
+<div class="modal-overlay" id="cmModal" onclick="if(event.target===this)closeCmModal()">
+  <div class="modal" style="max-width:540px" onclick="event.stopPropagation()">
+    <div class="modal-header"><h3>🔥 체인지 메이커 기록</h3><button class="modal-close" onclick="closeCmModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>조 선택</label>
+        <div class="cm-group-select" id="cmGroupSelect">
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,1)">1조<span class="cm-gs-members">곽승민 백세영 이연우 조시현</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,2)">2조<span class="cm-gs-members">김효정 염서윤 주여원 허은</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,3)">3조<span class="cm-gs-members">김나후 양연우 이율리</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,4)">4조<span class="cm-gs-members">구민기 이규준 이재후</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,5)">5조<span class="cm-gs-members">김나경 이예은 정예현</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,6)">6조<span class="cm-gs-members">심연경 이나율 한윤화</span></button>
+          <button class="cm-gs-btn" onclick="selectCmModalGroup(this,7)">7조<span class="cm-gs-members">김연우 이선준 최주은</span></button>
+        </div>
+      </div>
+      <div class="form-group"><label>제목</label><input type="text" id="cmTitle" placeholder="활동 제목을 입력해주세요" /></div>
+      <div class="form-group"><label>날짜</label><input type="date" id="cmDate" /></div>
+      <div class="form-group"><label>내용</label><textarea id="cmContent" placeholder="활동 내용을 자유롭게 기록해요" style="min-height:100px"></textarea></div>
+      <div class="form-group">
+        <label>사진 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+        <div class="cm-img-upload" onclick="document.getElementById('cmImgInput').click()">
+          <span>📷 사진 추가</span>
+        </div>
+        <input type="file" id="cmImgInput" accept="image/*" multiple style="display:none" onchange="previewCmImages(this.files)" />
+        <div id="cmImgPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+      </div>
+      <button class="submit-btn" id="cmSaveBtn" onclick="saveCmRecord()">📝 저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 클래스 저널 작성 모달 -->
+<div class="modal-overlay" id="journalModal" onclick="if(event.target===this)closeJournalModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header"><h3>📰 클래스 저널 기록</h3><button class="modal-close" onclick="closeJournalModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>제목</label><input type="text" id="jlTitle" placeholder="저널 제목을 입력해주세요" /></div>
+      <div class="form-group"><label>날짜</label><input type="date" id="jlDate" /></div>
+      <div class="form-group"><label>내용</label><textarea id="jlContent" placeholder="저널 내용을 자유롭게 기록해요" style="min-height:100px"></textarea></div>
+      <div class="form-group">
+        <label>사진 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+        <div class="cm-img-upload" onclick="document.getElementById('jlImgInput').click()">
+          <span>📷 사진 추가</span>
+        </div>
+        <input type="file" id="jlImgInput" accept="image/*" multiple style="display:none" onchange="previewJlImages(this.files)" />
+        <div id="jlImgPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+      </div>
+      <button class="submit-btn" id="jlSaveBtn" onclick="saveJournalRecord()">📝 저장하기</button>
     </div>
   </div>
 </div>
@@ -777,6 +901,10 @@
         <label>내용</label>
         <textarea id="ntBody" placeholder="공지 내용을 입력하세요" style="min-height:100px"></textarea>
       </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="ntPinned" style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary)" />
+        <label for="ntPinned" style="cursor:pointer;font-size:0.9rem;margin:0">📌 상단 고정 (중요 공지)</label>
+      </div>
       <button class="submit-btn" id="ntSaveBtn" onclick="saveNotice()">📢 등록하기</button>
     </div>
   </div>
@@ -866,7 +994,7 @@
     notice: loadNotices,
     roles: loadRoles,
     meeting: loadMeetings,
-    activity: loadActivities,
+    activity: loadActivityPage,
     photos: loadPhotos,
     survey: initSurvey,
     counseling: loadCounseling,
@@ -1162,15 +1290,22 @@
     const list = document.getElementById('noticeList');
     list.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
     const { data, error } = await sb.from('notices').select('*')
+      .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
     if (error) { list.innerHTML = '<div class="no-events">❗ 글을 불러오지 못했어요</div>'; return; }
     if (!data || !data.length) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>아직 글이 없어요.<br/>첫 번째 글을 올려봐요!</p></div>'; return;
     }
     list.innerHTML = data.map(n => `
-      <div class="notice-item" onclick="this.classList.toggle('open')">
+      <div class="notice-item ${n.pinned ? 'pinned' : ''}" onclick="this.classList.toggle('open')">
+        <div class="notice-top-row">
+          ${n.pinned ? '<span class="notice-pin">📌 고정</span>' : ''}
+          ${n.is_new ? '<span class="notice-new">NEW</span>' : ''}
+        </div>
         <div class="notice-title">${n.title}</div>
-        <div class="notice-meta">${n.author || '익명'} · ${n.created_at ? n.created_at.slice(0,10) : ''}</div>
+        <div class="notice-meta">${n.author || '익명'} · ${n.created_at ? n.created_at.slice(0,10) : ''}
+          <button onclick="deleteNotice(${n.id}, event)" style="margin-left:10px;background:none;border:none;color:var(--text-muted);font-size:0.78rem;cursor:pointer;opacity:0.6" title="삭제">🗑️ 삭제</button>
+        </div>
         <div class="notice-body">${n.body}</div>
       </div>`).join('');
   }
@@ -1183,6 +1318,7 @@
     if (document.getElementById('ntPwInput')) document.getElementById('ntPwInput').value = '';
     document.getElementById('ntTitle').value = '';
     document.getElementById('ntBody').value = '';
+    document.getElementById('ntPinned').checked = false;
     document.getElementById('noticeModal').style.display = 'flex';
   }
 
@@ -1198,6 +1334,7 @@
     const title = document.getElementById('ntTitle').value.trim();
     const body = document.getElementById('ntBody').value.trim();
     if (!title || !body) { showToast('❗ 제목과 내용을 입력해주세요'); return; }
+    const pinned = document.getElementById('ntPinned').checked;
 
     const btn = document.getElementById('ntSaveBtn');
     btn.disabled = true; btn.textContent = '확인 중...';
@@ -1215,13 +1352,22 @@
 
     btn.textContent = '등록 중...';
     const { error: insertErr } = await sb.from('notices').insert([{
-      title, body, author: student.name, pinned: false, is_new: true
+      title, body, author: student.name, pinned, is_new: true
     }]);
     btn.disabled = false; btn.textContent = '📢 등록하기';
     if (insertErr) { showToast('❗ 등록 실패: ' + insertErr.message); return; }
     closeNoticeModal();
     await loadNotices();
-    showToast('📢 공지가 등록됐어요!');
+    showToast(pinned ? '📌 고정 공지가 등록됐어요!' : '📢 공지가 등록됐어요!');
+  }
+
+  async function deleteNotice(id, e) {
+    e.stopPropagation();
+    if (!confirm('이 글을 삭제할까요?')) return;
+    const { error } = await sb.from('notices').delete().eq('id', id);
+    if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
+    showToast('🗑️ 삭제됐어요');
+    await loadNotices();
   }
 
   // ════════════ 1인1역 ════════════
@@ -1344,8 +1490,206 @@
   // ════════════ 자율활동 ════════════
   const ACT_EMOJIS = { '봉사':'🤝', '문화행사':'🎉', '체험활동':'🌿', '학급행사':'🏫', '기타':'✨' };
 
+  // ════════════ 자율활동 ════════════
+  let currentActTab = 'change';
+  let currentCmGroup = 0; // 0=전체
+  let cmImgFiles = [];
+  let jlImgFiles = [];
+
+  function loadActivityPage() {
+    switchActTab('change');
+  }
+
+  function switchActTab(tab) {
+    currentActTab = tab;
+    ['change','journal','general'].forEach(t => {
+      document.getElementById('asubtab-' + t)?.classList.toggle('active', t === tab);
+      document.getElementById('actPanel-' + t).style.display = t === tab ? 'block' : 'none';
+    });
+    if (tab === 'change') loadCmRecords();
+    else if (tab === 'journal') loadJournalRecords();
+    else loadActivities();
+  }
+
+  // ── 체인지 메이커 ──
+  function selectCmGroup(btn, group) {
+    document.querySelectorAll('.act-group-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCmGroup = group;
+    loadCmRecords();
+  }
+
+  async function loadCmRecords() {
+    const el = document.getElementById('cmList');
+    el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+    let query = sb.from('cm_records').select('*').order('date', { ascending: false });
+    if (currentCmGroup > 0) query = query.eq('group_num', currentCmGroup);
+    const { data, error } = await query;
+    if (error) { el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">❗</div><p>불러오지 못했어요</p></div>'; return; }
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔥</div><p>아직 기록이 없어요!<br/>+ 기록 추가 버튼으로 남겨봐요</p></div>'; return;
+    }
+    el.innerHTML = data.map(r => {
+      const imgs = r.image_urls ? JSON.parse(r.image_urls) : [];
+      return `<div class="cm-card">
+        <button class="cm-del" onclick="deleteCmRecord(${r.id},event)">✕</button>
+        <span class="cm-group-badge">${r.group_num}조</span>
+        <div class="cm-title">${r.title}</div>
+        <div class="cm-date">📅 ${r.date || ''}</div>
+        ${r.content ? `<div class="cm-content">${r.content}</div>` : ''}
+        ${imgs.length ? `<div class="cm-imgs">${imgs.map(u=>`<img src="${u}" onclick="openGradeImgLightbox('${u}')" />`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  let selectedCmGroup = 0;
+  function openCmModal() {
+    selectedCmGroup = 0;
+    document.querySelectorAll('.cm-gs-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('cmTitle').value = '';
+    document.getElementById('cmDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('cmContent').value = '';
+    document.getElementById('cmImgPreview').innerHTML = '';
+    cmImgFiles = [];
+    document.getElementById('cmModal').classList.add('open');
+  }
+  function closeCmModal() { document.getElementById('cmModal').classList.remove('open'); }
+
+  function selectCmModalGroup(btn, g) {
+    document.querySelectorAll('.cm-gs-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCmGroup = g;
+  }
+
+  function previewCmImages(files) {
+    cmImgFiles = [...cmImgFiles, ...Array.from(files)];
+    renderCmPreview();
+  }
+  function renderCmPreview() {
+    document.getElementById('cmImgPreview').innerHTML = cmImgFiles.map((f,i) =>
+      `<div style="position:relative">
+        <img class="cm-preview-img" src="${URL.createObjectURL(f)}" />
+        <button onclick="removeCmImg(${i})" style="position:absolute;top:-6px;right:-6px;background:#e63946;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>`).join('');
+  }
+  function removeCmImg(i) { cmImgFiles.splice(i,1); renderCmPreview(); }
+
+  async function saveCmRecord() {
+    if (!selectedCmGroup) { showToast('❗ 조를 선택해주세요'); return; }
+    const title = document.getElementById('cmTitle').value.trim();
+    if (!title) { showToast('❗ 제목을 입력해주세요'); return; }
+    const btn = document.getElementById('cmSaveBtn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+
+    // 이미지 업로드
+    const urls = [];
+    for (const file of cmImgFiles) {
+      const fname = `cm/${selectedCmGroup}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+      const { data: up } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
+      if (up) urls.push(sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl);
+    }
+
+    const { error } = await sb.from('cm_records').insert([{
+      group_num: selectedCmGroup,
+      title,
+      date: document.getElementById('cmDate').value,
+      content: document.getElementById('cmContent').value.trim() || null,
+      image_urls: urls.length ? JSON.stringify(urls) : null
+    }]);
+    btn.disabled = false; btn.textContent = '📝 저장하기';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    closeCmModal();
+    showToast('🔥 기록이 추가됐어요!');
+    await loadCmRecords();
+  }
+
+  async function deleteCmRecord(id, e) {
+    e.stopPropagation();
+    if (!confirm('이 기록을 삭제할까요?')) return;
+    await sb.from('cm_records').delete().eq('id', id);
+    showToast('🗑️ 삭제됐어요');
+    await loadCmRecords();
+  }
+
+  // ── 클래스 저널 ──
+  async function loadJournalRecords() {
+    const el = document.getElementById('journalList');
+    el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+    const { data, error } = await sb.from('journal_records').select('*').order('date', { ascending: false });
+    if (error || !data || !data.length) {
+      el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📰</div><p>아직 저널 기록이 없어요!<br/>+ 기록 추가 버튼으로 남겨봐요</p></div>'; return;
+    }
+    el.innerHTML = data.map(r => {
+      const imgs = r.image_urls ? JSON.parse(r.image_urls) : [];
+      return `<div class="cm-card">
+        <button class="cm-del" onclick="deleteJournalRecord(${r.id},event)">✕</button>
+        <div class="cm-title">${r.title}</div>
+        <div class="cm-date">📅 ${r.date || ''}</div>
+        ${r.content ? `<div class="cm-content">${r.content}</div>` : ''}
+        ${imgs.length ? `<div class="cm-imgs">${imgs.map(u=>`<img src="${u}" onclick="openGradeImgLightbox('${u}')" />`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function openJournalModal() {
+    document.getElementById('jlTitle').value = '';
+    document.getElementById('jlDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('jlContent').value = '';
+    document.getElementById('jlImgPreview').innerHTML = '';
+    jlImgFiles = [];
+    document.getElementById('journalModal').classList.add('open');
+  }
+  function closeJournalModal() { document.getElementById('journalModal').classList.remove('open'); }
+
+  function previewJlImages(files) {
+    jlImgFiles = [...jlImgFiles, ...Array.from(files)];
+    document.getElementById('jlImgPreview').innerHTML = jlImgFiles.map((f,i) =>
+      `<div style="position:relative">
+        <img class="cm-preview-img" src="${URL.createObjectURL(f)}" />
+        <button onclick="removeJlImg(${i})" style="position:absolute;top:-6px;right:-6px;background:#e63946;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>`).join('');
+  }
+  function removeJlImg(i) { jlImgFiles.splice(i,1); previewJlImages([]); }
+
+  async function saveJournalRecord() {
+    const title = document.getElementById('jlTitle').value.trim();
+    if (!title) { showToast('❗ 제목을 입력해주세요'); return; }
+    const btn = document.getElementById('jlSaveBtn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+    const urls = [];
+    for (const file of jlImgFiles) {
+      const fname = `journal/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+      const { data: up } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
+      if (up) urls.push(sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl);
+    }
+    const { error } = await sb.from('journal_records').insert([{
+      title, date: document.getElementById('jlDate').value,
+      content: document.getElementById('jlContent').value.trim() || null,
+      image_urls: urls.length ? JSON.stringify(urls) : null
+    }]);
+    btn.disabled = false; btn.textContent = '📝 저장하기';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    closeJournalModal();
+    showToast('📰 저널 기록이 추가됐어요!');
+    await loadJournalRecords();
+  }
+
+  async function deleteJournalRecord(id, e) {
+    e.stopPropagation();
+    if (!confirm('이 기록을 삭제할까요?')) return;
+    await sb.from('journal_records').delete().eq('id', id);
+    showToast('🗑️ 삭제됐어요');
+    await loadJournalRecords();
+  }
+
+  function openGradeImgLightbox(url) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('photoLightbox').classList.add('open');
+  }
+
   async function loadActivities() {
     const container = document.getElementById('activityList');
+    if (!container) return;
     container.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
     const { data, error } = await sb.from('activities').select('*').order('date', { ascending: false });
     if (error) { container.innerHTML = '<div class="no-events">❗ 활동을 불러오지 못했어요</div>'; return; }
