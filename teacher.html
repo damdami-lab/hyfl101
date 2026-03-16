@@ -221,7 +221,26 @@
     .spw-reset-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 5px 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; white-space: nowrap; }
     .spw-reset-btn:hover { background: #fff3e0; border-color: #e76f51; color: #e76f51; }
 
-    /* ── 건의사항 ── */
+    /* ── 자율활동 공지 ── */
+    .act-notice-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); margin-bottom: 10px; position: relative; }
+    .act-notice-item .an-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .act-notice-item .an-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .act-notice-item .an-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .act-notice-item .an-content { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; }
+    .act-notice-item .an-files { display: flex; flex-direction: column; gap: 6px; }
+    .act-notice-item .an-file { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-pale); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .act-notice-item .an-file:hover { background: var(--primary); color: white; }
+    .act-notice-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.82rem; opacity: 0.6; flex-shrink: 0; padding: 2px 6px; }
+    .act-notice-del:hover { opacity: 1; color: #e63946; }
+
+    /* 학생 페이지용 공지 배너 */
+    .act-teacher-notice { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; }
+    .act-teacher-notice .atn-label { font-size: 0.72rem; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+    .act-teacher-notice .atn-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .act-teacher-notice .atn-content { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 8px; white-space: pre-wrap; }
+    .act-teacher-notice .atn-files { display: flex; flex-wrap: wrap; gap: 6px; }
+    .act-teacher-notice .atn-file { display: inline-flex; align-items: center; gap: 5px; background: white; border: 1.5px solid #fcd34d; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 700; color: #92400e; text-decoration: none; }
+    .act-teacher-notice .atn-file:hover { background: #fef3c7; }
     .suggest-list { display: flex; flex-direction: column; gap: 12px; }
     .suggest-item { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); transition: border-color 0.2s; }
     .suggest-item.unread { border-left: 4px solid var(--primary-light); }
@@ -328,6 +347,7 @@
   <div class="nav-right">
     <button class="nav-tab active" id="tab-dashboard" onclick="showTab('dashboard')">👥 학생 현황</button>
     <button class="nav-tab" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
+    <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 공지</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
@@ -420,6 +440,48 @@
       </div>
     </div>
 
+    <!-- 자율활동 공지 탭 -->
+    <div class="page-content" id="page-activity">
+      <div class="page-fullwrap">
+        <div class="section-top">
+          <h3>🌱 자율활동 공지 관리</h3>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:24px">학생 페이지의 각 활동 탭 상단에 공지와 파일이 표시돼요.</p>
+
+        <!-- 활동 선택 탭 -->
+        <div style="display:flex;gap:8px;margin-bottom:24px;border-bottom:2px solid var(--border)">
+          <button class="dtab-btn active" id="actNoticeTab-change" onclick="switchActNoticeTab('change')">🔥 체인지 메이커</button>
+          <button class="dtab-btn" id="actNoticeTab-journal" onclick="switchActNoticeTab('journal')">📰 클래스 저널</button>
+        </div>
+
+        <!-- 공지 작성 폼 -->
+        <div class="slot-form-card" style="margin-bottom:24px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="slot-form-group" style="flex:1">
+              <label>공지 제목</label>
+              <input type="text" id="actNoticeTitle" class="slot-input" placeholder="예: 1차 발표 자료 안내" />
+            </div>
+            <div class="slot-form-group" style="flex:1">
+              <label>내용</label>
+              <textarea id="actNoticeContent" class="slot-input" placeholder="학생들에게 전달할 내용을 입력해주세요" style="min-height:80px;resize:vertical"></textarea>
+            </div>
+            <div class="slot-form-group" style="flex:1">
+              <label>파일 첨부 <span style="font-weight:400;color:var(--text-muted)">(선택 · PDF, 이미지, 문서 등)</span></label>
+              <input type="file" id="actNoticeFile" class="slot-input" style="padding:8px" multiple />
+            </div>
+            <button class="slot-add-btn" style="align-self:flex-start" onclick="saveActNotice()">📢 공지 올리기</button>
+          </div>
+        </div>
+
+        <!-- 등록된 공지 목록 -->
+        <div class="section-top">
+          <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 공지 <span class="count-badge" id="actNoticeCount"></span></h3>
+          <button class="refresh-btn" onclick="loadActNotices()">🔄 새로고침</button>
+        </div>
+        <div id="actNoticeList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
     <!-- 통계 탭 -->
     <div class="page-content" id="page-stats">
       <div class="page-fullwrap">
@@ -501,6 +563,7 @@
       document.getElementById('mainContent').classList.add('visible');
       showTab('dashboard');
       loadSuggestions();
+      loadActNotices();
       loadSlots();
       loadCounsel();
       loadStats();
@@ -1106,6 +1169,85 @@
     if (error) { showToast('❗ 초기화 실패: ' + error.message); return; }
     showToast(`✅ ${name} 비밀번호가 초기화됐어요`);
     await loadStudentPws();
+  }
+
+  // ── 자율활동 공지 ──
+  let currentActNoticeTab = 'change';
+
+  function switchActNoticeTab(tab) {
+    currentActNoticeTab = tab;
+    ['change','journal'].forEach(t => {
+      document.getElementById('actNoticeTab-' + t)?.classList.toggle('active', t === tab);
+    });
+    loadActNotices();
+  }
+
+  async function loadActNotices() {
+    const el = document.getElementById('actNoticeList');
+    if (!el) return;
+    el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    const { data } = await sb.from('activity_notices').select('*')
+      .eq('activity_type', currentActNoticeTab).order('created_at', { ascending: false });
+    const list = data || [];
+    document.getElementById('actNoticeCount').textContent = `(${list.length}개)`;
+    if (!list.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>등록된 공지가 없어요</p></div>'; return;
+    }
+    el.innerHTML = list.map(n => {
+      const files = n.file_urls ? JSON.parse(n.file_urls) : [];
+      return `<div class="act-notice-item">
+        <div class="an-header">
+          <div>
+            <div class="an-title">${n.title}</div>
+            <div class="an-meta">${n.created_at ? n.created_at.slice(0,10) : ''}</div>
+          </div>
+          <button class="act-notice-del" onclick="deleteActNotice(${n.id})">✕ 삭제</button>
+        </div>
+        ${n.content ? `<div class="an-content">${n.content}</div>` : ''}
+        ${files.length ? `<div class="an-files">${files.map(f =>
+          `<a href="${f.url}" target="_blank" class="an-file">📎 ${f.name}</a>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  async function saveActNotice() {
+    const title = document.getElementById('actNoticeTitle').value.trim();
+    if (!title) { showToast('❗ 제목을 입력해주세요'); return; }
+    const content = document.getElementById('actNoticeContent').value.trim();
+    const fileInput = document.getElementById('actNoticeFile');
+    const btn = document.querySelector('#page-activity .slot-add-btn');
+    btn.disabled = true; btn.textContent = '올리는 중...';
+
+    // 파일 업로드
+    const fileUrls = [];
+    for (const file of fileInput.files) {
+      const fname = `notices/${currentActNoticeTab}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+      const { data: up, error: upErr } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
+      if (!upErr) {
+        const url = sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl;
+        fileUrls.push({ name: file.name, url });
+      }
+    }
+
+    const { error } = await sb.from('activity_notices').insert([{
+      activity_type: currentActNoticeTab,
+      title, content: content || null,
+      file_urls: fileUrls.length ? JSON.stringify(fileUrls) : null
+    }]);
+    btn.disabled = false; btn.textContent = '📢 공지 올리기';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    document.getElementById('actNoticeTitle').value = '';
+    document.getElementById('actNoticeContent').value = '';
+    fileInput.value = '';
+    showToast('✅ 공지가 등록됐어요!');
+    await loadActNotices();
+  }
+
+  async function deleteActNotice(id) {
+    if (!confirm('이 공지를 삭제할까요?')) return;
+    await sb.from('activity_notices').delete().eq('id', id);
+    showToast('🗑️ 삭제됐어요');
+    await loadActNotices();
   }
 
   // ── 건의사항 ──
