@@ -188,9 +188,11 @@
     .act-subtab { background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; padding: 10px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
     .act-subtab.active { color: var(--primary); border-bottom-color: var(--primary); }
     .act-group-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .act-group-btn { background: var(--bg); border: 1.5px solid var(--border); border-radius: 20px; padding: 6px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .act-group-btn { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 8px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 3px; }
     .act-group-btn:hover { border-color: var(--primary-light); color: var(--primary); }
     .act-group-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .act-group-btn.active .act-group-members { color: rgba(255,255,255,0.8); }
+    .act-group-members { font-size: 0.65rem; font-weight: 400; color: var(--text-muted); white-space: nowrap; }
     .cm-group-select { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .cm-gs-btn { border: 2px solid var(--border); border-radius: 12px; padding: 8px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--text-muted); background: var(--bg); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
     .cm-gs-btn.selected { border-color: var(--primary); background: var(--primary-pale); color: var(--primary); }
@@ -558,20 +560,19 @@
     <div class="act-subtab-row">
       <button class="act-subtab active" id="asubtab-change" onclick="switchActTab('change')">🔥 체인지 메이커</button>
       <button class="act-subtab" id="asubtab-journal" onclick="switchActTab('journal')">📰 클래스 저널</button>
-      <button class="act-subtab" id="asubtab-general" onclick="switchActTab('general')">🌱 기타 활동</button>
     </div>
 
     <!-- 체인지 메이커 -->
     <div id="actPanel-change">
       <div class="act-group-row" id="cmGroupRow">
         <button class="act-group-btn active" onclick="selectCmGroup(this,0)">전체</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,1)">1조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,2)">2조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,3)">3조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,4)">4조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,5)">5조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,6)">6조</button>
-        <button class="act-group-btn" onclick="selectCmGroup(this,7)">7조</button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,1)">1조<span class="act-group-members">곽승민·백세영·이연우·조시현</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,2)">2조<span class="act-group-members">김효정·염서윤·주여원·허은</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,3)">3조<span class="act-group-members">김나후·양연우·이율리</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,4)">4조<span class="act-group-members">구민기·이규준·이재후</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,5)">5조<span class="act-group-members">김나경·이예은·정예현</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,6)">6조<span class="act-group-members">심연경·이나율·한윤화</span></button>
+        <button class="act-group-btn" onclick="selectCmGroup(this,7)">7조<span class="act-group-members">김연우·이선준·최주은</span></button>
         <button class="add-btn" style="margin-left:auto" onclick="openCmModal()">+ 기록 추가</button>
       </div>
       <div class="activity-grid" id="cmList">
@@ -586,17 +587,6 @@
         <button class="add-btn" onclick="openJournalModal()">+ 기록 추가</button>
       </div>
       <div class="activity-grid" id="journalList">
-        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
-      </div>
-    </div>
-
-    <!-- 기타 활동 -->
-    <div id="actPanel-general" style="display:none">
-      <div class="activity-top">
-        <h3>활동 기록</h3>
-        <button class="add-btn" onclick="openActivityModal()">+ 활동 등록</button>
-      </div>
-      <div class="activity-grid" id="activityList">
         <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
       </div>
     </div>
@@ -1502,13 +1492,12 @@
 
   function switchActTab(tab) {
     currentActTab = tab;
-    ['change','journal','general'].forEach(t => {
+    ['change','journal'].forEach(t => {
       document.getElementById('asubtab-' + t)?.classList.toggle('active', t === tab);
       document.getElementById('actPanel-' + t).style.display = t === tab ? 'block' : 'none';
     });
     if (tab === 'change') loadCmRecords();
     else if (tab === 'journal') loadJournalRecords();
-    else loadActivities();
   }
 
   // ── 체인지 메이커 ──
