@@ -182,6 +182,16 @@
     .counsel-note-item .cn-body { font-size: 0.9rem; line-height: 1.7; white-space: pre-wrap; }
     .counsel-note-item .cn-del { position: absolute; top: 12px; right: 14px; background: none; border: none; cursor: pointer; font-size: 0.82rem; color: var(--text-muted); opacity: 0.5; }
     .counsel-note-item .cn-del:hover { opacity: 1; color: #e63946; }
+    .cn-first-badge { display: inline-block; background: var(--primary); color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; margin-bottom: 10px; }
+    .cn-category { margin-bottom: 10px; }
+    .cn-category-label { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+    .cn-category-body { font-size: 0.88rem; line-height: 1.6; color: var(--text); background: var(--bg); border-radius: 8px; padding: 8px 12px; white-space: pre-wrap; }
+    .first-counsel-form { background: var(--card); border: 1.5px solid var(--primary-light); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--shadow); }
+    .first-counsel-form h4 { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .fc-field { margin-bottom: 14px; }
+    .fc-field label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 5px; }
+    .fc-field textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; line-height: 1.6; resize: vertical; min-height: 70px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
+    .fc-field textarea:focus { border-color: var(--primary-light); }
     .note-write-box { background: var(--card); border: 1.5px solid var(--primary-light); border-radius: 14px; padding: 16px 18px; display: none; box-shadow: var(--shadow); margin-bottom: 16px; }
     .note-write-box.open { display: block; }
     .note-write-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 9px 20px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
@@ -617,20 +627,6 @@
 
         <!-- ③ 상담기록 -->
         <div class="dtab-panel" id="tab-counsel">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <span style="font-size:0.88rem;color:var(--text-muted)">상담한 내용을 날짜별로 기록해요</span>
-            <button class="note-write-btn" onclick="toggleNoteBox()" id="noteToggleBtn">✏️ 기록 추가</button>
-          </div>
-          <div class="note-write-box" id="noteWriteBox">
-            <div style="margin-bottom:10px">
-              <input type="date" id="counselNoteDate" class="info-input" style="width:auto;margin-bottom:10px" />
-            </div>
-            <textarea class="dash-memo-area" id="noteInput" placeholder="상담 내용을 자세히 기록해두세요..." style="min-height:120px;margin-bottom:12px"></textarea>
-            <div style="display:flex;gap:10px">
-              <button class="dash-save-btn" onclick="saveNote()">💾 저장</button>
-              <button onclick="toggleNoteBox()" style="background:none;border:1.5px solid var(--border);border-radius:30px;padding:9px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.85rem;cursor:pointer;color:var(--text-muted)">취소</button>
-            </div>
-          </div>
           <div id="noteList"><div class="loading"><div class="spinner"></div></div></div>
         </div>
 
@@ -849,54 +845,146 @@
   }
 
   // ── 상담기록 ──
+  const COUNSEL_CATEGORIES = [
+    { key: 'friends',  label: '👥 친구 관계' },
+    { key: 'family',   label: '🏠 가족 관계' },
+    { key: 'college',  label: '🎓 진학 관련' },
+    { key: 'grades',   label: '📝 성적 관련' },
+    { key: 'academy',  label: '🏫 학원' },
+    { key: 'etc',      label: '✏️ 기타' },
+  ];
+
   async function loadCounselNotes(num) {
     const el = document.getElementById('noteList');
-    const { data } = await sb.from('student_notes').select('*').eq('student_num', num).order('created_at', {ascending:false});
+    const { data } = await sb.from('student_notes').select('*')
+      .eq('student_num', num).order('created_at', { ascending: true });
     const notes = data || [];
-    if (!notes.length) {
-      el.innerHTML = '<div class="dash-empty" style="text-align:center;padding:24px">아직 상담 기록이 없어요<br/>✏️ 버튼으로 첫 기록을 남겨봐요!</div>'; return;
-    }
-    el.innerHTML = notes.map(n => {
-      const dt = new Date(n.created_at);
-      const dateStr = n.counsel_date || `${dt.getFullYear()}.${(dt.getMonth()+1).toString().padStart(2,'0')}.${dt.getDate().toString().padStart(2,'0')}`;
-      return `<div class="counsel-note-item">
-        <div class="cn-date">📅 ${dateStr}</div>
-        <div class="cn-body">${n.content}</div>
-        <button class="cn-del" onclick="deleteNote(${n.id})" title="삭제">✕</button>
+    const isFirst = !notes.length;
+
+    let html = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <span style="font-size:0.88rem;color:var(--text-muted)">
+          ${isFirst ? '첫 상담 기록을 남겨봐요!' : `총 ${notes.length}회 상담 기록`}
+        </span>
+        <button class="note-write-btn" onclick="toggleNoteBox()" id="noteToggleBtn">
+          ✏️ ${isFirst ? '첫 상담 기록' : '상담 추가'}
+        </button>
       </div>`;
-    }).join('');
+
+    // 작성 폼
+    if (isFirst) {
+      html += `
+      <div class="note-write-box first-counsel-form" id="noteWriteBox">
+        <h4>📋 첫 상담 기록 <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">— 항목별로 기록해요</span></h4>
+        <div class="fc-field">
+          <label>📅 상담 날짜</label>
+          <input type="date" id="counselNoteDate" class="info-input" style="width:200px" />
+        </div>
+        ${COUNSEL_CATEGORIES.map(c => `
+        <div class="fc-field">
+          <label>${c.label}</label>
+          <textarea id="fc_${c.key}" placeholder="${c.label.replace(/^.*\s/,'')} 관련 내용 (없으면 비워두세요)"></textarea>
+        </div>`).join('')}
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="dash-save-btn" id="counselSaveBtn" onclick="saveFirstCounsel()">💾 저장</button>
+          <button onclick="toggleNoteBox()" style="background:none;border:1.5px solid var(--border);border-radius:30px;padding:9px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.85rem;cursor:pointer;color:var(--text-muted)">취소</button>
+        </div>
+      </div>`;
+    } else {
+      html += `
+      <div class="note-write-box" id="noteWriteBox">
+        <input type="date" id="counselNoteDate" class="info-input" style="width:200px;margin-bottom:10px" />
+        <textarea class="dash-memo-area" id="noteInput" placeholder="상담 내용을 기록해주세요..." style="min-height:120px;margin-bottom:12px"></textarea>
+        <div style="display:flex;gap:10px">
+          <button class="dash-save-btn" id="counselSaveBtn" onclick="saveNote()">💾 저장</button>
+          <button onclick="toggleNoteBox()" style="background:none;border:1.5px solid var(--border);border-radius:30px;padding:9px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.85rem;cursor:pointer;color:var(--text-muted)">취소</button>
+        </div>
+      </div>`;
+    }
+
+    // 기록 목록
+    if (!notes.length) {
+      html += '<div class="dash-empty" style="text-align:center;padding:24px">아직 상담 기록이 없어요</div>';
+    } else {
+      html += notes.map((n, i) => {
+        const dt = new Date(n.created_at);
+        const dateStr = n.counsel_date || `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+
+        if (n.is_first && n.categories) {
+          let cats;
+          try { cats = JSON.parse(n.categories); } catch { cats = {}; }
+          const catHtml = COUNSEL_CATEGORIES.filter(c => cats[c.key])
+            .map(c => `<div class="cn-category">
+              <div class="cn-category-label">${c.label}</div>
+              <div class="cn-category-body">${cats[c.key]}</div>
+            </div>`).join('');
+          return `<div class="counsel-note-item">
+            <div class="cn-date">📅 ${dateStr} &nbsp;<span class="cn-first-badge">첫 상담</span></div>
+            ${catHtml}
+            ${n.content ? `<div class="cn-category"><div class="cn-category-label">📌 추가 메모</div><div class="cn-category-body">${n.content}</div></div>` : ''}
+            <button class="cn-del" onclick="deleteNote(${n.id})" title="삭제">✕</button>
+          </div>`;
+        }
+        return `<div class="counsel-note-item">
+          <div class="cn-date">📅 ${dateStr} &nbsp;<span style="font-size:0.72rem;color:var(--text-muted)">${i+1}회차</span></div>
+          <div class="cn-body">${n.content}</div>
+          <button class="cn-del" onclick="deleteNote(${n.id})" title="삭제">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    el.innerHTML = html;
   }
 
   function toggleNoteBox() {
     const box = document.getElementById('noteWriteBox');
-    box.classList.toggle('open');
     const btn = document.getElementById('noteToggleBtn');
+    if (!box || !btn) return;
+    box.classList.toggle('open');
     if (box.classList.contains('open')) {
-      const today = new Date().toISOString().slice(0,10);
-      document.getElementById('counselNoteDate').value = today;
-      document.getElementById('noteInput').focus();
+      document.getElementById('counselNoteDate').value = new Date().toISOString().slice(0,10);
       btn.textContent = '✕ 닫기';
     } else {
-      document.getElementById('noteInput').value = '';
-      btn.textContent = '✏️ 기록 추가';
+      btn.textContent = box.querySelector('#fc_friends') ? '✏️ 첫 상담 기록' : '✏️ 상담 추가';
     }
+  }
+
+  async function saveFirstCounsel() {
+    if (!dashStudent) return;
+    const counsel_date = document.getElementById('counselNoteDate').value;
+    const cats = {};
+    COUNSEL_CATEGORIES.forEach(c => {
+      const v = document.getElementById('fc_' + c.key)?.value.trim();
+      if (v) cats[c.key] = v;
+    });
+    if (!Object.keys(cats).length) { showToast('❗ 최소 한 항목 이상 입력해주세요'); return; }
+    const btn = document.getElementById('counselSaveBtn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+    const { error } = await sb.from('student_notes').insert([{
+      student_num: dashStudent.num, student_name: dashStudent.name,
+      content: '', categories: JSON.stringify(cats),
+      is_first: true, counsel_date: counsel_date || null
+    }]);
+    btn.disabled = false; btn.textContent = '💾 저장';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    showToast('✅ 첫 상담 기록이 저장됐어요');
+    await loadCounselNotes(dashStudent.num);
   }
 
   async function saveNote() {
     if (!dashStudent) return;
-    const content = document.getElementById('noteInput').value.trim();
+    const content = document.getElementById('noteInput')?.value.trim();
     if (!content) { showToast('❗ 내용을 입력해주세요'); return; }
     const counsel_date = document.getElementById('counselNoteDate').value;
-    const btn = document.querySelector('.dash-save-btn');
+    const btn = document.getElementById('counselSaveBtn');
     btn.disabled = true; btn.textContent = '저장 중...';
     const { error } = await sb.from('student_notes').insert([{
       student_num: dashStudent.num, student_name: dashStudent.name,
-      content, counsel_date: counsel_date || null
+      content, counsel_date: counsel_date || null, is_first: false
     }]);
     btn.disabled = false; btn.textContent = '💾 저장';
     if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
     showToast('✅ 저장됐어요');
-    toggleNoteBox();
     await loadCounselNotes(dashStudent.num);
   }
 
