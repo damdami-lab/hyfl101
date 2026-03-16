@@ -656,6 +656,9 @@
             <button class="note-write-btn" onclick="toggleObserveBox()" id="observeToggleBtn">✏️ 기록 추가</button>
           </div>
           <div class="note-write-box" id="observeWriteBox">
+            <input type="text" class="info-input" id="observeTitleInput"
+              placeholder="제목 (예: 3월 수업 태도, 친구 관계 변화 등)"
+              style="margin-bottom:10px" />
             <textarea class="dash-memo-area" id="observeInput"
               placeholder="오늘 수업 태도, 교우 관계, 변화된 점, 특이사항 등 자유롭게 기록해주세요..."
               style="min-height:120px;margin-bottom:12px"></textarea>
@@ -692,9 +695,10 @@
     const btn = document.getElementById('observeToggleBtn');
     box.classList.toggle('open');
     if (box.classList.contains('open')) {
-      document.getElementById('observeInput').focus();
+      document.getElementById('observeTitleInput').focus();
       btn.textContent = '✕ 닫기';
     } else {
+      document.getElementById('observeTitleInput').value = '';
       document.getElementById('observeInput').value = '';
       btn.textContent = '✏️ 기록 추가';
     }
@@ -715,6 +719,7 @@
       const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
       return `<div class="counsel-note-item">
         <div class="cn-date">🔍 ${dateStr}</div>
+        ${r.title ? `<div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:6px">${r.title}</div>` : ''}
         <div class="cn-body">${r.content}</div>
         <button class="cn-del" onclick="deleteObserve(${r.id})" title="삭제">✕</button>
       </div>`;
@@ -723,6 +728,7 @@
 
   async function saveObserve() {
     if (!dashStudent) return;
+    const title = document.getElementById('observeTitleInput').value.trim();
     const content = document.getElementById('observeInput').value.trim();
     if (!content) { showToast('❗ 내용을 입력해주세요'); return; }
     const btn = document.querySelector('#observeWriteBox .dash-save-btn');
@@ -730,6 +736,7 @@
     const { error } = await sb.from('student_observations').insert([{
       student_num: dashStudent.num,
       student_name: dashStudent.name,
+      title: title || null,
       content
     }]);
     btn.disabled = false; btn.textContent = '💾 저장';
