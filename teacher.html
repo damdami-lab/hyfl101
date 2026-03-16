@@ -582,6 +582,7 @@
         <button class="dtab-btn" onclick="switchDtab(this,'tab-grade')">📊 학업사항</button>
         <button class="dtab-btn" onclick="switchDtab(this,'tab-counsel')">💬 상담기록</button>
         <button class="dtab-btn" onclick="switchDtab(this,'tab-record')">📋 생활기록부</button>
+        <button class="dtab-btn" onclick="switchDtab(this,'tab-observe')">🔍 관찰 기록</button>
       </div>
 
       <div style="padding:24px 32px">
@@ -648,6 +649,24 @@
           <div id="savedDraftBox" style="margin-top:20px"></div>
         </div>
 
+        <!-- ⑤ 관찰 기록 -->
+        <div class="dtab-panel" id="tab-observe">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <span style="font-size:0.88rem;color:var(--text-muted)">학생을 관찰한 내용을 자유롭게 기록해요. 시간순으로 쌓여요.</span>
+            <button class="note-write-btn" onclick="toggleObserveBox()" id="observeToggleBtn">✏️ 기록 추가</button>
+          </div>
+          <div class="note-write-box" id="observeWriteBox">
+            <textarea class="dash-memo-area" id="observeInput"
+              placeholder="오늘 수업 태도, 교우 관계, 변화된 점, 특이사항 등 자유롭게 기록해주세요..."
+              style="min-height:120px;margin-bottom:12px"></textarea>
+            <div style="display:flex;gap:10px">
+              <button class="dash-save-btn" onclick="saveObserve()">💾 저장</button>
+              <button onclick="toggleObserveBox()" style="background:none;border:1.5px solid var(--border);border-radius:30px;padding:9px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.85rem;cursor:pointer;color:var(--text-muted)">취소</button>
+            </div>
+          </div>
+          <div id="observeList"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+
       </div>
     </div>`;
 
@@ -657,6 +676,7 @@
     loadCounselNotes(num);
     loadGradeImages(num);
     loadActivityRecords(num, name);
+    loadObserveRecords(num);
   }
 
   function switchDtab(btn, tabId) {
@@ -664,6 +684,66 @@
     btn.classList.add('active');
     document.querySelectorAll('.dtab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
+  }
+
+  // ── 관찰 기록 ──
+  function toggleObserveBox() {
+    const box = document.getElementById('observeWriteBox');
+    const btn = document.getElementById('observeToggleBtn');
+    box.classList.toggle('open');
+    if (box.classList.contains('open')) {
+      document.getElementById('observeInput').focus();
+      btn.textContent = '✕ 닫기';
+    } else {
+      document.getElementById('observeInput').value = '';
+      btn.textContent = '✏️ 기록 추가';
+    }
+  }
+
+  async function loadObserveRecords(num) {
+    const el = document.getElementById('observeList');
+    if (!el) return;
+    const { data } = await sb.from('student_observations')
+      .select('*').eq('student_num', num).order('created_at', { ascending: false });
+    const records = data || [];
+    if (!records.length) {
+      el.innerHTML = '<div class="dash-empty" style="text-align:center;padding:32px">아직 관찰 기록이 없어요.<br/>✏️ 버튼으로 첫 기록을 남겨봐요!</div>';
+      return;
+    }
+    el.innerHTML = records.map(r => {
+      const dt = new Date(r.created_at);
+      const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      return `<div class="counsel-note-item">
+        <div class="cn-date">🔍 ${dateStr}</div>
+        <div class="cn-body">${r.content}</div>
+        <button class="cn-del" onclick="deleteObserve(${r.id})" title="삭제">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function saveObserve() {
+    if (!dashStudent) return;
+    const content = document.getElementById('observeInput').value.trim();
+    if (!content) { showToast('❗ 내용을 입력해주세요'); return; }
+    const btn = document.querySelector('#observeWriteBox .dash-save-btn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+    const { error } = await sb.from('student_observations').insert([{
+      student_num: dashStudent.num,
+      student_name: dashStudent.name,
+      content
+    }]);
+    btn.disabled = false; btn.textContent = '💾 저장';
+    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+    showToast('✅ 관찰 기록이 저장됐어요');
+    toggleObserveBox();
+    await loadObserveRecords(dashStudent.num);
+  }
+
+  async function deleteObserve(id) {
+    if (!confirm('이 기록을 삭제할까요?')) return;
+    await sb.from('student_observations').delete().eq('id', id);
+    showToast('🗑️ 삭제됐어요');
+    await loadObserveRecords(dashStudent.num);
   }
 
   // ── 기본사항 ──
