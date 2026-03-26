@@ -507,19 +507,258 @@
     .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary-light); border-radius: 3px; transition: width 0.3s; width: 0%; }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      nav { padding: 0 16px; }
+    /* ══════════════════════════════════════════════════════════════
+       📱 RESPONSIVE - 모바일 최적화
+       ══════════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      /* 네비게이션 */
+      nav { padding: 0 16px; height: 56px; }
+      .nav-logo { font-size: 1.1rem; }
       .nav-links { display: none; }
-      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: white; border-bottom: 1.5px solid var(--border); padding: 12px; gap: 2px; }
-      .hamburger { display: block; }
-      .hero { padding: 60px 20px 40px; }
-      .dday-strip { padding: 20px 16px; gap: 10px; }
-      .dday-card { min-width: 110px; padding: 14px 16px; }
-      .section, .counsel-wrap, .notice-wrap, .calendar-wrap, .upcoming,
-      .roles-wrap, .meeting-wrap, .activity-wrap { padding-left: 16px; padding-right: 16px; }
-      .roles-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-      .activity-grid { grid-template-columns: 1fr; }
+      .nav-links.open { 
+        display: flex; flex-direction: column; 
+        position: absolute; top: 56px; left: 0; right: 0; 
+        background: white; border-bottom: 1.5px solid var(--border); 
+        padding: 12px 16px; gap: 4px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      }
+      .nav-links button { padding: 12px 16px; font-size: 0.95rem; text-align: left; border-radius: 10px; }
+      .hamburger { display: block; font-size: 1.3rem; }
+
+      /* 페이지 전체 */
+      .page { padding-top: 56px; }
+
+      /* 히어로 */
+      .hero { padding: 40px 20px 32px; }
+      .hero-badge { font-size: 0.72rem; padding: 5px 14px; margin-bottom: 14px; }
+      .hero h1 { font-size: 1.7rem; margin-bottom: 8px; }
+      .hero p { font-size: 0.88rem; margin-bottom: 20px; }
+      .hero-motto { padding: 12px 20px; font-size: 1rem; border-radius: 10px; }
+      .hero-motto small { font-size: 0.68rem; }
+
+      /* D-DAY */
+      .dday-strip { padding: 16px 12px; gap: 8px; }
+      .dday-card { min-width: 95px; padding: 12px 10px; flex: 1; border-radius: 12px; }
+      .dday-card .emoji { font-size: 1.3rem; margin-bottom: 4px; }
+      .dday-card .label { font-size: 0.68rem; }
+      .dday-card .days { font-size: 1.4rem; }
+      .dday-card .date { font-size: 0.65rem; }
+
+      /* 섹션 공통 */
+      .section { padding: 24px 16px 36px; }
+      .section-title { font-size: 1rem; margin-bottom: 14px; }
+      .counsel-wrap, .notice-wrap, .calendar-wrap,
+      .roles-wrap, .meeting-wrap, .activity-wrap, .survey-wrap, .photos-wrap { 
+        padding: 20px 16px 40px; 
+      }
+
+      /* 빠른 이동 그리드 */
+      .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .quick-btn { padding: 18px 12px; border-radius: 14px; }
+      .quick-btn .icon { font-size: 1.5rem; margin-bottom: 8px; }
+      .quick-btn .name { font-size: 0.82rem; }
+      .quick-btn .desc { font-size: 0.68rem; }
+
+      /* 오늘 체크 */
+      .today-card { padding: 18px; }
+      .checklist li { padding: 8px 0; font-size: 0.88rem; }
+
+      /* 페이지 헤더 */
+      .page-header { padding: 32px 20px 24px; }
+      .page-header h2 { font-size: 1.4rem; }
+      .page-header p { font-size: 0.82rem; }
+
+      /* 탭/필터 버튼 */
+      .tab-row { gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; flex-wrap: nowrap; }
+      .tab-btn { padding: 6px 12px; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; }
+      .add-btn { padding: 8px 14px; font-size: 0.78rem; flex-shrink: 0; }
+      .notice-filter-row { gap: 6px; }
+
+      /* 달력 */
+      .calendar-wrap { padding: 16px 12px 36px; }
+      .cal-header { margin-bottom: 12px; }
+      .cal-header h3 { font-size: 0.95rem; }
+      .cal-nav { width: 30px; height: 30px; font-size: 0.85rem; }
+      .cal-grid { gap: 2px; }
+      .cal-day-label { font-size: 0.65rem; padding: 4px 0; }
+      .cal-cell { height: 52px; padding: 3px 2px; border-radius: 6px; }
+      .cal-date { font-size: 0.68rem; line-height: 16px; }
+      .cal-cell.today .cal-date { width: 18px; height: 18px; font-size: 0.65rem; }
+      .cal-event-chip { font-size: 0.5rem; padding: 1px 2px; line-height: 1.3; border-radius: 2px; }
+
+      /* 날짜 상세 */
+      .day-detail-wrap { padding: 0 12px 30px; }
+      .day-detail-header { padding: 12px 16px; font-size: 0.9rem; }
+      .day-detail-list { padding: 10px 12px; gap: 6px; }
+      .day-detail-item { padding: 8px 10px; gap: 8px; flex-wrap: wrap; }
+      .day-detail-item .det-title { font-size: 0.82rem; }
+      .day-detail-item .det-tag { font-size: 0.65rem; padding: 2px 6px; }
+      .day-detail-item .det-note { font-size: 0.72rem; width: 100%; }
+
+      /* 1인1역 */
+      .roles-semester-tab { max-width: 100%; }
+      .sem-tab { padding: 8px; font-size: 0.85rem; }
+      .roles-table { font-size: 0.8rem; display: block; overflow-x: auto; }
+      .roles-table thead th { padding: 10px 12px; font-size: 0.75rem; white-space: nowrap; }
+      .roles-table td { padding: 10px 12px; }
+      .td-role { gap: 6px; font-size: 0.8rem; }
+      .td-role .role-emoji { font-size: 1rem; }
+      .td-person-name { font-size: 0.82rem; }
+      .td-person-num { font-size: 0.68rem; }
+      .td-desc { font-size: 0.72rem; min-width: 120px; }
+
+      /* 학급회의 */
+      .meeting-top { flex-direction: column; align-items: stretch; gap: 12px; }
+      .meeting-top .add-btn { margin-left: 0; }
+      .meeting-item { padding: 16px; }
+      .meeting-header-row { flex-wrap: wrap; gap: 8px; }
+      .meeting-num { font-size: 0.68rem; padding: 3px 8px; }
+      .meeting-title { font-size: 0.88rem; width: 100%; order: 1; }
+      .meeting-date { font-size: 0.72rem; order: 2; }
+      .meeting-chevron { order: 0; }
+      .meeting-section-title { font-size: 0.75rem; }
+      .meeting-section-body { font-size: 0.8rem; }
+
+      /* 자율활동 */
+      .act-subtab-row { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0; }
+      .act-subtab { padding: 8px 14px; font-size: 0.82rem; white-space: nowrap; }
+      .act-group-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; flex-wrap: nowrap; }
+      .act-group-btn { padding: 6px 10px; font-size: 0.75rem; flex-shrink: 0; }
+      .act-group-members { font-size: 0.55rem; }
+      .activity-grid { grid-template-columns: 1fr; gap: 12px; }
+      .cm-card { padding: 16px; }
+      .cm-card .cm-group-badge { font-size: 0.72rem; padding: 2px 10px; }
+      .cm-card .cm-title { font-size: 0.9rem; }
+      .cm-card .cm-date { font-size: 0.72rem; }
+      .cm-card .cm-content { font-size: 0.78rem; }
+      .cm-card .cm-imgs img { width: 56px; height: 56px; }
+      .act-teacher-notice { padding: 14px 16px; }
+      .act-teacher-notice .atn-title { font-size: 0.88rem; }
+      .act-teacher-notice .atn-content { font-size: 0.8rem; }
+
+      /* 게시판 */
+      .board-item { padding: 14px 16px; }
+      .board-item-title { font-size: 0.88rem; }
+      .board-item-preview { font-size: 0.78rem; -webkit-line-clamp: 2; }
+      .board-item-meta { font-size: 0.68rem; gap: 8px; }
+      .board-pin-badge, .board-cat-badge { font-size: 0.68rem; }
+
+      /* 게시판 상세 패널 */
+      .board-detail-panel { max-width: 100%; }
+      .board-detail-header { padding: 12px 16px; }
+      .board-detail-body { padding: 16px; }
+      .board-detail-title { font-size: 1.05rem; }
+      .board-detail-meta { font-size: 0.75rem; }
+      .board-detail-content { font-size: 0.85rem; line-height: 1.7; }
+      .board-detail-imgs { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .board-detail-del-btn { font-size: 0.72rem; padding: 5px 12px; }
+      .board-comment-section { padding: 16px; }
+      .board-comment-title { font-size: 0.85rem; }
+      .board-comment-author { font-size: 0.78rem; }
+      .board-comment-body { font-size: 0.82rem; }
+      .board-comment-input-row { flex-direction: column; gap: 10px; }
+      .board-comment-input-row > div { width: 100%; }
+      .board-comment-submit { width: 100%; padding: 12px; }
+
+      /* 모달 공통 */
+      .modal-overlay { padding: 16px; }
+      .modal { padding: 24px 20px; max-height: 85vh; overflow-y: auto; border-radius: 16px; }
+      .modal h3 { font-size: 1rem; margin-bottom: 16px; }
+      .form-group { margin-bottom: 14px; }
+      .form-group label { font-size: 0.82rem; margin-bottom: 5px; }
+      .form-group input, .form-group select, .form-group textarea { 
+        padding: 10px 12px; font-size: 0.88rem; border-radius: 8px;
+      }
+      .modal-btns { flex-direction: column; gap: 8px; margin-top: 20px; }
+      .modal-cancel, .modal-save { padding: 14px; flex: none; }
+
+      /* 글쓰기 모달 */
+      .board-write-overlay { padding: 12px; }
+      .board-write-modal { max-height: 90vh; border-radius: 16px; }
+      .board-write-head { padding: 14px 16px; }
+      .board-write-head h3 { font-size: 0.95rem; }
+      .board-write-body { padding: 16px; gap: 12px; }
+      .cm-group-select { gap: 6px; }
+      .cm-gs-btn { padding: 6px 10px; font-size: 0.78rem; }
+      .cm-gs-members { font-size: 0.6rem; }
+      .board-img-preview-item img { width: 64px; height: 64px; }
+
+      /* 상담 */
+      .slot-info-box { padding: 12px 14px; flex-direction: column; gap: 8px; }
+      .slot-info-box p { font-size: 0.8rem; }
+      .slot-cards { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .slot-card { padding: 12px 14px; border-radius: 10px; }
+      .slot-card .slot-time { font-size: 0.92rem; }
+      .slot-card .slot-label { font-size: 0.7rem; }
+      .slot-available-tag, .slot-booked-tag { font-size: 0.68rem; }
+      .booking-slot-info { font-size: 0.85rem; padding: 10px 14px; }
+
+      /* 건의사항 */
+      .auth-card { padding: 24px 18px; }
+      .auth-card h3 { font-size: 0.95rem; }
+      .auth-card .auth-desc { font-size: 0.8rem; margin-bottom: 18px; }
+      .student-search-input { padding: 10px 14px; font-size: 0.88rem; }
+      .auth-pw-row { flex-direction: column; gap: 8px; }
+      .auth-pw-input { width: 100%; padding: 10px 14px; }
+      .auth-confirm-btn { width: 100%; padding: 12px; }
+      .auth-logged-in { padding: 12px 14px; flex-direction: column; align-items: stretch; gap: 12px; }
+      .auth-logged-in-info { text-align: center; }
+      .auth-logged-in > div { align-items: center; }
+      .suggest-type-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .suggest-type-btn { padding: 10px 6px; font-size: 0.75rem; }
+      .survey-card { padding: 24px 18px; }
+      .survey-card h3 { font-size: 1rem; }
+      .survey-card .survey-desc { font-size: 0.82rem; margin-bottom: 18px; }
+      .submit-btn { padding: 14px; font-size: 0.95rem; }
+
+      /* 사진 보관함 */
+      .photo-upload-area { padding: 28px 16px; border-radius: 14px; }
+      .photo-upload-area .upload-icon { font-size: 2rem; }
+      .photo-upload-area p { font-size: 0.82rem; }
+      .photo-upload-area small { font-size: 0.72rem; }
+      .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .photo-card { border-radius: 10px; }
+
+      /* 관리자 */
+      .admin-lock-card { padding: 28px 20px; }
+      .admin-lock-icon { font-size: 2.5rem; }
+      .admin-lock-card h3 { font-size: 1.1rem; }
+      .admin-lock-card p { font-size: 0.82rem; }
+      .admin-pw-input { padding: 12px 14px; font-size: 0.95rem; }
+      .admin-panel { padding: 20px 12px 40px; }
+      .admin-top { flex-direction: column; align-items: stretch; gap: 10px; }
+      .counsel-table { display: block; overflow-x: auto; }
+      .counsel-table th, .counsel-table td { padding: 10px 12px; font-size: 0.78rem; white-space: nowrap; }
+      .counsel-table .content-cell { max-width: 120px; font-size: 0.72rem; }
+
+      /* 토스트 */
+      .toast { font-size: 0.82rem; padding: 10px 20px; bottom: 20px; }
+    }
+
+    /* 더 작은 화면 (아이폰 SE, 갤럭시 폴드 등) */
+    @media (max-width: 380px) {
+      .hero h1 { font-size: 1.5rem; }
+      .hero-motto { font-size: 0.9rem; padding: 10px 16px; }
+
+      .dday-strip { flex-direction: row; flex-wrap: wrap; }
+      .dday-card { min-width: calc(50% - 4px); }
+
+      .quick-grid { gap: 8px; }
+      .quick-btn { padding: 14px 10px; }
+      .quick-btn .icon { font-size: 1.3rem; }
+      .quick-btn .name { font-size: 0.78rem; }
+
+      .cal-cell { height: 44px; }
+      .cal-event-chip { display: none; }
+      .cal-date { font-size: 0.65rem; }
+
+      .slot-cards { grid-template-columns: 1fr; }
+
+      .photo-grid { grid-template-columns: 1fr; }
+
+      .suggest-type-grid { grid-template-columns: 1fr; }
+
+      .board-detail-imgs { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1188,13 +1427,11 @@
       grid.appendChild(cell);
     }
 
-    // 선택된 날짜 패널 유지
     if (selectedDate) renderDayDetail(selectedDate);
   }
 
   function selectDay(dateStr, d) {
     if (selectedDate === dateStr) {
-      // 같은 날 다시 클릭하면 닫기
       selectedDate = null;
       closeDayDetail();
       renderCalendar();
@@ -1287,7 +1524,6 @@
       list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
       return;
     }
-    // 날짜별 그룹핑
     const groups = {};
     data.forEach(s => {
       const key = s.slot_date;
@@ -1325,7 +1561,6 @@
     const dayNames = ['일','월','화','수','목','금','토'];
     const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${time.slice(0,5)}`;
     document.getElementById('bookingSlotInfo').textContent = `🕐 ${dateStr}${label ? ' · ' + label : ''}`;
-    // 초기화
     document.getElementById('bkStudentSearch').value = '';
     document.getElementById('bkStudentDropdown').classList.remove('open');
     document.getElementById('bkSelectedBadge').style.display = 'none';
@@ -1349,7 +1584,6 @@
     const btn = document.getElementById('bkSubmitBtn');
     btn.disabled = true; btn.textContent = '확인 중...';
 
-    // 비밀번호 검증
     const { data, error } = await sb.from('students')
       .select('password').eq('student_num', student.num).maybeSingle();
     if (error || !data) { btn.disabled = false; btn.textContent = '📨 예약하기'; showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
@@ -1361,7 +1595,6 @@
       showToast('❗ 비밀번호가 틀렸어요'); return;
     }
 
-    // 예약
     btn.textContent = '예약 중...';
     const { error: bookErr } = await sb.from('counsel_slots').update({
       booked_by: student.name,
@@ -1376,6 +1609,9 @@
 
 
   // ════════════ 게시판 ════════════
+  let currentBoardPost = null;
+  let bwImgFiles = [];
+
   async function loadBoard() {
     const el = document.getElementById('boardList');
     el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
@@ -1422,7 +1658,7 @@
     currentBoardPost = post;
     const imgs = post.image_urls ? JSON.parse(post.image_urls) : [];
     document.getElementById('boardDetailBody').innerHTML = `
-      <div class="board-detail-cat"><span class="board-cat-badge ${post.category}">${post.category}</span>${post.pinned ? ' <span class="board-pin-badge">📌 고정</span>' : ''}</div>
+      <div class="board-detail-cat"><span class="board-cat-badge ${post.category}">${post.category || ''}</span>${post.pinned ? ' <span class="board-pin-badge">📌 고정</span>' : ''}</div>
       <div class="board-detail-title">${post.title}</div>
       <div class="board-detail-meta">
         <span>${post.author || '익명'}</span>
@@ -1537,12 +1773,6 @@
     bwImgFiles = [];
   }
 
-  function selectBoardCat(btn, cat) {
-    document.querySelectorAll('.board-cat-opt').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedBoardCat = cat;
-  }
-
   function previewBoardImages(files) {
     bwImgFiles = [...bwImgFiles, ...Array.from(files)];
     renderBwPreview();
@@ -1626,7 +1856,6 @@
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">❗</div><p>역할을 불러오지 못했어요</p></div>';
         return;
       }
-      // role_name 기준 그룹핑
       const grouped = {};
       (data || []).forEach(r => {
         if (!grouped[r.role_name]) grouped[r.role_name] = { icon: r.icon, name: r.role_name, desc: r.description, persons: [] };
@@ -1642,6 +1871,7 @@
     }
 
     container.innerHTML = `
+      <div style="overflow-x:auto">
       <table class="roles-table">
         <thead>
           <tr>
@@ -1664,7 +1894,8 @@
               <td class="td-desc">${r.desc || '—'}</td>
             </tr>`).join('')}
         </tbody>
-      </table>`;
+      </table>
+      </div>`;
   }
 
   // ════════════ 학급회의 ════════════
@@ -1720,16 +1951,12 @@
 
   // ════════════ 자율활동 ════════════
   const ACT_EMOJIS = { '봉사':'🤝', '문화행사':'🎉', '체험활동':'🌿', '학급행사':'🏫', '기타':'✨' };
-
-  // ════════════ 자율활동 ════════════
   let currentActTab = 'change';
-  let currentCmGroup = 0; // 0=전체
+  let currentCmGroup = 0;
   let cmImgFiles = [];
   let jlImgFiles = [];
 
-  function loadActivityPage() {
-    switchActTab('change');
-  }
+  function loadActivityPage() { switchActTab('change'); }
 
   function switchActTab(tab) {
     currentActTab = tab;
@@ -1741,7 +1968,6 @@
     else if (tab === 'journal') loadJournalRecords();
   }
 
-  // ── 체인지 메이커 ──
   function selectCmGroup(btn, group) {
     document.querySelectorAll('.act-group-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -1752,10 +1978,7 @@
   async function loadCmRecords() {
     const el = document.getElementById('cmList');
     el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
-
-    // 선생님 공지 로드
     await loadActNoticeBanner('change', 'cmNotice');
-
     let query = sb.from('cm_records').select('*').order('date', { ascending: false });
     if (currentCmGroup > 0) query = query.eq('group_num', currentCmGroup);
     const { data, error } = await query;
@@ -1777,7 +2000,6 @@
   }
 
   async function loadActNoticeBanner(type, containerId) {
-    // 컨테이너가 없으면 삽입
     let container = document.getElementById(containerId);
     if (!container) {
       const panel = document.getElementById('actPanel-' + (type === 'change' ? 'change' : 'journal'));
@@ -1839,15 +2061,12 @@
     if (!title) { showToast('❗ 제목을 입력해주세요'); return; }
     const btn = document.getElementById('cmSaveBtn');
     btn.disabled = true; btn.textContent = '저장 중...';
-
-    // 이미지 업로드
     const urls = [];
     for (const file of cmImgFiles) {
       const fname = `cm/${selectedCmGroup}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
       const { data: up } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
       if (up) urls.push(sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl);
     }
-
     const { error } = await sb.from('cm_records').insert([{
       group_num: selectedCmGroup,
       title,
@@ -1870,14 +2089,10 @@
     await loadCmRecords();
   }
 
-  // ── 클래스 저널 ──
   async function loadJournalRecords() {
     const el = document.getElementById('journalList');
     el.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
-
-    // 선생님 공지 로드
     await loadActNoticeBanner('journal', 'journalNotice');
-
     const { data, error } = await sb.from('journal_records').select('*').order('date', { ascending: false });
     if (error || !data || !data.length) {
       el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📰</div><p>아직 저널 기록이 없어요!<br/>+ 기록 추가 버튼으로 남겨봐요</p></div>'; return;
@@ -1950,60 +2165,6 @@
     document.getElementById('photoLightbox').classList.add('open');
   }
 
-  async function loadActivities() {
-    const container = document.getElementById('activityList');
-    if (!container) return;
-    container.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
-    const { data, error } = await sb.from('activities').select('*').order('date', { ascending: false });
-    if (error) { container.innerHTML = '<div class="no-events">❗ 활동을 불러오지 못했어요</div>'; return; }
-    if (!data || !data.length) {
-      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🌱</div><p>아직 등록된 활동이 없어요.<br/>+ 활동 등록 버튼으로 기록해봐요!</p></div>'; return;
-    }
-    container.innerHTML = data.map(a => `
-      <div class="activity-card">
-        <button class="act-delete" onclick="deleteActivity(${a.id}, event)" title="삭제">✕</button>
-        <div class="act-emoji">${a.emoji || ACT_EMOJIS[a.type] || '✨'}</div>
-        <div class="act-title">${a.title}</div>
-        <div class="act-date">📅 ${a.date}</div>
-        <div class="act-desc">${a.description || ''}</div>
-        <span class="act-tag">${a.type}</span>
-      </div>`).join('');
-  }
-
-  function openActivityModal() {
-    document.getElementById('acDate').value = new Date().toISOString().slice(0,10);
-    openModal('activityModal');
-  }
-
-  async function saveActivity() {
-    const title = document.getElementById('acTitle').value.trim();
-    const date = document.getElementById('acDate').value;
-    if (!title || !date) { showToast('❗ 활동 이름과 날짜를 입력해주세요'); return; }
-    const btn = document.getElementById('acSaveBtn');
-    btn.disabled = true; btn.textContent = '저장 중...';
-    const { error } = await sb.from('activities').insert([{
-      title, date,
-      type: document.getElementById('acType').value,
-      emoji: document.getElementById('acEmoji').value.trim() || null,
-      description: document.getElementById('acDesc').value.trim() || null
-    }]);
-    btn.disabled = false; btn.textContent = '저장';
-    if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
-    ['acTitle','acEmoji','acDesc'].forEach(id => document.getElementById(id).value = '');
-    closeModal('activityModal');
-    await loadActivities();
-    showToast('🌱 활동이 등록됐어요!');
-  }
-
-  async function deleteActivity(id, e) {
-    e.stopPropagation();
-    if (!confirm('이 활동을 삭제할까요?')) return;
-    const { error } = await sb.from('activities').delete().eq('id', id);
-    if (error) { showToast('❗ 삭제 실패: ' + error.message); return; }
-    await loadActivities();
-    showToast('🗑️ 활동이 삭제됐어요');
-  }
-
   // ════════════ 학생 목록 & 본인 인증 ════════════
   const STUDENTS = [
     {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
@@ -2017,7 +2178,6 @@
     {num:'10130',name:'관리자'}
   ];
 
-  // prefix: 'sg' (건의사항) | 'bk' (상담예약)
   let authedStudent = { sg: null, bk: null };
   let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null };
 
@@ -2070,7 +2230,6 @@
       return;
     }
 
-    // 인증 성공
     authedStudent[prefix] = { num: student.num, name: student.name };
     document.getElementById(prefix + 'PwInput').value = '';
 
@@ -2078,11 +2237,6 @@
       document.getElementById('sgAuthCard').style.display = 'none';
       document.getElementById('sgAuthedArea').style.display = 'block';
       document.getElementById('sgLoggedInInfo').innerHTML =
-        `${student.name} <span>(${student.num})</span>`;
-    } else {
-      document.getElementById('bkAuthSection').style.display = 'none';
-      document.getElementById('bkAuthedSection').style.display = 'block';
-      document.getElementById('bkLoggedInInfo').innerHTML =
         `${student.name} <span>(${student.num})</span>`;
     }
   }
@@ -2097,12 +2251,6 @@
       document.getElementById('sgStudentSearch').value = '';
       document.getElementById('sgPwInput').value = '';
       resetSuggestion();
-    } else {
-      document.getElementById('bkAuthSection').style.display = 'block';
-      document.getElementById('bkAuthedSection').style.display = 'none';
-      document.getElementById('bkSelectedBadge').style.display = 'none';
-      document.getElementById('bkStudentSearch').value = '';
-      document.getElementById('bkPwInput').value = '';
     }
   }
 
@@ -2126,9 +2274,8 @@
     showToast('✅ 비밀번호가 변경됐어요!');
   }
 
-  // 바깥 클릭 시 드롭다운 닫기
   document.addEventListener('click', e => {
-    ['sg','bk'].forEach(p => {
+    ['sg','bk','bw','cmt'].forEach(p => {
       const wrap = document.getElementById(p + 'StudentSearch');
       const drop = document.getElementById(p + 'StudentDropdown');
       if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
@@ -2253,9 +2400,7 @@
   }
 
   // ════════════ 관리자 ════════════
-  // ⚠️ 비밀번호를 여기서 바꾸세요!
   const ADMIN_PASSWORD = 'teacher1234';
-
   let isAdminLoggedIn = false;
 
   function initAdminPage() {
