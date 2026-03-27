@@ -194,21 +194,146 @@
     .board-detail-imgs img { width: 100%; border-radius: 10px; cursor: pointer; object-fit: cover; aspect-ratio: 4/3; }
     .board-detail-del-btn { background: none; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 20px; padding: 6px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
     .board-detail-del-btn:hover { background: #fee2e2; }
-    /* 댓글 */
-    .board-comment-section { background: white; border-top: 1px solid var(--border); padding: 20px; }
-    .board-comment-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
-    .board-comment-item { padding: 12px 0; border-bottom: 1px solid var(--primary-pale); }
-    .board-comment-item:last-of-type { border-bottom: none; }
-    .board-comment-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-    .board-comment-author { font-size: 0.82rem; font-weight: 700; color: var(--primary); }
-    .board-comment-date { font-size: 0.72rem; color: var(--text-muted); }
-    .board-comment-body { font-size: 0.88rem; line-height: 1.6; color: var(--text); }
-    .board-comment-del { background: none; border: none; font-size: 0.72rem; color: var(--text-muted); cursor: pointer; opacity: 0.6; }
-    .board-comment-del:hover { opacity: 1; color: #dc2626; }
-    .board-comment-input-row { display: flex; gap: 8px; margin-top: 14px; align-items: flex-end; }
-    .board-comment-input { flex: 1; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; resize: none; min-height: 44px; max-height: 100px; outline: none; background: var(--bg); transition: border-color 0.2s; }
-    .board-comment-input:focus { border-color: var(--primary-light); }
-    .board-comment-submit { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 10px 16px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+    /* ═══════════════════════════════════════════════════════════
+       🎨 댓글 섹션 - 자연스럽게 게시글과 이어지는 디자인
+       ═══════════════════════════════════════════════════════════ */
+    .board-comment-section {
+      background: transparent;
+      border-top: 1px dashed var(--border);
+      padding: 20px;
+      margin-top: 0;
+    }
+    .board-comment-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .board-comment-item {
+      background: rgba(45, 106, 79, 0.04);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: none;
+    }
+    .board-comment-item:last-of-type {
+      margin-bottom: 0;
+    }
+    .board-comment-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .board-comment-author {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .board-comment-date {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .board-comment-body {
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .board-comment-del {
+      background: none;
+      border: none;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .board-comment-del:hover {
+      opacity: 1;
+      color: #dc2626;
+      background: rgba(220, 38, 38, 0.08);
+    }
+    .board-comment-input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed rgba(0,0,0,0.08);
+      align-items: flex-end;
+    }
+    .board-comment-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.88rem;
+      resize: none;
+      min-height: 44px;
+      max-height: 100px;
+      outline: none;
+      background: rgba(255,255,255,0.7);
+      transition: all 0.2s;
+    }
+    .board-comment-input:focus {
+      border-color: var(--primary-light);
+      background: white;
+    }
+    .board-comment-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .board-comment-submit:hover {
+      background: #1b4332;
+      transform: translateY(-1px);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       📌 고정 게시글 전용 댓글 스타일 - 노란빛 테마 통일
+       ═══════════════════════════════════════════════════════════ */
+    .board-detail-panel.pinned-post .board-comment-section {
+      background: transparent;
+      border-top-color: rgba(244, 162, 97, 0.3);
+    }
+    .board-detail-panel.pinned-post .board-comment-item {
+      background: rgba(244, 162, 97, 0.08);
+    }
+    .board-detail-panel.pinned-post .board-comment-author {
+      color: #b45309;
+    }
+    .board-detail-panel.pinned-post .board-comment-input {
+      background: rgba(255, 251, 235, 0.8);
+      border-color: rgba(244, 162, 97, 0.3);
+    }
+    .board-detail-panel.pinned-post .board-comment-input:focus {
+      border-color: var(--accent);
+      background: #fffbeb;
+    }
+    .board-detail-panel.pinned-post .board-comment-submit {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    .board-detail-panel.pinned-post .board-comment-submit:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    }
+    .board-detail-panel.pinned-post .board-comment-input-row {
+      border-top-color: rgba(244, 162, 97, 0.2);
+    }
+
     /* 글쓰기 모달 */
     .board-write-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; display: none; align-items: center; justify-content: center; padding: 24px; }
     .board-write-overlay.open { display: flex; }
@@ -652,12 +777,16 @@
       .board-detail-content { font-size: 0.85rem; line-height: 1.7; }
       .board-detail-imgs { grid-template-columns: repeat(2, 1fr); gap: 8px; }
       .board-detail-del-btn { font-size: 0.72rem; padding: 5px 12px; }
+
+      /* 📱 모바일 댓글 */
       .board-comment-section { padding: 16px; }
-      .board-comment-title { font-size: 0.85rem; }
+      .board-comment-title { font-size: 0.82rem; margin-bottom: 12px; }
+      .board-comment-item { padding: 12px 14px; margin-bottom: 8px; }
       .board-comment-author { font-size: 0.78rem; }
       .board-comment-body { font-size: 0.82rem; }
       .board-comment-input-row { flex-direction: column; gap: 10px; }
       .board-comment-input-row > div { width: 100%; }
+      .board-comment-input { font-size: 0.85rem; padding: 10px 12px; }
       .board-comment-submit { width: 100%; padding: 12px; }
 
       /* 모달 공통 */
@@ -1542,7 +1671,7 @@
             <span class="slot-booked-tag">예약 완료</span>
           </div>`;
         }
-        return `<div class="slot-card" onclick="openBookingModal(${s.id}, '${date}', '${s.slot_time}', '${(s.label||'').replace(/'/g,"\\'")}')">
+        return `<div class="slot-card" onclick="openBookingModal(${s.id}, '${date}', '${s.slot_time}', '${(s.label||'').replace(/'/g,"\'")}')">
           <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
           ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
           <span class="slot-available-tag">예약 가능</span>
@@ -1656,6 +1785,15 @@
     const { data: post } = await sb.from('board_posts').select('*').eq('id', id).maybeSingle();
     if (!post) return;
     currentBoardPost = post;
+
+    // 고정 게시글이면 패널에 클래스 추가
+    const panel = document.getElementById('boardDetailPanel');
+    if (post.pinned) {
+      panel.classList.add('pinned-post');
+    } else {
+      panel.classList.remove('pinned-post');
+    }
+
     const imgs = post.image_urls ? JSON.parse(post.image_urls) : [];
     document.getElementById('boardDetailBody').innerHTML = `
       <div class="board-detail-cat"><span class="board-cat-badge ${post.category}">${post.category || ''}</span>${post.pinned ? ' <span class="board-pin-badge">📌 고정</span>' : ''}</div>
@@ -1668,13 +1806,15 @@
       ${imgs.length ? `<div class="board-detail-imgs">${imgs.map(u => `<img src="${u}" onclick="openGradeImgLightbox('${u}')" />`).join('')}</div>` : ''}`;
     await loadBoardComments(id);
     document.getElementById('boardDetailOverlay').classList.add('open');
-    document.getElementById('boardDetailPanel').classList.add('open');
+    panel.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
 
   function closeBoardDetail() {
     document.getElementById('boardDetailOverlay').classList.remove('open');
-    document.getElementById('boardDetailPanel').classList.remove('open');
+    const panel = document.getElementById('boardDetailPanel');
+    panel.classList.remove('open');
+    panel.classList.remove('pinned-post');
     document.body.style.overflow = '';
     currentBoardPost = null;
   }
