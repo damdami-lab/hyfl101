@@ -325,6 +325,30 @@
       .login-card { padding: 32px 24px; }
       .wrap { padding: 24px 16px 40px; }
     }
+.planner-admin-row {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.planner-admin-row:hover { border-color: var(--primary-light); }
+.planner-admin-row.has-planner { border-left: 4px solid var(--primary-light); }
+.planner-admin-row .par-top {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.planner-admin-row .par-name { font-weight: 900; font-size: 0.95rem; min-width: 60px; }
+.planner-admin-row .par-status-ok { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
+.planner-admin-row .par-status-no { background: #f5f5f5; color: #aaa; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
+.planner-admin-row .par-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; min-width: 80px; }
+.planner-admin-row .par-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.planner-admin-row .par-pct { font-size: 0.85rem; font-weight: 700; color: var(--primary); min-width: 40px; text-align: right; }
+.planner-admin-row .par-content { font-size: 0.88rem; color: var(--text); line-height: 1.7; background: var(--bg); border-radius: 10px; padding: 12px 14px; margin-top: 8px; white-space: pre-wrap; display: none; }
+.planner-admin-row.open .par-content { display: block; }
+.planner-admin-row .par-time { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+    
   </style>
 </head>
 <body>
@@ -349,6 +373,7 @@
     <button class="nav-tab" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
     <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 공지</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
+    <button class="nav-tab" id="tab-planner" onclick="showTab('planner')">📓 플래너</button>
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
   </div>
@@ -481,7 +506,28 @@
         <div id="actNoticeList"><div class="loading"><div class="spinner"></div></div></div>
       </div>
     </div>
-
+<!-- 플래너 탭 -->
+<div class="page-content" id="page-planner">
+  <div class="page-fullwrap">
+    <div class="section-top">
+      <h3>📓 플래너 현황</h3>
+      <button class="refresh-btn" onclick="loadPlannerAdmin()">🔄 새로고침</button>
+    </div>
+    <!-- 날짜 선택 -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+      <button class="cal-nav" onclick="changePlannerAdminDate(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:1rem">‹</button>
+      <input type="date" id="plannerAdminDate" style="border:1.5px solid var(--border);border-radius:10px;padding:10px 16px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;font-weight:700;outline:none;background:var(--card)" onchange="loadPlannerAdmin()" />
+      <button class="cal-nav" onclick="changePlannerAdminDate(1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:1rem">›</button>
+      <button class="refresh-btn" onclick="setPlannerAdminToday()">오늘</button>
+      <span id="plannerAdminSummary" style="font-size:0.85rem;color:var(--text-muted);margin-left:8px"></span>
+    </div>
+    <!-- 학생 목록 -->
+    <div id="plannerAdminList">
+      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+    
     <!-- 통계 탭 -->
     <div class="page-content" id="page-stats">
       <div class="page-fullwrap">
@@ -590,6 +636,9 @@
     if (tab) tab.classList.add('active');
     // dashboard일 때만 사이드바 표시
     const sidebar = document.getElementById('studentSidebar');
+    if (name === 'planner') {
+  setPlannerAdminToday();
+}
     if (name === 'dashboard') {
       sidebar.classList.add('visible');
       renderStudentDashboard();
@@ -1473,6 +1522,79 @@
       return `<div class="mood-row"><span class="mood-name" style="width:70px;font-size:0.8rem">${t}</span><div class="mood-track"><div class="mood-fill" style="width:${pct}%"></div></div><span class="mood-cnt">${cnt}</span></div>`;
     }).join('');
   }
+  // ════════════ 플래너 관리 ════════════
+const TEACHER_STUDENTS = [
+  {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
+  {num:'10104',name:'김나후'},{num:'10105',name:'김연우'},{num:'10106',name:'김효정A'},
+  {num:'10107',name:'백세영'},{num:'10108',name:'심연경'},{num:'10109',name:'양연우'},
+  {num:'10110',name:'염서윤'},{num:'10111',name:'이규준'},{num:'10112',name:'이나율'},
+  {num:'10113',name:'이선준'},{num:'10114',name:'이연우'},{num:'10115',name:'이예은'},
+  {num:'10116',name:'이율리'},{num:'10117',name:'이재후'},{num:'10118',name:'정예현'},
+  {num:'10119',name:'조시현'},{num:'10120',name:'주여원'},{num:'10121',name:'최예지'},
+  {num:'10122',name:'최주은'},{num:'10123',name:'한윤화'},{num:'10124',name:'허은'}
+];
+
+function setPlannerAdminToday() {
+  document.getElementById('plannerAdminDate').value = new Date().toISOString().slice(0, 10);
+  loadPlannerAdmin();
+}
+
+function changePlannerAdminDate(dir) {
+  const input = document.getElementById('plannerAdminDate');
+  const d = new Date(input.value + 'T00:00:00');
+  d.setDate(d.getDate() + dir);
+  input.value = d.toISOString().slice(0, 10);
+  loadPlannerAdmin();
+}
+
+async function loadPlannerAdmin() {
+  const dateInput = document.getElementById('plannerAdminDate');
+  if (!dateInput.value) {
+    dateInput.value = new Date().toISOString().slice(0, 10);
+  }
+  const date = dateInput.value;
+  const el = document.getElementById('plannerAdminList');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+
+  const { data, error } = await sb.from('planners')
+    .select('*').eq('plan_date', date);
+
+  if (error) { el.innerHTML = '<div class="empty">❗ 불러오지 못했어요</div>'; return; }
+
+  const written = {};
+  (data || []).forEach(p => { written[p.student_num] = p; });
+
+  const writtenCount = TEACHER_STUDENTS.filter(s => written[s.num]).length;
+  document.getElementById('plannerAdminSummary').textContent =
+    `✅ ${writtenCount}명 작성 / ❌ ${TEACHER_STUDENTS.length - writtenCount}명 미작성`;
+
+  el.innerHTML = TEACHER_STUDENTS.map(s => {
+    const p = written[s.num];
+    const hasWritten = !!p;
+    const pct = hasWritten ? (p.achievement || 0) : 0;
+    const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#e0e0e0';
+    const updatedAt = hasWritten && p.updated_at
+      ? new Date(p.updated_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    return `<div class="planner-admin-row ${hasWritten ? 'has-planner' : ''}" onclick="this.classList.toggle('open')">
+      <div class="par-top">
+        <span class="par-name">${s.name}</span>
+        ${hasWritten
+          ? `<span class="par-status-ok">✅ 작성</span>`
+          : `<span class="par-status-no">❌ 미작성</span>`}
+        <div class="par-bar-wrap">
+          <div class="par-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <span class="par-pct">${hasWritten ? pct + '%' : '—'}</span>
+        ${updatedAt ? `<span class="par-time">${updatedAt}</span>` : ''}
+      </div>
+      ${hasWritten && p.content
+        ? `<div class="par-content">${p.content}</div>`
+        : ''}
+    </div>`;
+  }).join('');
+}
 </script>
 </body>
 </html>
