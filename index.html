@@ -1338,16 +1338,19 @@
 
           <!-- 플래너 작성 (인증 후) -->
           <div id="plannerModalWrite" style="display:none">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-              <span style="font-size:0.85rem;color:var(--text-muted);font-weight:700">달성률</span>
-              <div style="display:flex;gap:4px">
-                <button class="achievement-btn" data-val="0" onclick="selectAchievement(0)">0%</button>
-                <button class="achievement-btn" data-val="25" onclick="selectAchievement(25)">25%</button>
-                <button class="achievement-btn" data-val="50" onclick="selectAchievement(50)">50%</button>
-                <button class="achievement-btn" data-val="75" onclick="selectAchievement(75)">75%</button>
-                <button class="achievement-btn" data-val="100" onclick="selectAchievement(100)">100%</button>
-              </div>
+            <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">📝 오늘의 할 일</div>
+            <div id="plannerItemList" style="margin-bottom:16px"></div>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="plannerItemInput"
+                placeholder="할 일 입력 후 Enter 또는 + 버튼"
+                style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;outline:none;background:var(--bg)"
+                onkeydown="if(event.key==='Enter') addPlannerItem()"
+                onfocus="this.style.borderColor='var(--primary-light)'"
+                onblur="this.style.borderColor='var(--border)'" />
+              <button onclick="addPlannerItem()" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer;font-weight:700">+</button>
             </div>
+            <button class="submit-btn" id="plannerSaveBtn" onclick="savePlanner()" style="margin-top:16px">💾 저장하기</button>
+          </div>
             <textarea id="plannerContent" placeholder="오늘의 계획을 자유롭게 작성해요..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;line-height:1.8;resize:vertical;min-height:200px;outline:none;background:var(--bg)" onfocus="this.style.borderColor='var(--primary-light)'" onblur="this.style.borderColor='var(--border)'"></textarea>
             <button class="submit-btn" id="plannerSaveBtn" onclick="savePlanner()" style="margin-top:14px">💾 저장하기</button>
           </div>
@@ -2712,8 +2715,10 @@
       </div>`;
   }
 // ════════════ 플래너 ════════════
+// ════════════ 플래너 ════════════
 let authedPlanner = null;
 let selectedAchievement = 0;
+let plannerItems = [];
 
 function setTodayPlanner() {
   document.getElementById('plannerDate').value = new Date().toISOString().slice(0, 10);
@@ -2728,13 +2733,6 @@ function changePlannerDate(dir) {
   loadPlannerPage();
 }
 
-function selectAchievement(val) {
-  selectedAchievement = val;
-  document.querySelectorAll('.achievement-btn').forEach(b => {
-    b.classList.toggle('selected', parseInt(b.dataset.val) === val);
-  });
-}
-
 async function loadPlannerPage() {
   const dateInput = document.getElementById('plannerDate');
   if (!dateInput || !dateInput.value) return;
@@ -2743,7 +2741,7 @@ async function loadPlannerPage() {
   if (!grid) return;
   grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
 
-  const { data } = await sb.from('planners').select('student_num,achievement').eq('plan_date', date);
+  const { data } = await sb.from('planners').select('student_num,achievement,items').eq('plan_date', date);
   const written = {};
   (data || []).forEach(p => { written[p.student_num] = p; });
 
@@ -2769,7 +2767,7 @@ async function loadPlannerPage() {
 
 function openPlannerModal(num, name) {
   authedPlanner = null;
-  selectedAchievement = 0;
+  plannerItems = [];
   document.getElementById('plannerModalName').textContent = name;
   const date = document.getElementById('plannerDate').value;
   const d = new Date(date + 'T00:00:00');
@@ -2778,7 +2776,6 @@ function openPlannerModal(num, name) {
   document.getElementById('plannerModalPw').value = '';
   document.getElementById('plannerModalAuth').style.display = 'block';
   document.getElementById('plannerModalWrite').style.display = 'none';
-  document.querySelectorAll('.achievement-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('plannerModal').style.display = 'flex';
   document.getElementById('plannerModal').dataset.num = num;
   document.getElementById('plannerModal').dataset.name = name;
@@ -2790,6 +2787,7 @@ function closePlannerModal() {
   document.getElementById('plannerModal').style.display = 'none';
   document.body.style.overflow = '';
   authedPlanner = null;
+  plannerItems = [];
 }
 
 async function verifyPlannerPw() {
@@ -2811,32 +2809,65 @@ async function verifyPlannerPw() {
   document.getElementById('plannerModalAuth').style.display = 'none';
   document.getElementById('plannerModalWrite').style.display = 'block';
 
+  // 기존 플래너 불러오기
   const date = document.getElementById('plannerDate').value;
   const { data: existing } = await sb.from('planners').select('*').eq('student_num', num).eq('plan_date', date).maybeSingle();
-  if (existing) {
-    document.getElementById('plannerContent').value = existing.content || '';
-    selectAchievement(existing.achievement || 0);
+  if (existing && existing.items) {
+    try { plannerItems = JSON.parse(existing.items); } catch { plannerItems = []; }
   } else {
-    document.getElementById('plannerContent').value = '';
-    selectAchievement(0);
+    plannerItems = [];
   }
+  renderPlannerItems();
+}
+
+function renderPlannerItems() {
+  const list = document.getElementById('plannerItemList');
+  if (!list) return;
+  if (!plannerItems.length) {
+    list.innerHTML = '<div style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:16px 0">아직 할 일이 없어요. 아래에서 추가해요!</div>';
+    return;
+  }
+  list.innerHTML = plannerItems.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px">
+      <span style="flex:1;font-size:0.9rem;color:var(--text)">${item.text}</span>
+      <button onclick="removePlannerItem(${i})" style="background:none;border:none;cursor:pointer;font-size:0.85rem;color:var(--text-muted);opacity:0.5;padding:2px 6px;border-radius:4px;transition:all 0.2s" onmouseover="this.style.opacity=1;this.style.color='#e63946'" onmouseout="this.style.opacity=0.5;this.style.color='var(--text-muted)'">✕</button>
+    </div>`).join('');
+}
+
+function addPlannerItem() {
+  const input = document.getElementById('plannerItemInput');
+  const text = input.value.trim();
+  if (!text) { showToast('❗ 할 일을 입력해주세요'); return; }
+  plannerItems.push({ text, checked: false });
+  input.value = '';
+  renderPlannerItems();
+  input.focus();
+}
+
+function removePlannerItem(i) {
+  plannerItems.splice(i, 1);
+  renderPlannerItems();
 }
 
 async function savePlanner() {
   if (!authedPlanner) return;
-  const date = document.getElementById('plannerDate').value;
-  const content = document.getElementById('plannerContent').value.trim();
-  if (!content) { showToast('❗ 내용을 입력해주세요'); return; }
+  if (!plannerItems.length) { showToast('❗ 할 일을 최소 1개 추가해주세요'); return; }
 
+  const date = document.getElementById('plannerDate').value;
   const btn = document.getElementById('plannerSaveBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
+
+  // 달성률 계산
+  const checkedCount = plannerItems.filter(i => i.checked).length;
+  const achievement = Math.round(checkedCount / plannerItems.length * 100);
 
   const { error } = await sb.from('planners').upsert({
     student_num: authedPlanner.num,
     student_name: authedPlanner.name,
     plan_date: date,
-    content,
-    achievement: selectedAchievement,
+    content: plannerItems.map(i => i.text).join('\n'),
+    items: JSON.stringify(plannerItems),
+    achievement,
     updated_at: new Date().toISOString()
   }, { onConflict: 'student_num,plan_date' });
 
