@@ -889,6 +889,39 @@
 
       .board-detail-imgs { grid-template-columns: 1fr; }
     }
+    .achievement-btn {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.achievement-btn.selected {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+.planner-student-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.planner-student-row .ps-name { font-weight: 700; font-size: 0.92rem; min-width: 60px; }
+.planner-student-row .ps-status { font-size: 0.82rem; }
+.planner-student-row .ps-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.planner-student-row .ps-bar-fill { height: 100%; border-radius: 4px; background: var(--primary-light); transition: width 0.4s ease; }
+.planner-student-row .ps-pct { font-size: 0.82rem; font-weight: 700; color: var(--primary); min-width: 36px; text-align: right; }
+    
   </style>
 </head>
 <body>
@@ -905,6 +938,7 @@
     <button onclick="showPage('survey')" id="nav-survey">📣 건의사항</button>
     <button onclick="showPage('counseling')" id="nav-counseling">💬 상담</button>
     <button onclick="showPage('notice')" id="nav-notice">📋 게시판</button>
+    <button onclick="showPage('planner')" id="nav-planner">📓 플래너</button>
   </div>
   <button class="hamburger" onclick="toggleNav()">☰</button>
 </nav>
@@ -932,6 +966,7 @@
       <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📣</div><div class="name">건의사항</div><div class="desc">선생님께 의견 전달하기</div></div>
       <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
       <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📋</div><div class="name">게시판</div><div class="desc">자유롭게 글 올리기</div></div>
+      <div class="quick-btn" onclick="showPage('planner')"><div class="icon">📓</div><div class="name">플래너</div><div class="desc">오늘 계획 작성하기</div></div>
     </div>
   </div>
   <div class="section" style="padding-top:0">
@@ -1264,7 +1299,70 @@
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
 </div>
+<!-- ════════════ PLANNER ════════════ -->
+<div class="page" id="page-planner">
+  <div class="page-header"><h2>📓 플래너</h2><p>오늘의 계획을 작성하고 달성률을 기록해요</p></div>
+  <div class="counsel-wrap" style="max-width:800px">
 
+    <!-- 본인 인증 -->
+    <div class="auth-card" id="plannerAuthCard">
+      <h3>🔐 본인 확인</h3>
+      <p class="auth-desc">이름 또는 학번으로 검색하고 비밀번호를 입력해주세요.<br/>초기 비밀번호는 <strong>1234</strong>예요.</p>
+      <div class="form-group">
+        <label>학생 선택</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="plStudentSearch" placeholder="이름 또는 학번 입력..." oninput="searchStudents('pl')" autocomplete="off" />
+          <div class="student-dropdown" id="plStudentDropdown"></div>
+        </div>
+        <div id="plSelectedBadge" style="display:none"></div>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="auth-pw-row">
+          <input class="auth-pw-input" type="password" id="plPwInput" placeholder="••••" onkeydown="if(event.key==='Enter') authPlanner()" />
+          <button class="auth-confirm-btn" onclick="authPlanner()">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인증 후 플래너 영역 -->
+    <div id="plannerAuthedArea" style="display:none">
+      <div class="auth-logged-in">
+        <div class="auth-logged-in-info" id="plannerLoggedInInfo"></div>
+        <button class="auth-logout-btn" onclick="logoutPlanner()">다른 학생으로</button>
+      </div>
+
+      <!-- 날짜 선택 -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="cal-nav" onclick="changePlannerDate(-1)">‹</button>
+        <input type="date" id="plannerDate" class="filter-input" style="border-radius:10px;padding:10px 16px;font-size:0.95rem;font-weight:700" onchange="loadMyPlanner()" />
+        <button class="cal-nav" onclick="changePlannerDate(1)">›</button>
+        <button class="tab-btn" onclick="setTodayPlanner()" style="margin-left:auto">오늘</button>
+      </div>
+
+      <!-- 플래너 작성 카드 -->
+      <div class="today-card" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <span style="font-size:0.95rem;font-weight:700;color:var(--primary)">📝 오늘의 플래너</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.82rem;color:var(--text-muted)">달성률</span>
+            <div style="display:flex;gap:4px">
+              ${[0,25,50,75,100].map(v => `<button class="achievement-btn" data-val="${v}" onclick="selectAchievement(${v})">${v}%</button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <textarea id="plannerContent" placeholder="오늘의 계획을 자유롭게 작성해요..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;line-height:1.8;resize:vertical;min-height:200px;outline:none;background:var(--bg);transition:border-color 0.2s" onfocus="this.style.borderColor='var(--primary-light)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <button class="submit-btn" id="plannerSaveBtn" onclick="savePlanner()" style="margin-top:14px">💾 저장하기</button>
+      </div>
+
+      <!-- 우리반 현황 -->
+      <div class="section-title" style="margin-bottom:14px">👥 우리반 플래너 현황</div>
+      <div id="plannerClassStatus">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- ════════════ ADMIN ════════════ -->
 <div class="page" id="page-admin">
   <div class="page-header"><h2>🔐 관리자</h2><p>담임선생님 전용 관리 페이지</p></div>
@@ -1457,6 +1555,7 @@
     survey: initSurvey,
     counseling: loadCounseling,
     admin: initAdminPage
+    planner: loadPlanner,
   };
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2617,6 +2716,136 @@
         </table>
       </div>`;
   }
+// ════════════ 플래너 ════════════
+let authedPlanner = null;
+let selectedAchievement = 0;
+
+// searchStudents, selectStudent에 'pl' prefix 지원 추가
+selectedStudentTemp['pl'] = null;
+
+function authPlanner() {
+  const student = selectedStudentTemp['pl'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('plPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+
+  sb.from('students').select('*').eq('student_num', student.num).maybeSingle()
+    .then(({ data, error }) => {
+      if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+      if (data.password !== pw) {
+        const input = document.getElementById('plPwInput');
+        input.classList.add('error'); input.value = '';
+        setTimeout(() => input.classList.remove('error'), 1000);
+        showToast('❗ 비밀번호가 틀렸어요'); return;
+      }
+      authedPlanner = { num: student.num, name: student.name };
+      document.getElementById('plannerAuthCard').style.display = 'none';
+      document.getElementById('plannerAuthedArea').style.display = 'block';
+      document.getElementById('plannerLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
+      setTodayPlanner();
+    });
+}
+
+function logoutPlanner() {
+  authedPlanner = null;
+  selectedStudentTemp['pl'] = null;
+  document.getElementById('plannerAuthCard').style.display = 'block';
+  document.getElementById('plannerAuthedArea').style.display = 'none';
+  document.getElementById('plSelectedBadge').style.display = 'none';
+  document.getElementById('plStudentSearch').value = '';
+  document.getElementById('plPwInput').value = '';
+}
+
+function setTodayPlanner() {
+  document.getElementById('plannerDate').value = new Date().toISOString().slice(0, 10);
+  loadMyPlanner();
+}
+
+function changePlannerDate(dir) {
+  const input = document.getElementById('plannerDate');
+  const d = new Date(input.value + 'T00:00:00');
+  d.setDate(d.getDate() + dir);
+  input.value = d.toISOString().slice(0, 10);
+  loadMyPlanner();
+}
+
+function selectAchievement(val) {
+  selectedAchievement = val;
+  document.querySelectorAll('.achievement-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.val) === val);
+  });
+}
+
+async function loadMyPlanner() {
+  if (!authedPlanner) return;
+  const date = document.getElementById('plannerDate').value;
+  if (!date) return;
+
+  const { data } = await sb.from('planners')
+    .select('*').eq('student_num', authedPlanner.num).eq('plan_date', date).maybeSingle();
+
+  if (data) {
+    document.getElementById('plannerContent').value = data.content || '';
+    selectAchievement(data.achievement || 0);
+  } else {
+    document.getElementById('plannerContent').value = '';
+    selectAchievement(0);
+  }
+  await loadClassPlannerStatus(date);
+}
+
+async function savePlanner() {
+  if (!authedPlanner) return;
+  const date = document.getElementById('plannerDate').value;
+  const content = document.getElementById('plannerContent').value.trim();
+  if (!content) { showToast('❗ 내용을 입력해주세요'); return; }
+
+  const btn = document.getElementById('plannerSaveBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  const { error } = await sb.from('planners').upsert({
+    student_num: authedPlanner.num,
+    student_name: authedPlanner.name,
+    plan_date: date,
+    content,
+    achievement: selectedAchievement,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'student_num,plan_date' });
+
+  btn.disabled = false; btn.textContent = '💾 저장하기';
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast('✅ 플래너가 저장됐어요!');
+  await loadClassPlannerStatus(date);
+}
+
+async function loadClassPlannerStatus(date) {
+  const el = document.getElementById('plannerClassStatus');
+  if (!el) return;
+  const { data } = await sb.from('planners').select('student_num, student_name, achievement').eq('plan_date', date);
+  const written = {};
+  (data || []).forEach(p => { written[p.student_num] = p; });
+
+  el.innerHTML = STUDENTS.filter(s => s.num !== '10130').map(s => {
+    const p = written[s.num];
+    const hasWritten = !!p;
+    const pct = hasWritten ? (p.achievement || 0) : 0;
+    const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#e0e0e0';
+    return `<div class="planner-student-row">
+      <span class="ps-name">${s.name}</span>
+      <span class="ps-status">${hasWritten ? '✅ 작성' : '❌ 미작성'}</span>
+      <div class="ps-bar-wrap">
+        <div class="ps-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <span class="ps-pct">${hasWritten ? pct + '%' : '—'}</span>
+    </div>`;
+  }).join('');
+}
+
+function loadPlanner() {
+  if (authedPlanner) {
+    setTodayPlanner();
+  }
+}
 </script>
 </body>
 </html>
