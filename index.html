@@ -1347,8 +1347,12 @@
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:0.82rem;color:var(--text-muted)">달성률</span>
             <div style="display:flex;gap:4px">
-              ${[0,25,50,75,100].map(v => `<button class="achievement-btn" data-val="${v}" onclick="selectAchievement(${v})">${v}%</button>`).join('')}
-            </div>
+              <button class="achievement-btn" data-val="0" onclick="selectAchievement(0)">0%</button>
+              <button class="achievement-btn" data-val="25" onclick="selectAchievement(25)">25%</button>
+              <button class="achievement-btn" data-val="50" onclick="selectAchievement(50)">50%</button>
+              <button class="achievement-btn" data-val="75" onclick="selectAchievement(75)">75%</button>
+              <button class="achievement-btn" data-val="100" onclick="selectAchievement(100)">100%</button>
+            </div>      
           </div>
         </div>
         <textarea id="plannerContent" placeholder="오늘의 계획을 자유롭게 작성해요..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;line-height:1.8;resize:vertical;min-height:200px;outline:none;background:var(--bg);transition:border-color 0.2s" onfocus="this.style.borderColor='var(--primary-light)'" onblur="this.style.borderColor='var(--border)'"></textarea>
