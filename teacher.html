@@ -1221,7 +1221,8 @@
     // 파일 업로드
     const fileUrls = [];
     for (const file of fileInput.files) {
-      const fname = `notices/${currentActNoticeTab}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+      const ext = file.name.split('.').pop();
+      const fname = `notices/${currentActNoticeTab}/${Date.now()}.${ext}`;
       const { data: up, error: upErr } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
       if (!upErr) {
         const url = sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl;
