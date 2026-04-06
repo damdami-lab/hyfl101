@@ -2820,13 +2820,52 @@ function renderPlannerItems() {
   if (!list) return;
   if (!plannerItems.length) {
     list.innerHTML = '<div style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:16px 0">아직 할 일이 없어요. 아래에서 추가해요!</div>';
+    updateAchievementDisplay();
     return;
   }
   list.innerHTML = plannerItems.map((item, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px">
-      <span style="flex:1;font-size:0.9rem;color:var(--text)">${item.text}</span>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px;transition:background 0.2s">
+      <input type="checkbox" ${item.checked ? 'checked' : ''}
+        style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary);flex-shrink:0"
+        onchange="togglePlannerCheck(${i}, this.checked)" />
+      <span style="flex:1;font-size:0.9rem;color:var(--text);${item.checked ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${item.text}</span>
       <button onclick="removePlannerItem(${i})" style="background:none;border:none;cursor:pointer;font-size:0.85rem;color:var(--text-muted);opacity:0.5;padding:2px 6px;border-radius:4px;transition:all 0.2s" onmouseover="this.style.opacity=1;this.style.color='#e63946'" onmouseout="this.style.opacity=0.5;this.style.color='var(--text-muted)'">✕</button>
     </div>`).join('');
+  updateAchievementDisplay();
+}
+  function togglePlannerCheck(i, checked) {
+  plannerItems[i].checked = checked;
+  const rows = document.getElementById('plannerItemList').children;
+  const span = rows[i]?.querySelector('span');
+  if (span) {
+    span.style.textDecoration = checked ? 'line-through' : '';
+    span.style.color = checked ? 'var(--text-muted)' : 'var(--text)';
+  }
+  updateAchievementDisplay();
+}
+
+function updateAchievementDisplay() {
+  const total = plannerItems.length;
+  const checked = plannerItems.filter(i => i.checked).length;
+  const pct = total === 0 ? 0 : Math.round(checked / total * 100);
+
+  let el = document.getElementById('plannerAchievementDisplay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'plannerAchievementDisplay';
+    el.style.cssText = 'margin-bottom:12px;padding:12px 16px;background:var(--primary-pale);border-radius:12px;display:flex;align-items:center;gap:12px';
+    const writeArea = document.getElementById('plannerModalWrite');
+    const itemList = document.getElementById('plannerItemList');
+    if (writeArea && itemList) writeArea.insertBefore(el, itemList);
+  }
+  const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
+  el.innerHTML = `
+    <span style="font-size:0.82rem;font-weight:700;color:var(--primary);white-space:nowrap">달성률</span>
+    <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div>
+    </div>
+    <span style="font-size:0.9rem;font-weight:900;color:var(--primary);min-width:36px;text-align:right">${pct}%</span>
+    <span style="font-size:0.78rem;color:var(--text-muted)">(${checked}/${total})</span>`;
 }
 
 function addPlannerItem() {
@@ -2846,13 +2885,24 @@ function removePlannerItem(i) {
 
 async function savePlanner() {
   if (!authedPlanner) return;
-  if (!plannerItems.length) { showToast('❗ 할 일을 최소 1개 추가해주세요'); return; }
 
   const date = document.getElementById('plannerDate').value;
   const btn = document.getElementById('plannerSaveBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
 
-  // 달성률 계산
+  // 할 일이 하나도 없으면 DB 행 삭제 → 미작성으로 복귀
+  if (!plannerItems.length) {
+    await sb.from('planners')
+      .delete()
+      .eq('student_num', authedPlanner.num)
+      .eq('plan_date', date);
+    btn.disabled = false; btn.textContent = '💾 저장하기';
+    showToast('🗑️ 플래너가 삭제됐어요 (미작성으로 변경)');
+    closePlannerModal();
+    await loadPlannerPage();
+    return;
+  }
+
   const checkedCount = plannerItems.filter(i => i.checked).length;
   const achievement = Math.round(checkedCount / plannerItems.length * 100);
 
@@ -2860,7 +2910,7 @@ async function savePlanner() {
     student_num: authedPlanner.num,
     student_name: authedPlanner.name,
     plan_date: date,
-    content: plannerItems.map(i => i.text).join('\n'),
+    content: plannerItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
     items: JSON.stringify(plannerItems),
     achievement,
     updated_at: new Date().toISOString()
