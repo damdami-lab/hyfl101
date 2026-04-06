@@ -945,6 +945,7 @@
         <button class="nav-dropdown-item" onclick="showPage('roles')">🙋 1인1역</button>
         <button class="nav-dropdown-item" onclick="showPage('meeting')">📋 학급회의</button>
         <button class="nav-dropdown-item" onclick="showPage('activity')">🌱 자율활동</button>
+        <button class="nav-dropdown-item" onclick="showPage('classics')">📖 고전깊이읽기</button>
       </div>
     </div>
     <button onclick="showPage('photos')" id="nav-photos">📷 사진</button>
@@ -1147,6 +1148,70 @@
   </div>
 </div>
 
+<!-- ════════════ 고전깊이읽기 ════════════ -->
+<div class="page" id="page-classics">
+  <div class="page-header"><h2>📖 고전깊이읽기</h2><p>차시별 과제를 제출하고 확인해요</p></div>
+  <div class="activity-wrap">
+
+    <!-- 본인 인증 -->
+    <div class="auth-card" id="classicsAuthCard">
+      <h3>🔐 본인 확인</h3>
+      <p class="auth-desc">이름 또는 학번으로 검색하고 비밀번호를 입력해주세요.<br/>초기 비밀번호는 <strong>1234</strong>예요.</p>
+      <div class="form-group">
+        <label>학생 선택</label>
+        <div class="student-search-wrap">
+          <input class="student-search-input" type="text" id="clStudentSearch"
+            placeholder="이름 또는 학번 입력..." oninput="searchStudents('cl')" autocomplete="off" />
+          <div class="student-dropdown" id="clStudentDropdown"></div>
+        </div>
+        <div id="clSelectedBadge" style="display:none"></div>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="auth-pw-row">
+          <input class="auth-pw-input" type="password" id="clPwInput" placeholder="••••"
+            onkeydown="if(event.key==='Enter') authClassics()" />
+          <button class="auth-confirm-btn" onclick="authClassics()">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인증 후 과제 목록 -->
+    <div id="classicsAuthedArea" style="display:none">
+      <div class="auth-logged-in" style="margin-bottom:20px">
+        <div class="auth-logged-in-info" id="classicsLoggedInInfo"></div>
+        <button class="auth-logout-btn" onclick="logoutClassics()">다른 학생으로</button>
+      </div>
+      <div id="classicsAssignmentList">
+        <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 고전깊이읽기 제출 모달 -->
+<div class="modal-overlay" id="classicsSubmitModal" onclick="if(event.target===this)closeClassicsModal()">
+  <div class="modal" style="max-width:560px" onclick="event.stopPropagation()">
+    <h3 id="classicsModalTitle">📖 과제 제출</h3>
+    <div class="form-group">
+      <label>과제 내용</label>
+      <textarea id="classicsContent" placeholder="과제 내용을 자유롭게 작성해주세요..." style="min-height:160px"></textarea>
+    </div>
+    <div class="form-group">
+      <label>사진 첨부 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></label>
+      <div class="board-img-upload" onclick="document.getElementById('classicsImgInput').click()">📷 사진 추가</div>
+      <input type="file" id="classicsImgInput" accept="image/*" multiple style="display:none"
+        onchange="previewClassicsImages(this.files)" />
+      <div class="board-img-preview" id="classicsImgPreview"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeClassicsModal()">취소</button>
+      <button class="modal-save" id="classicsSubmitBtn" onclick="submitClassics()">📨 제출하기</button>
+    </div>
+  </div>
+</div>
+  
 <!-- ════════════ COUNSELING ════════════ -->
 <div class="page" id="page-counseling">
   <div class="page-header"><h2>💬 상담 예약</h2><p>선생님이 열어둔 상담 시간을 골라 예약해요</p></div>
@@ -1563,6 +1628,7 @@
     counseling: loadCounseling,
     admin: initAdminPage,
     planner: loadPlanner,
+    classics: loadClassicsPage,
   };
 function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1571,7 +1637,7 @@ function showPage(name) {
     const navBtn = document.getElementById('nav-' + name);
     if (navBtn) navBtn.classList.add('active');
     // 드롭다운 하위 페이지면 드롭다운 버튼도 active
-    if (['roles','meeting','activity'].includes(name)) {
+    if (['roles','meeting','activity','classics'].includes(name)) {
       document.getElementById('nav-activity-group').classList.add('active');
     }
     document.getElementById('navLinks').classList.remove('open');
@@ -2438,7 +2504,7 @@ function showPage(name) {
   ];
 
   let authedStudent = { sg: null, bk: null };
-  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null };
+ let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null };
 
   function searchStudents(prefix) {
     const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
@@ -2534,7 +2600,7 @@ function showPage(name) {
   }
 
   document.addEventListener('click', e => {
-    ['sg','bk','bw','cmt'].forEach(p => {
+    ['sg','bk','bw','cmt','cl'].forEach(p => {
       const wrap = document.getElementById(p + 'StudentSearch');
       const drop = document.getElementById(p + 'StudentDropdown');
       if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
@@ -2953,6 +3019,160 @@ function loadPlanner() {
   const input = document.getElementById('plannerDate');
   if (!input.value) input.value = new Date().toISOString().slice(0, 10);
   loadPlannerPage();
+}
+  // ════════════ 고전깊이읽기 ════════════
+let authedClassics = null;
+let currentClassicsAssignmentId = null;
+let classicsImgFiles = [];
+
+async function authClassics() {
+  const student = selectedStudentTemp['cl'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('clPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+  const { data, error } = await sb.from('students').select('*').eq('student_num', student.num).maybeSingle();
+  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+  if (data.password !== pw) {
+    const input = document.getElementById('clPwInput');
+    input.classList.add('error'); input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+    showToast('❗ 비밀번호가 틀렸어요'); return;
+  }
+  authedClassics = { num: student.num, name: student.name };
+  document.getElementById('clPwInput').value = '';
+  document.getElementById('classicsAuthCard').style.display = 'none';
+  document.getElementById('classicsAuthedArea').style.display = 'block';
+  document.getElementById('classicsLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
+  await loadClassicsAssignments();
+}
+
+function logoutClassics() {
+  authedClassics = null;
+  selectedStudentTemp['cl'] = null;
+  document.getElementById('classicsAuthCard').style.display = 'block';
+  document.getElementById('classicsAuthedArea').style.display = 'none';
+  document.getElementById('clSelectedBadge').style.display = 'none';
+  document.getElementById('clStudentSearch').value = '';
+  document.getElementById('clPwInput').value = '';
+}
+
+async function loadClassicsPage() {
+  if (authedClassics) await loadClassicsAssignments();
+}
+
+async function loadClassicsAssignments() {
+  const el = document.getElementById('classicsAssignmentList');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+  const { data: assignments, error } = await sb.from('classics_assignments')
+    .select('*').order('session_num', { ascending: true });
+  if (error || !assignments || !assignments.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><p>아직 등록된 과제가 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
+    return;
+  }
+  const { data: mySubmissions } = await sb.from('classics_submissions')
+    .select('*').eq('student_num', authedClassics.num);
+  const subMap = {};
+  (mySubmissions || []).forEach(s => { subMap[s.assignment_id] = s; });
+
+  el.innerHTML = assignments.map(a => {
+    const sub = subMap[a.id];
+    const isSubmitted = !!sub;
+    return `<div class="cm-card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <span class="cm-group-badge">${a.session_num}차시</span>
+        <span style="font-size:1rem;font-weight:700;color:var(--text);flex:1">${a.title}</span>
+        <span style="font-size:0.75rem;font-weight:700;background:${isSubmitted ? 'var(--primary-pale)' : '#fff3e0'};color:${isSubmitted ? 'var(--primary)' : '#e76f51'};border-radius:20px;padding:3px 12px">
+          ${isSubmitted ? '✅ 제출완료' : '⏳ 미제출'}
+        </span>
+      </div>
+      ${a.description ? `<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px;line-height:1.6">${a.description}</div>` : ''}
+      ${a.due_date ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">📅 마감일: ${a.due_date}</div>` : ''}
+      ${isSubmitted ? `
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--primary);margin-bottom:6px">내가 제출한 내용</div>
+          <div style="font-size:0.88rem;color:var(--text);line-height:1.7;white-space:pre-wrap">${sub.content || ''}</div>
+          ${sub.image_urls ? (() => {
+            const imgs = JSON.parse(sub.image_urls);
+            return imgs.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${imgs.map(u => `<img src="${u}" onclick="openGradeImgLightbox('${u}')" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer;border:1.5px solid var(--border)" />`).join('')}</div>` : '';
+          })() : ''}
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px">제출일: ${sub.submitted_at ? sub.submitted_at.slice(0,16).replace('T',' ') : ''}</div>
+        </div>
+        <button onclick="openClassicsModal(${a.id}, '${a.title.replace(/'/g,"\\'")}', true)"
+          style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:7px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.85rem;cursor:pointer;color:var(--text-muted);transition:all 0.2s"
+          onmouseover="this.style.borderColor='var(--primary-light)';this.style.color='var(--primary)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+          ✏️ 수정하기
+        </button>
+      ` : `
+        <button onclick="openClassicsModal(${a.id}, '${a.title.replace(/'/g,"\\'")}', false)"
+          style="background:var(--primary);color:white;border:none;border-radius:20px;padding:9px 22px;font-family:'Noto Sans KR',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s"
+          onmouseover="this.style.background='#1b4332'"
+          onmouseout="this.style.background='var(--primary)'">
+          📝 과제 제출하기
+        </button>
+      `}
+    </div>`;
+  }).join('');
+}
+
+function openClassicsModal(assignmentId, title, isEdit) {
+  currentClassicsAssignmentId = assignmentId;
+  classicsImgFiles = [];
+  document.getElementById('classicsModalTitle').textContent = isEdit ? '✏️ 과제 수정' : `📖 ${title}`;
+  document.getElementById('classicsContent').value = '';
+  document.getElementById('classicsImgPreview').innerHTML = '';
+  document.getElementById('classicsImgInput').value = '';
+  document.getElementById('classicsSubmitBtn').textContent = isEdit ? '💾 수정하기' : '📨 제출하기';
+  openModal('classicsSubmitModal');
+}
+
+function closeClassicsModal() {
+  closeModal('classicsSubmitModal');
+  classicsImgFiles = [];
+}
+
+function previewClassicsImages(files) {
+  classicsImgFiles = [...classicsImgFiles, ...Array.from(files)];
+  document.getElementById('classicsImgPreview').innerHTML = classicsImgFiles.map((f, i) =>
+    `<div class="board-img-preview-item">
+      <img src="${URL.createObjectURL(f)}" />
+      <button class="board-img-preview-del" onclick="removeClassicsImg(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeClassicsImg(i) {
+  classicsImgFiles.splice(i, 1);
+  previewClassicsImages([]);
+}
+
+async function submitClassics() {
+  if (!authedClassics || !currentClassicsAssignmentId) return;
+  const content = document.getElementById('classicsContent').value.trim();
+  if (!content) { showToast('❗ 과제 내용을 입력해주세요'); return; }
+  const btn = document.getElementById('classicsSubmitBtn');
+  btn.disabled = true; btn.textContent = '제출 중...';
+
+  const urls = [];
+  for (const file of classicsImgFiles) {
+    const fname = `classics/${authedClassics.num}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+    const { data: up } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
+    if (up) urls.push(sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl);
+  }
+
+  const { error } = await sb.from('classics_submissions').upsert({
+    assignment_id: currentClassicsAssignmentId,
+    student_num: authedClassics.num,
+    student_name: authedClassics.name,
+    content,
+    image_urls: urls.length ? JSON.stringify(urls) : null,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'assignment_id,student_num' });
+
+  btn.disabled = false; btn.textContent = '📨 제출하기';
+  if (error) { showToast('❗ 제출 실패: ' + error.message); return; }
+  closeClassicsModal();
+  showToast('✅ 과제가 제출됐어요!');
+  await loadClassicsAssignments();
 }
 </script>
 </body>
