@@ -896,6 +896,11 @@
       .suggest-type-grid { grid-template-columns: 1fr; }
 
       .board-detail-imgs { grid-template-columns: 1fr; }
+
+      /* 홈 플래너 패널 모바일 */
+      #page-home .section div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
     }
     .achievement-btn {
   border: 2px solid var(--border);
@@ -983,7 +988,7 @@
       <div class="quick-btn" onclick="showPage('planner')"><div class="icon">📓</div><div class="name">플래너</div><div class="desc">오늘 계획 작성하기</div></div>
     </div>
   </div>
-  <div class="section" style="padding-top:0">
+<div class="section" style="padding-top:0">
     <div class="section-title">☀️ 오늘 체크</div>
     <div class="today-card">
       <ul class="checklist">
@@ -991,6 +996,89 @@
         <li>공지사항 새 글 확인</li>
         <li>상담 신청 필요 여부 확인</li>
       </ul>
+    </div>
+  </div>
+
+  <!-- 홈 플래너 패널 -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">📓 오늘의 플래너</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+      <!-- 왼쪽: 작성 패널 -->
+      <div class="today-card" id="homePlannerWrite">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">✏️ 플래너 작성</div>
+        <div id="homePlannerAuthArea">
+          <div class="student-search-wrap" style="margin-bottom:8px">
+            <input class="student-search-input" type="text" id="hpStudentSearch"
+              placeholder="이름 또는 학번 검색..." oninput="searchStudents('hp')" autocomplete="off"
+              style="font-size:0.85rem;padding:9px 12px" />
+            <div class="student-dropdown" id="hpStudentDropdown"></div>
+          </div>
+          <div id="hpSelectedBadge" style="display:none;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input class="auth-pw-input" type="password" id="hpPwInput"
+              placeholder="비밀번호" style="flex:1;font-size:0.85rem;padding:9px 12px;letter-spacing:2px"
+              onkeydown="if(event.key==='Enter') authHomePlanner()" />
+            <button class="auth-confirm-btn" onclick="authHomePlanner()"
+              style="padding:9px 14px;font-size:0.82rem">확인</button>
+          </div>
+        </div>
+        <div id="homePlannerWriteArea" style="display:none">
+          <div class="auth-logged-in" style="padding:10px 14px;margin-bottom:12px">
+            <div class="auth-logged-in-info" id="hpLoggedInInfo" style="font-size:0.85rem"></div>
+            <button class="auth-logout-btn" onclick="logoutHomePlanner()" style="font-size:0.75rem;padding:4px 10px">변경</button>
+          </div>
+          <div id="hpItemList" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="hpItemInput"
+              placeholder="할 일 추가..."
+              style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;outline:none;background:var(--bg)"
+              onkeydown="if(event.key==='Enter') addHomePlannerItem()"
+              onfocus="this.style.borderColor='var(--primary-light)'"
+              onblur="this.style.borderColor='var(--border)'" />
+            <button onclick="addHomePlannerItem()"
+              style="background:var(--primary);color:white;border:none;border-radius:8px;padding:8px 12px;font-size:0.9rem;cursor:pointer;font-weight:700">+</button>
+          </div>
+          <button onclick="saveHomePlanner()" id="hpSaveBtn"
+            style="width:100%;margin-top:10px;background:var(--primary);color:white;border:none;border-radius:10px;padding:11px;font-family:'Noto Sans KR',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s">
+            💾 저장하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 체크 패널 -->
+      <div class="today-card" id="homePlannerCheck">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">✅ 계획 체크</div>
+        <div id="homePlannerCheckAuthArea">
+          <div class="student-search-wrap" style="margin-bottom:8px">
+            <input class="student-search-input" type="text" id="hcStudentSearch"
+              placeholder="이름 또는 학번 검색..." oninput="searchStudents('hc')" autocomplete="off"
+              style="font-size:0.85rem;padding:9px 12px" />
+            <div class="student-dropdown" id="hcStudentDropdown"></div>
+          </div>
+          <div id="hcSelectedBadge" style="display:none;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input class="auth-pw-input" type="password" id="hcPwInput"
+              placeholder="비밀번호" style="flex:1;font-size:0.85rem;padding:9px 12px;letter-spacing:2px"
+              onkeydown="if(event.key==='Enter') authHomeCheck()" />
+            <button class="auth-confirm-btn" onclick="authHomeCheck()"
+              style="padding:9px 14px;font-size:0.82rem">확인</button>
+          </div>
+        </div>
+        <div id="homePlannerCheckArea" style="display:none">
+          <div class="auth-logged-in" style="padding:10px 14px;margin-bottom:12px">
+            <div class="auth-logged-in-info" id="hcLoggedInInfo" style="font-size:0.85rem"></div>
+            <button class="auth-logout-btn" onclick="logoutHomeCheck()" style="font-size:0.75rem;padding:4px 10px">변경</button>
+          </div>
+          <div id="hcAchievementBar" style="margin-bottom:12px"></div>
+          <div id="hcItemList"></div>
+          <button onclick="saveHomeCheck()" id="hcSaveBtn"
+            style="width:100%;margin-top:10px;background:var(--primary);color:white;border:none;border-radius:10px;padding:11px;font-family:'Noto Sans KR',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s">
+            💾 저장하기
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2504,7 +2592,7 @@ function showPage(name) {
   ];
 
   let authedStudent = { sg: null, bk: null };
- let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null };
+  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null, hp: null, hc: null };
 
   function searchStudents(prefix) {
     const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
@@ -2600,7 +2688,7 @@ function showPage(name) {
   }
 
   document.addEventListener('click', e => {
-    ['sg','bk','bw','cmt','cl'].forEach(p => {
+    ['sg','bk','bw','cmt','cl','hp','hc'].forEach(p => {
       const wrap = document.getElementById(p + 'StudentSearch');
       const drop = document.getElementById(p + 'StudentDropdown');
       if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
@@ -3019,6 +3107,235 @@ function loadPlanner() {
   const input = document.getElementById('plannerDate');
   if (!input.value) input.value = new Date().toISOString().slice(0, 10);
   loadPlannerPage();
+}
+  // ════════════ 홈 플래너 패널 ════════════
+let authedHp = null;   // 작성 패널 인증
+let authedHc = null;   // 체크 패널 인증
+let hpItems = [];      // 작성 패널 할 일 목록
+let hcItems = [];      // 체크 패널 할 일 목록
+
+function getTodayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// ── 작성 패널 인증 ──
+async function authHomePlanner() {
+  const student = selectedStudentTemp['hp'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('hpPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
+  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+  if (data.password !== pw) {
+    const input = document.getElementById('hpPwInput');
+    input.classList.add('error'); input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+    showToast('❗ 비밀번호가 틀렸어요'); return;
+  }
+  authedHp = { num: student.num, name: student.name };
+  document.getElementById('hpPwInput').value = '';
+  document.getElementById('homePlannerAuthArea').style.display = 'none';
+  document.getElementById('homePlannerWriteArea').style.display = 'block';
+  document.getElementById('hpLoggedInInfo').textContent = `${student.name} (${student.num})`;
+
+  // 기존 플래너 불러오기
+  const { data: existing } = await sb.from('planners')
+    .select('*').eq('student_num', student.num).eq('plan_date', getTodayStr()).maybeSingle();
+  hpItems = existing?.items ? JSON.parse(existing.items) : [];
+  renderHpItems();
+}
+
+function logoutHomePlanner() {
+  authedHp = null; hpItems = [];
+  selectedStudentTemp['hp'] = null;
+  document.getElementById('hpSelectedBadge').style.display = 'none';
+  document.getElementById('hpStudentSearch').value = '';
+  document.getElementById('hpPwInput').value = '';
+  document.getElementById('homePlannerAuthArea').style.display = 'block';
+  document.getElementById('homePlannerWriteArea').style.display = 'none';
+}
+
+function renderHpItems() {
+  const el = document.getElementById('hpItemList');
+  if (!hpItems.length) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:10px 0">아직 할 일이 없어요!</div>';
+    return;
+  }
+  el.innerHTML = hpItems.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px">
+      <span style="flex:1;font-size:0.85rem;color:var(--text);${item.checked ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${item.text}</span>
+      <button onclick="removeHpItem(${i})"
+        style="background:none;border:none;cursor:pointer;font-size:0.78rem;color:var(--text-muted);opacity:0.5;padding:2px 4px"
+        onmouseover="this.style.opacity=1;this.style.color='#e63946'"
+        onmouseout="this.style.opacity=0.5;this.style.color='var(--text-muted)'">✕</button>
+    </div>`).join('');
+}
+
+function addHomePlannerItem() {
+  const input = document.getElementById('hpItemInput');
+  const text = input.value.trim();
+  if (!text) return;
+  hpItems.push({ text, checked: false });
+  input.value = '';
+  renderHpItems();
+  input.focus();
+}
+
+function removeHpItem(i) {
+  hpItems.splice(i, 1);
+  renderHpItems();
+}
+
+async function saveHomePlanner() {
+  if (!authedHp) return;
+  const btn = document.getElementById('hpSaveBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  if (!hpItems.length) {
+    await sb.from('planners').delete()
+      .eq('student_num', authedHp.num).eq('plan_date', getTodayStr());
+    btn.disabled = false; btn.textContent = '💾 저장하기';
+    showToast('🗑️ 플래너가 삭제됐어요');
+    return;
+  }
+
+  const checkedCount = hpItems.filter(i => i.checked).length;
+  const achievement = Math.round(checkedCount / hpItems.length * 100);
+
+  const { error } = await sb.from('planners').upsert({
+    student_num: authedHp.num,
+    student_name: authedHp.name,
+    plan_date: getTodayStr(),
+    content: hpItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
+    items: JSON.stringify(hpItems),
+    achievement,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'student_num,plan_date' });
+
+  btn.disabled = false; btn.textContent = '💾 저장하기';
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast('✅ 플래너가 저장됐어요!');
+
+  // 체크 패널이 같은 학생이면 새로고침
+  if (authedHc && authedHc.num === authedHp.num) {
+    hcItems = [...hpItems];
+    renderHcItems();
+  }
+}
+
+// ── 체크 패널 인증 ──
+async function authHomeCheck() {
+  const student = selectedStudentTemp['hc'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('hcPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
+  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+  if (data.password !== pw) {
+    const input = document.getElementById('hcPwInput');
+    input.classList.add('error'); input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+    showToast('❗ 비밀번호가 틀렸어요'); return;
+  }
+  authedHc = { num: student.num, name: student.name };
+  document.getElementById('hcPwInput').value = '';
+  document.getElementById('homePlannerCheckAuthArea').style.display = 'none';
+  document.getElementById('homePlannerCheckArea').style.display = 'block';
+  document.getElementById('hcLoggedInInfo').textContent = `${student.name} (${student.num})`;
+
+  // 기존 플래너 불러오기
+  const { data: existing } = await sb.from('planners')
+    .select('*').eq('student_num', student.num).eq('plan_date', getTodayStr()).maybeSingle();
+  hcItems = existing?.items ? JSON.parse(existing.items) : [];
+  renderHcItems();
+}
+
+function logoutHomeCheck() {
+  authedHc = null; hcItems = [];
+  selectedStudentTemp['hc'] = null;
+  document.getElementById('hcSelectedBadge').style.display = 'none';
+  document.getElementById('hcStudentSearch').value = '';
+  document.getElementById('hcPwInput').value = '';
+  document.getElementById('homePlannerCheckAuthArea').style.display = 'block';
+  document.getElementById('homePlannerCheckArea').style.display = 'none';
+}
+
+function renderHcItems() {
+  const total = hcItems.length;
+  const checked = hcItems.filter(i => i.checked).length;
+  const pct = total === 0 ? 0 : Math.round(checked / total * 100);
+  const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
+
+  // 달성률 바
+  document.getElementById('hcAchievementBar').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--primary-pale);border-radius:10px">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--primary);white-space:nowrap">달성률</span>
+      <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div>
+      </div>
+      <span style="font-size:0.88rem;font-weight:900;color:var(--primary);min-width:32px;text-align:right">${pct}%</span>
+      <span style="font-size:0.72rem;color:var(--text-muted)">(${checked}/${total})</span>
+    </div>`;
+
+  const el = document.getElementById('hcItemList');
+  if (!hcItems.length) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:10px 0">플래너가 없어요. 먼저 작성해주세요!</div>';
+    return;
+  }
+  el.innerHTML = hcItems.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px;transition:background 0.15s">
+      <input type="checkbox" ${item.checked ? 'checked' : ''}
+        style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary);flex-shrink:0"
+        onchange="toggleHcItem(${i}, this.checked)" />
+      <span style="flex:1;font-size:0.85rem;color:var(--text);${item.checked ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${item.text}</span>
+    </div>`).join('');
+}
+
+function toggleHcItem(i, checked) {
+  hcItems[i].checked = checked;
+  const rows = document.getElementById('hcItemList').children;
+  const span = rows[i]?.querySelector('span');
+  if (span) {
+    span.style.textDecoration = checked ? 'line-through' : '';
+    span.style.color = checked ? 'var(--text-muted)' : 'var(--text)';
+  }
+  // 달성률 바만 업데이트
+  const total = hcItems.length;
+  const checkedCount = hcItems.filter(i => i.checked).length;
+  const pct = total === 0 ? 0 : Math.round(checkedCount / total * 100);
+  const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
+  document.getElementById('hcAchievementBar').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--primary-pale);border-radius:10px">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--primary);white-space:nowrap">달성률</span>
+      <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div>
+      </div>
+      <span style="font-size:0.88rem;font-weight:900;color:var(--primary);min-width:32px;text-align:right">${pct}%</span>
+      <span style="font-size:0.72rem;color:var(--text-muted)">(${checkedCount}/${total})</span>
+    </div>`;
+}
+
+async function saveHomeCheck() {
+  if (!authedHc) return;
+  const btn = document.getElementById('hcSaveBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  const checkedCount = hcItems.filter(i => i.checked).length;
+  const achievement = hcItems.length === 0 ? 0 : Math.round(checkedCount / hcItems.length * 100);
+
+  const { error } = await sb.from('planners').upsert({
+    student_num: authedHc.num,
+    student_name: authedHc.name,
+    plan_date: getTodayStr(),
+    content: hcItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
+    items: JSON.stringify(hcItems),
+    achievement,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'student_num,plan_date' });
+
+  btn.disabled = false; btn.textContent = '💾 저장하기';
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast(`✅ ${achievement}% 달성! 저장됐어요 🌱`);
 }
   // ════════════ 고전깊이읽기 ════════════
 let authedClassics = null;
