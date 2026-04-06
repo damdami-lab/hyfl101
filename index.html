@@ -974,33 +974,8 @@
     <div class="dday-card"><div class="emoji">📝</div><div class="label">중간고사</div><div class="days" id="ddayMidterm">—</div><div class="date">2026-04-29</div></div>
     <div class="dday-card"><div class="emoji">☀️</div><div class="label">오늘</div><div class="days" id="todayDate">—</div><div class="date" id="todayDay">—</div></div>
   </div>
-  <div class="section">
-    <div class="section-title">⚡ 빠른 이동</div>
-    <div class="quick-grid">
-      <div class="quick-btn" onclick="showPage('schedule')"><div class="icon">📅</div><div class="name">일정/수행평가</div><div class="desc">시험·수행 일정 확인</div></div>
-      <div class="quick-btn" onclick="showPage('roles')"><div class="icon">🙋</div><div class="name">1인1역</div><div class="desc">내 역할 확인하기</div></div>
-      <div class="quick-btn" onclick="showPage('meeting')"><div class="icon">📋</div><div class="name">학급회의</div><div class="desc">회의록 모아보기</div></div>
-      <div class="quick-btn" onclick="showPage('activity')"><div class="icon">🌱</div><div class="name">자율활동</div><div class="desc">학급 활동 기록</div></div>
-      <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
-      <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📣</div><div class="name">건의사항</div><div class="desc">선생님께 의견 전달하기</div></div>
-      <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
-      <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📋</div><div class="name">게시판</div><div class="desc">자유롭게 글 올리기</div></div>
-      <div class="quick-btn" onclick="showPage('planner')"><div class="icon">📓</div><div class="name">플래너</div><div class="desc">오늘 계획 작성하기</div></div>
-    </div>
-  </div>
-<div class="section" style="padding-top:0">
-    <div class="section-title">☀️ 오늘 체크</div>
-    <div class="today-card">
-      <ul class="checklist">
-        <li>수행평가 마감 일정 확인</li>
-        <li>공지사항 새 글 확인</li>
-        <li>상담 신청 필요 여부 확인</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 홈 플래너 패널 -->
-  <div class="section" style="padding-top:0">
+<!-- 홈 플래너 패널 -->
+  <div class="section" style="padding-top:40px">
     <div class="section-title">📓 오늘의 플래너</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
@@ -1046,9 +1021,9 @@
         </div>
       </div>
 
-      <!-- 오른쪽: 체크 패널 -->
+      <!-- 오른쪽: 플래너 확인 패널 -->
       <div class="today-card" id="homePlannerCheck">
-        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">✅ 계획 체크</div>
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">✅ 플래너 확인</div>
         <div id="homePlannerCheckAuthArea">
           <div class="student-search-wrap" style="margin-bottom:8px">
             <input class="student-search-input" type="text" id="hcStudentSearch"
@@ -1079,6 +1054,33 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⚡ 빠른 이동</div>
+    <div class="quick-grid">
+      <div class="quick-btn" onclick="showPage('schedule')"><div class="icon">📅</div><div class="name">일정/수행평가</div><div class="desc">시험·수행 일정 확인</div></div>
+      <div class="quick-btn" onclick="showPage('roles')"><div class="icon">🙋</div><div class="name">1인1역</div><div class="desc">내 역할 확인하기</div></div>
+      <div class="quick-btn" onclick="showPage('meeting')"><div class="icon">📋</div><div class="name">학급회의</div><div class="desc">회의록 모아보기</div></div>
+      <div class="quick-btn" onclick="showPage('activity')"><div class="icon">🌱</div><div class="name">자율활동</div><div class="desc">학급 활동 기록</div></div>
+      <div class="quick-btn" onclick="showPage('photos')"><div class="icon">📷</div><div class="name">사진 보관함</div><div class="desc">우리반 추억 모아보기</div></div>
+      <div class="quick-btn" onclick="showPage('survey')"><div class="icon">📣</div><div class="name">건의사항</div><div class="desc">선생님께 의견 전달하기</div></div>
+      <div class="quick-btn" onclick="showPage('counseling')"><div class="icon">💬</div><div class="name">상담 신청</div><div class="desc">선생님과 상담 예약</div></div>
+      <div class="quick-btn" onclick="showPage('notice')"><div class="icon">📋</div><div class="name">게시판</div><div class="desc">자유롭게 글 올리기</div></div>
+      <div class="quick-btn" onclick="showPage('planner')"><div class="icon">📓</div><div class="name">플래너</div><div class="desc">오늘 계획 작성하기</div></div>
+    </div>
+  </div>
+<div class="section" style="padding-top:0">
+    <div class="section-title">☀️ 오늘 체크</div>
+    <div class="today-card">
+      <ul class="checklist">
+        <li>수행평가 마감 일정 확인</li>
+        <li>공지사항 새 글 확인</li>
+        <li>상담 신청 필요 여부 확인</li>
+      </ul>
+    </div>
+  </div>
     </div>
   </div>
 </div>
@@ -3243,10 +3245,23 @@ async function authHomeCheck() {
   document.getElementById('homePlannerCheckArea').style.display = 'block';
   document.getElementById('hcLoggedInInfo').textContent = `${student.name} (${student.num})`;
 
-  // 기존 플래너 불러오기
+  // 기존 플래너 불러오기 — items 파싱 강화
   const { data: existing } = await sb.from('planners')
     .select('*').eq('student_num', student.num).eq('plan_date', getTodayStr()).maybeSingle();
-  hcItems = existing?.items ? JSON.parse(existing.items) : [];
+  if (existing?.items) {
+    try {
+      const parsed = JSON.parse(existing.items);
+      hcItems = parsed.map(item => ({
+        text: item.text || '',
+        checked: item.checked || false
+      }));
+    } catch { hcItems = []; }
+  } else {
+    hcItems = [];
+  }
+  if (!hcItems.length) {
+    showToast('📝 오늘 작성된 플래너가 없어요. 먼저 작성해주세요!');
+  }
   renderHcItems();
 }
 
