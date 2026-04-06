@@ -1707,13 +1707,39 @@ async function loadClAssignments() {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>등록된 과제가 없어요</p></div>';
     return;
   }
-  el.innerHTML = clAssignments.map(a => `
-    <div class="slot-manage-item">
+el.innerHTML = clAssignments.map(a => `
+    <div class="slot-manage-item" id="cl-item-${a.id}">
       <span class="smi-date">${a.session_num}차시</span>
       <span class="smi-time" style="font-size:0.9rem">${a.title}</span>
       ${a.due_date ? `<span class="smi-label">📅 ${a.due_date}</span>` : ''}
       ${a.description ? `<span class="smi-label" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.description}</span>` : ''}
+      <button class="smi-delete" style="border-color:var(--primary-light);color:var(--primary)" onclick="openEditClAssignment(${a.id})">✏️ 수정</button>
       <button class="smi-delete" onclick="deleteClAssignment(${a.id})">삭제</button>
+    </div>
+    <div class="slot-form-card" id="cl-edit-${a.id}" style="display:none;margin-bottom:8px">
+      <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:12px">✏️ 과제 수정</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="slot-form-group" style="min-width:80px;max-width:100px">
+          <label>차시</label>
+          <input type="number" id="cl-edit-session-${a.id}" class="slot-input" value="${a.session_num}" min="1" />
+        </div>
+        <div class="slot-form-group" style="flex:2">
+          <label>과제 제목</label>
+          <input type="text" id="cl-edit-title-${a.id}" class="slot-input" value="${a.title.replace(/"/g,'&quot;')}" />
+        </div>
+        <div class="slot-form-group" style="min-width:140px">
+          <label>마감일</label>
+          <input type="date" id="cl-edit-due-${a.id}" class="slot-input" value="${a.due_date || ''}" />
+        </div>
+      </div>
+      <div class="slot-form-group" style="margin-bottom:12px">
+        <label>과제 설명</label>
+        <textarea id="cl-edit-desc-${a.id}" class="slot-input" style="min-height:60px;resize:vertical">${a.description || ''}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="slot-add-btn" onclick="saveEditClAssignment(${a.id})">💾 저장</button>
+        <button onclick="closeEditClAssignment(${a.id})" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:10px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;cursor:pointer;color:var(--text-muted)">취소</button>
+      </div>
     </div>`).join('');
 
   // 차시 탭 업데이트
@@ -1764,6 +1790,41 @@ async function deleteClAssignment(id) {
       '<div class="empty"><div class="empty-icon">📖</div><p>차시를 선택해주세요</p></div>';
   }
   showToast('🗑️ 삭제됐어요');
+  await loadClAssignments();
+}
+  function openEditClAssignment(id) {
+  // 다른 열린 수정 폼 닫기
+  clAssignments.forEach(a => {
+    if (a.id !== id) closeEditClAssignment(a.id);
+  });
+  document.getElementById(`cl-edit-${id}`).style.display = 'block';
+  document.getElementById(`cl-item-${id}`).style.display = 'none';
+}
+
+function closeEditClAssignment(id) {
+  const edit = document.getElementById(`cl-edit-${id}`);
+  const item = document.getElementById(`cl-item-${id}`);
+  if (edit) edit.style.display = 'none';
+  if (item) item.style.display = 'flex';
+}
+
+async function saveEditClAssignment(id) {
+  const sessionNum = parseInt(document.getElementById(`cl-edit-session-${id}`).value);
+  const title = document.getElementById(`cl-edit-title-${id}`).value.trim();
+  const description = document.getElementById(`cl-edit-desc-${id}`).value.trim();
+  const dueDate = document.getElementById(`cl-edit-due-${id}`).value;
+  if (!sessionNum || !title) { showToast('❗ 차시와 제목을 입력해주세요'); return; }
+  const btn = document.querySelector(`#cl-edit-${id} .slot-add-btn`);
+  btn.disabled = true; btn.textContent = '저장 중...';
+  const { error } = await sb.from('classics_assignments').update({
+    session_num: sessionNum,
+    title,
+    description: description || null,
+    due_date: dueDate || null
+  }).eq('id', id);
+  btn.disabled = false; btn.textContent = '💾 저장';
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast('✅ 과제가 수정됐어요!');
   await loadClAssignments();
 }
 
