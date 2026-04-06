@@ -348,6 +348,23 @@
 .planner-admin-row .par-content { font-size: 0.88rem; color: var(--text); line-height: 1.7; background: var(--bg); border-radius: 10px; padding: 12px 14px; margin-top: 8px; white-space: pre-wrap; display: none; }
 .planner-admin-row.open .par-content { display: block; }
 .planner-admin-row .par-time { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+
+/* ── 고전깊이읽기 ── */
+.cl-session-tab { border: none; border-radius: 30px; padding: 8px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; background: var(--bg); border: 1.5px solid var(--border); color: var(--text-muted); }
+.cl-session-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+.cl-submission-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.2s; }
+.cl-submission-card:hover { border-color: var(--primary-light); }
+.cl-submission-card.not-submitted { background: #fafafa; border-color: #e0e0e0; cursor: default; }
+.cl-submission-card.not-submitted:hover { border-color: #e0e0e0; }
+.cl-sub-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.cl-sub-name { font-weight: 700; font-size: 0.95rem; }
+.cl-sub-status-ok { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
+.cl-sub-status-no { background: #f5f5f5; color: #aaa; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
+.cl-sub-date { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+.cl-sub-content { font-size: 0.88rem; color: var(--text); line-height: 1.7; white-space: pre-wrap; background: var(--bg); border-radius: 10px; padding: 12px 14px; display: none; margin-top: 8px; }
+.cl-submission-card.open .cl-sub-content { display: block; }
+.cl-sub-imgs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.cl-sub-imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1.5px solid var(--border); }
     
   </style>
 </head>
@@ -374,6 +391,7 @@
     <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 공지</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
     <button class="nav-tab" id="tab-planner" onclick="showTab('planner')">📓 플래너</button>
+    <button class="nav-tab" id="tab-classics" onclick="showTab('classics')">📖 고전깊이읽기</button> 
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
   </div>
@@ -506,6 +524,65 @@
         <div id="actNoticeList"><div class="loading"><div class="spinner"></div></div></div>
       </div>
     </div>
+
+<!-- 고전깊이읽기 탭 -->
+<div class="page-content" id="page-classics">
+  <div class="page-fullwrap">
+    <div class="section-top">
+      <h3>📖 고전깊이읽기 과제 관리</h3>
+      <button class="refresh-btn" onclick="loadClassicsAdmin()">🔄 새로고침</button>
+    </div>
+
+    <!-- 과제 등록 폼 -->
+    <div class="slot-form-card" style="margin-bottom:28px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="slot-form-group" style="min-width:80px;max-width:100px">
+            <label>차시</label>
+            <input type="number" id="clSessionNum" class="slot-input" placeholder="1" min="1" />
+          </div>
+          <div class="slot-form-group" style="flex:2">
+            <label>과제 제목</label>
+            <input type="text" id="clTitle" class="slot-input" placeholder="예: 1차시 - 홍길동전 감상문" />
+          </div>
+          <div class="slot-form-group" style="min-width:140px">
+            <label>마감일 (선택)</label>
+            <input type="date" id="clDueDate" class="slot-input" />
+          </div>
+        </div>
+        <div class="slot-form-group">
+          <label>과제 설명 (선택)</label>
+          <textarea id="clDescription" class="slot-input" placeholder="학생들에게 안내할 내용을 입력해주세요" style="min-height:70px;resize:vertical"></textarea>
+        </div>
+        <button class="slot-add-btn" style="align-self:flex-start" onclick="addClassicsAssignment()">+ 과제 등록</button>
+      </div>
+    </div>
+
+    <!-- 등록된 과제 목록 -->
+    <div class="section-top" style="margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 과제 <span class="count-badge" id="clAssignmentCount"></span></h3>
+    </div>
+    <div id="clAssignmentList" style="margin-bottom:36px">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 제출 현황 -->
+    <div class="section-top" style="margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">📋 제출 현황</h3>
+      <button class="refresh-btn" onclick="loadClassicsSubmissions()">🔄 새로고침</button>
+    </div>
+
+    <!-- 차시 선택 탭 -->
+    <div id="clSessionTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
+
+    <!-- 제출 목록 -->
+    <div id="clSubmissionList">
+      <div class="empty"><div class="empty-icon">📖</div><p>위에서 차시를 선택해주세요</p></div>
+    </div>
+
+  </div>
+</div>
+    
 <!-- 플래너 탭 -->
 <div class="page-content" id="page-planner">
   <div class="page-fullwrap">
@@ -638,6 +715,9 @@
     const sidebar = document.getElementById('studentSidebar');
     if (name === 'planner') {
       setPlannerAdminToday();
+    }
+    if (name === 'classics') {
+      loadClassicsAdmin();
     }
     if (name === 'dashboard') {
       sidebar.classList.add('visible');
@@ -1595,6 +1675,154 @@ async function loadPlannerAdmin() {
     </div>`;
   }).join('');
 }
+// ════════════ 고전깊이읽기 관리 ════════════
+const CL_STUDENTS = [
+  {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
+  {num:'10104',name:'김나후'},{num:'10105',name:'김연우'},{num:'10106',name:'김효정A'},
+  {num:'10107',name:'백세영'},{num:'10108',name:'심연경'},{num:'10109',name:'양연우'},
+  {num:'10110',name:'염서윤'},{num:'10111',name:'이규준'},{num:'10112',name:'이나율'},
+  {num:'10113',name:'이선준'},{num:'10114',name:'이연우'},{num:'10115',name:'이예은'},
+  {num:'10116',name:'이율리'},{num:'10117',name:'이재후'},{num:'10118',name:'정예현'},
+  {num:'10119',name:'조시현'},{num:'10120',name:'주여원'},{num:'10121',name:'최예지'},
+  {num:'10122',name:'최주은'},{num:'10123',name:'한윤화'},{num:'10124',name:'허은'}
+];
+
+let clAssignments = [];
+let currentClSessionId = null;
+
+async function loadClassicsAdmin() {
+  await loadClAssignments();
+  await loadClassicsSubmissions();
+}
+
+async function loadClAssignments() {
+  const el = document.getElementById('clAssignmentList');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const { data, error } = await sb.from('classics_assignments')
+    .select('*').order('session_num', { ascending: true });
+  clAssignments = data || [];
+  document.getElementById('clAssignmentCount').textContent = `(${clAssignments.length}개)`;
+  if (error || !clAssignments.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>등록된 과제가 없어요</p></div>';
+    return;
+  }
+  el.innerHTML = clAssignments.map(a => `
+    <div class="slot-manage-item">
+      <span class="smi-date">${a.session_num}차시</span>
+      <span class="smi-time" style="font-size:0.9rem">${a.title}</span>
+      ${a.due_date ? `<span class="smi-label">📅 ${a.due_date}</span>` : ''}
+      ${a.description ? `<span class="smi-label" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.description}</span>` : ''}
+      <button class="smi-delete" onclick="deleteClAssignment(${a.id})">삭제</button>
+    </div>`).join('');
+
+  // 차시 탭 업데이트
+  renderClSessionTabs();
+}
+
+function renderClSessionTabs() {
+  const tabsEl = document.getElementById('clSessionTabs');
+  if (!tabsEl) return;
+  if (!clAssignments.length) { tabsEl.innerHTML = ''; return; }
+  tabsEl.innerHTML = clAssignments.map(a =>
+    `<button class="cl-session-tab ${currentClSessionId === a.id ? 'active' : ''}"
+      onclick="selectClSession(${a.id})">${a.session_num}차시 · ${a.title}</button>`
+  ).join('');
+}
+
+async function addClassicsAssignment() {
+  const sessionNum = parseInt(document.getElementById('clSessionNum').value);
+  const title = document.getElementById('clTitle').value.trim();
+  const description = document.getElementById('clDescription').value.trim();
+  const dueDate = document.getElementById('clDueDate').value;
+  if (!sessionNum || !title) { showToast('❗ 차시와 제목을 입력해주세요'); return; }
+  const btn = document.querySelector('#page-classics .slot-add-btn');
+  btn.disabled = true; btn.textContent = '등록 중...';
+  const { error } = await sb.from('classics_assignments').insert([{
+    session_num: sessionNum,
+    title,
+    description: description || null,
+    due_date: dueDate || null
+  }]);
+  btn.disabled = false; btn.textContent = '+ 과제 등록';
+  if (error) { showToast('❗ 등록 실패: ' + error.message); return; }
+  document.getElementById('clSessionNum').value = '';
+  document.getElementById('clTitle').value = '';
+  document.getElementById('clDescription').value = '';
+  document.getElementById('clDueDate').value = '';
+  showToast('✅ 과제가 등록됐어요!');
+  await loadClAssignments();
+}
+
+async function deleteClAssignment(id) {
+  if (!confirm('이 과제를 삭제할까요? 학생 제출물도 함께 삭제됩니다.')) return;
+  await sb.from('classics_submissions').delete().eq('assignment_id', id);
+  await sb.from('classics_assignments').delete().eq('id', id);
+  if (currentClSessionId === id) {
+    currentClSessionId = null;
+    document.getElementById('clSubmissionList').innerHTML =
+      '<div class="empty"><div class="empty-icon">📖</div><p>차시를 선택해주세요</p></div>';
+  }
+  showToast('🗑️ 삭제됐어요');
+  await loadClAssignments();
+}
+
+async function selectClSession(assignmentId) {
+  currentClSessionId = assignmentId;
+  renderClSessionTabs();
+  await loadClassicsSubmissions();
+}
+
+async function loadClassicsSubmissions() {
+  const el = document.getElementById('clSubmissionList');
+  if (!el) return;
+  if (!currentClSessionId) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>위에서 차시를 선택해주세요</p></div>';
+    return;
+  }
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+  const { data: submissions } = await sb.from('classics_submissions')
+    .select('*').eq('assignment_id', currentClSessionId);
+  const subMap = {};
+  (submissions || []).forEach(s => { subMap[s.student_num] = s; });
+
+  const submittedCount = Object.keys(subMap).length;
+  const total = CL_STUDENTS.length;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:0.88rem;color:var(--text-muted)">제출 현황</span>
+      <span style="font-size:1rem;font-weight:900;color:var(--primary)">${submittedCount}명</span>
+      <span style="font-size:0.88rem;color:var(--text-muted)">/ ${total}명</span>
+      <div style="flex:1;min-width:100px;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(submittedCount/total*100)}%;background:var(--primary-light);border-radius:4px;transition:width 0.4s ease"></div>
+      </div>
+      <span style="font-size:0.85rem;font-weight:700;color:var(--primary)">${Math.round(submittedCount/total*100)}%</span>
+    </div>
+    ${CL_STUDENTS.map(s => {
+      const sub = subMap[s.num];
+      const submitted = !!sub;
+      const imgs = sub?.image_urls ? JSON.parse(sub.image_urls) : [];
+      return `<div class="cl-submission-card ${submitted ? '' : 'not-submitted'}" ${submitted ? `onclick="this.classList.toggle('open')"` : ''}>
+        <div class="cl-sub-header">
+          <span class="cl-sub-name">${s.name}</span>
+          <span style="font-size:0.75rem;color:var(--text-muted)">${s.num}</span>
+          ${submitted
+            ? `<span class="cl-sub-status-ok">✅ 제출완료</span>`
+            : `<span class="cl-sub-status-no">❌ 미제출</span>`}
+          ${submitted ? `<span class="cl-sub-date">${sub.submitted_at ? sub.submitted_at.slice(0,16).replace('T',' ') : ''}</span>` : ''}
+          ${submitted ? `<span style="font-size:0.75rem;color:var(--text-muted);margin-left:4px">▼ 클릭해서 보기</span>` : ''}
+        </div>
+        ${submitted ? `
+          <div class="cl-sub-content">
+            <div style="font-size:0.88rem;line-height:1.7;white-space:pre-wrap">${sub.content || ''}</div>
+            ${imgs.length ? `<div class="cl-sub-imgs">${imgs.map(u =>
+              `<img src="${u}" onclick="event.stopPropagation();openGradeLightbox('${u}')" />`
+            ).join('')}</div>` : ''}
+          </div>` : ''}
+      </div>`;
+    }).join('')}`;
+} 
 </script>
 </body>
 </html>
