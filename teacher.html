@@ -348,6 +348,13 @@
 .planner-admin-row .par-content { font-size: 0.88rem; color: var(--text); line-height: 1.7; background: var(--bg); border-radius: 10px; padding: 12px 14px; margin-top: 8px; white-space: pre-wrap; display: none; }
 .planner-admin-row.open .par-content { display: block; }
 .planner-admin-row .par-time { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+.planner-admin-row .par-feedback-wrap { display: none; padding: 12px 14px; background: #f0fdf4; border-radius: 10px; margin-top: 10px; }
+.planner-admin-row.open .par-feedback-wrap { display: block; }
+.par-feedback-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; line-height: 1.6; resize: vertical; min-height: 70px; background: white; color: var(--text); outline: none; transition: border-color 0.2s; margin-bottom: 8px; }
+.par-feedback-input:focus { border-color: var(--primary-light); }
+.par-feedback-btn { background: var(--primary); color: white; border: none; border-radius: 20px; padding: 7px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.par-feedback-btn:hover { background: #1b4332; }
+.par-feedback-saved { font-size: 0.75rem; color: var(--primary); margin-left: 10px; }
 
 /* ── 고전깊이읽기 ── */
 .cl-session-tab { border: none; border-radius: 30px; padding: 8px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; background: var(--bg); border: 1.5px solid var(--border); color: var(--text-muted); }
@@ -1652,6 +1659,11 @@ async function loadPlannerAdmin() {
   document.getElementById('plannerAdminSummary').textContent =
     `✅ ${writtenCount}명 작성 / ❌ ${TEACHER_STUDENTS.length - writtenCount}명 미작성`;
 
+  const feedbackRes = await sb.from('planner_feedbacks')
+    .select('*').eq('plan_date', date);
+  const feedbackMap = {};
+  (feedbackRes.data || []).forEach(f => { feedbackMap[f.student_num] = f; });
+
   el.innerHTML = TEACHER_STUDENTS.map(s => {
     const p = written[s.num];
     const hasWritten = !!p;
@@ -1660,6 +1672,8 @@ async function loadPlannerAdmin() {
     const updatedAt = hasWritten && p.updated_at
       ? new Date(p.updated_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
       : '';
+    const fb = feedbackMap[s.num];
+    const fbText = fb ? fb.feedback : '';
 
     return `<div class="planner-admin-row ${hasWritten ? 'has-planner' : ''}" onclick="this.classList.toggle('open')">
       <div class="par-top">
@@ -1676,9 +1690,33 @@ async function loadPlannerAdmin() {
       ${hasWritten && p.content
         ? `<div class="par-content">${p.content}</div>`
         : ''}
+      <!-- 피드백 영역 -->
+      <div class="par-feedback-wrap" onclick="event.stopPropagation()">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--primary);margin-bottom:6px">💬 선생님 피드백</div>
+        <textarea id="fb-${s.num}" class="par-feedback-input" placeholder="피드백을 입력해주세요...">${fbText}</textarea>
+        <button onclick="savePlannerFeedback('${s.num}','${s.name}','${date}')" class="par-feedback-btn">
+          💾 저장
+        </button>
+        ${fbText ? `<span class="par-feedback-saved">✅ 저장된 피드백 있음</span>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
+async function savePlannerFeedback(studentNum, studentName, date) {
+  const feedback = document.getElementById('fb-' + studentNum).value.trim();
+  if (!feedback) { showToast('❗ 피드백 내용을 입력해주세요'); return; }
+  const { error } = await sb.from('planner_feedbacks').upsert({
+    student_num: studentNum,
+    student_name: studentName,
+    plan_date: date,
+    feedback,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'student_num,plan_date' });
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast(`✅ ${studentName} 피드백이 저장됐어요!`);
+  await loadPlannerAdmin();
+}
+  
 // ════════════ 고전깊이읽기 관리 ════════════
 const CL_STUDENTS = [
   {num:'10101',name:'곽승민'},{num:'10102',name:'구민기'},{num:'10103',name:'김나경'},
