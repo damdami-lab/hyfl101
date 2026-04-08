@@ -981,7 +981,7 @@
   </div>
   <div class="dday-strip">
     <div class="dday-card"><div class="emoji">🎓</div><div class="label">수능</div><div class="days" id="ddaySuneung">—</div><div class="date">2028-11-17</div></div>
-    <div class="dday-card"><div class="emoji">📝</div><div class="label">중간고사</div><div class="days" id="ddayMidterm">—</div><div class="date">2026-04-29</div></div>
+    <div class="dday-card"><div class="emoji">📝</div><div class="label">중간고사</div><div class="days" id="ddayMidterm">—</div><div class="date">2026-04-27</div></div>
     <div class="dday-card"><div class="emoji">☀️</div><div class="label">오늘</div><div class="days" id="todayDate">—</div><div class="date" id="todayDay">—</div></div>
   </div>
 <!-- 홈 플래너 패널 -->
@@ -1807,7 +1807,7 @@ function showPage(name) {
   }
   (function() {
     document.getElementById('ddaySuneung').textContent = calcDday('2028-11-17');
-    document.getElementById('ddayMidterm').textContent = calcDday('2026-04-29');
+    document.getElementById('ddayMidterm').textContent = calcDday('2026-04-27');
     const now = new Date();
     document.getElementById('todayDate').textContent = (now.getMonth()+1) + '/' + now.getDate();
     document.getElementById('todayDay').textContent = ['일','월','화','수','목','금','토'][now.getDay()] + '요일';
