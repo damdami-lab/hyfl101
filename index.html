@@ -3246,13 +3246,16 @@ async function loadWeekPlanner() {
   const grid = document.getElementById('plannerWeekGrid');
   grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
 
-  const { data } = await sb.from('planners')
-    .select('*')
-    .eq('student_num', authedPp.num)
-    .in('plan_date', dates);
+  const [planRes, fbRes] = await Promise.all([
+    sb.from('planners').select('*').eq('student_num', authedPp.num).in('plan_date', dates),
+    sb.from('planner_feedbacks').select('*').eq('student_num', authedPp.num).in('plan_date', dates)
+  ]);
 
   const planMap = {};
-  (data || []).forEach(p => { planMap[p.plan_date] = p; });
+  (planRes.data || []).forEach(p => { planMap[p.plan_date] = p; });
+
+  const fbMap = {};
+  (fbRes.data || []).forEach(f => { fbMap[f.plan_date] = f; });
 
   const today = new Date().toISOString().slice(0, 10);
   const dayNames = ['월','화','수','목','금','토','일'];
@@ -3286,11 +3289,17 @@ async function loadWeekPlanner() {
             </div>`).join('')}
           ${items.length > 3 ? `<div style="font-size:0.6rem;color:var(--text-muted);margin-top:2px">+${items.length - 3}개 더</div>` : ''}
         </div>
-      ` : `
+     ` : `
         <div style="flex:1;display:flex;align-items:center;justify-content:center">
           <span style="font-size:0.65rem;color:#ccc">미작성</span>
         </div>
       `}
+      ${fbMap[date] ? `
+        <div style="border-top:1px dashed var(--border);margin-top:6px;padding-top:6px">
+          <div style="font-size:0.6rem;font-weight:700;color:var(--primary);margin-bottom:2px">💬 선생님</div>
+          <div style="font-size:0.62rem;color:var(--text);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${fbMap[date].feedback}</div>
+        </div>
+      ` : ''}
     </div>`;
   }).join('');
 }
