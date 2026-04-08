@@ -860,8 +860,14 @@
       .counsel-table th, .counsel-table td { padding: 10px 12px; font-size: 0.78rem; white-space: nowrap; }
       .counsel-table .content-cell { max-width: 120px; font-size: 0.72rem; }
 
-      /* 토스트 */
+     /* 토스트 */
       .toast { font-size: 0.82rem; padding: 10px 20px; bottom: 20px; }
+
+      /* 주간 플래너 */
+      #plannerWeekGrid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+      }
     }
     /* ── 드롭다운 ── */
     .nav-dropdown { position: relative; }
@@ -897,9 +903,13 @@
 
       .board-detail-imgs { grid-template-columns: 1fr; }
 
-      /* 홈 플래너 패널 모바일 */
+     /* 홈 플래너 패널 모바일 */
       #page-home .section div[style*="grid-template-columns:1fr 1fr"] {
         grid-template-columns: 1fr !important;
+      }
+      /* 주간 플래너 모바일 */
+      #plannerWeekGrid {
+        grid-template-columns: repeat(4, 1fr) !important;
       }
     }
     .achievement-btn {
@@ -1471,6 +1481,49 @@
 <div class="page" id="page-planner">
   <div class="page-header"><h2>📓 플래너</h2><p>오늘의 계획을 작성하고 달성률을 기록해요</p></div>
   <div class="counsel-wrap" style="max-width:860px">
+
+    <!-- 본인 인증 -->
+    <div id="plannerPersonalAuthWrap" style="margin-bottom:28px">
+      <div class="auth-card" id="plannerPersonalAuthCard">
+        <h3>🔐 본인 확인</h3>
+        <p class="auth-desc">내 주간 플래너를 확인하려면 본인 인증을 해주세요.<br/>초기 비밀번호는 <strong>1234</strong>예요.</p>
+        <div class="form-group">
+          <label>학생 선택</label>
+          <div class="student-search-wrap">
+            <input class="student-search-input" type="text" id="ppStudentSearch"
+              placeholder="이름 또는 학번 입력..." oninput="searchStudents('pp')" autocomplete="off" />
+            <div class="student-dropdown" id="ppStudentDropdown"></div>
+          </div>
+          <div id="ppSelectedBadge" style="display:none"></div>
+        </div>
+        <div class="form-group">
+          <label>비밀번호</label>
+          <div class="auth-pw-row">
+            <input class="auth-pw-input" type="password" id="ppPwInput" placeholder="••••"
+              onkeydown="if(event.key==='Enter') authPlannerPersonal()" />
+            <button class="auth-confirm-btn" onclick="authPlannerPersonal()">확인</button>
+          </div>
+        </div>
+      </div>
+      <!-- 인증 후 주간 플래너 -->
+      <div id="plannerPersonalWeekWrap" style="display:none">
+        <div class="auth-logged-in" style="margin-bottom:20px">
+          <div class="auth-logged-in-info" id="ppLoggedInInfo"></div>
+          <button class="auth-logout-btn" onclick="logoutPlannerPersonal()">다른 학생으로</button>
+        </div>
+        <!-- 주간 네비게이션 -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="cal-nav" onclick="changeWeek(-1)">‹</button>
+          <span id="weekRangeLabel" style="font-size:0.95rem;font-weight:700;color:var(--primary)"></span>
+          <button class="cal-nav" onclick="changeWeek(1)">›</button>
+          <button class="tab-btn" onclick="goThisWeek()" style="margin-left:auto;font-size:0.82rem;padding:6px 16px">이번 주</button>
+        </div>
+        <!-- 주간 카드 그리드 -->
+        <div id="plannerWeekGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:32px"></div>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1.5px solid var(--border);margin-bottom:28px" />
 
     <!-- 날짜 선택 -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
@@ -2594,7 +2647,7 @@ function showPage(name) {
   ];
 
   let authedStudent = { sg: null, bk: null };
-  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null, hp: null, hc: null };
+  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null, hp: null, hc: null, pp: null };
 
   function searchStudents(prefix) {
     const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
@@ -2690,7 +2743,7 @@ function showPage(name) {
   }
 
   document.addEventListener('click', e => {
-    ['sg','bk','bw','cmt','cl','hp','hc'].forEach(p => {
+    ['sg','bk','bw','cmt','cl','hp','hc','pp'].forEach(p => {
       const wrap = document.getElementById(p + 'StudentSearch');
       const drop = document.getElementById(p + 'StudentDropdown');
       if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
@@ -2965,8 +3018,12 @@ function closePlannerModal() {
   document.body.style.overflow = '';
   authedPlanner = null;
   plannerItems = [];
+  // 주간 뷰가 열려있으면 새로고침
+  if (window._ppReloadOnClose && authedPp) {
+    window._ppReloadOnClose = false;
+    loadWeekPlanner();
+  }
 }
-
 async function verifyPlannerPw() {
   const num = document.getElementById('plannerModal').dataset.num;
   const name = document.getElementById('plannerModal').dataset.name;
@@ -3109,6 +3166,138 @@ function loadPlanner() {
   const input = document.getElementById('plannerDate');
   if (!input.value) input.value = new Date().toISOString().slice(0, 10);
   loadPlannerPage();
+}
+// ════════════ 주간 개인 플래너 ════════════
+let authedPp = null;
+let ppWeekOffset = 0; // 0=이번주, -1=지난주, 1=다음주
+
+function getWeekDates(offset) {
+  const today = new Date();
+  const dow = today.getDay(); // 0=일
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+function formatWeekLabel(dates) {
+  const s = new Date(dates[0] + 'T00:00:00');
+  const e = new Date(dates[6] + 'T00:00:00');
+  return `${s.getMonth()+1}월 ${s.getDate()}일 — ${e.getMonth()+1}월 ${e.getDate()}일`;
+}
+
+async function authPlannerPersonal() {
+  const student = selectedStudentTemp['pp'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('ppPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
+  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+  if (data.password !== pw) {
+    const input = document.getElementById('ppPwInput');
+    input.classList.add('error'); input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+    showToast('❗ 비밀번호가 틀렸어요'); return;
+  }
+  authedPp = { num: student.num, name: student.name };
+  document.getElementById('ppPwInput').value = '';
+  document.getElementById('plannerPersonalAuthCard').style.display = 'none';
+  document.getElementById('plannerPersonalWeekWrap').style.display = 'block';
+  document.getElementById('ppLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
+  ppWeekOffset = 0;
+  await loadWeekPlanner();
+}
+
+function logoutPlannerPersonal() {
+  authedPp = null;
+  ppWeekOffset = 0;
+  selectedStudentTemp['pp'] = null;
+  document.getElementById('ppSelectedBadge').style.display = 'none';
+  document.getElementById('ppStudentSearch').value = '';
+  document.getElementById('ppPwInput').value = '';
+  document.getElementById('plannerPersonalAuthCard').style.display = 'block';
+  document.getElementById('plannerPersonalWeekWrap').style.display = 'none';
+}
+
+function changeWeek(dir) {
+  ppWeekOffset += dir;
+  loadWeekPlanner();
+}
+
+function goThisWeek() {
+  ppWeekOffset = 0;
+  loadWeekPlanner();
+}
+
+async function loadWeekPlanner() {
+  if (!authedPp) return;
+  const dates = getWeekDates(ppWeekOffset);
+  document.getElementById('weekRangeLabel').textContent = formatWeekLabel(dates);
+
+  const grid = document.getElementById('plannerWeekGrid');
+  grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
+
+  const { data } = await sb.from('planners')
+    .select('*')
+    .eq('student_num', authedPp.num)
+    .in('plan_date', dates);
+
+  const planMap = {};
+  (data || []).forEach(p => { planMap[p.plan_date] = p; });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const dayNames = ['월','화','수','목','금','토','일'];
+
+  grid.innerHTML = dates.map((date, idx) => {
+    const p = planMap[date];
+    const hasData = !!p;
+    const pct = hasData ? (p.achievement || 0) : null;
+    const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
+    const isToday = date === today;
+    const items = hasData && p.items ? (() => { try { return JSON.parse(p.items); } catch { return []; } })() : [];
+
+    return `<div onclick="openPpDayModal('${date}')"
+      style="background:white;border:2px solid ${isToday ? 'var(--primary)' : hasData ? 'var(--primary-light)' : 'var(--border)'};border-radius:14px;padding:12px 10px;cursor:pointer;transition:all 0.2s;min-height:140px;display:flex;flex-direction:column;gap:6px"
+      onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(45,106,79,0.15)'"
+      onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:0.72rem;font-weight:700;color:${isToday ? 'var(--primary)' : 'var(--text-muted)'}">${dayNames[idx]}</span>
+        ${isToday ? '<span style="font-size:0.6rem;background:var(--primary);color:white;border-radius:10px;padding:1px 6px">오늘</span>' : ''}
+      </div>
+      <div style="font-size:1rem;font-weight:900;color:${isToday ? 'var(--primary)' : 'var(--text)'}">${new Date(date + 'T00:00:00').getDate()}</div>
+      ${hasData ? `
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:2px">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width 0.4s ease"></div>
+        </div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--primary)">${pct}%</div>
+        <div style="flex:1;overflow:hidden">
+          ${items.slice(0,3).map(item => `
+            <div style="font-size:0.65rem;color:${item.checked ? 'var(--text-muted)' : 'var(--text)'};text-decoration:${item.checked ? 'line-through' : 'none'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 0">
+              ${item.checked ? '✓' : '·'} ${item.text}
+            </div>`).join('')}
+          ${items.length > 3 ? `<div style="font-size:0.6rem;color:var(--text-muted);margin-top:2px">+${items.length - 3}개 더</div>` : ''}
+        </div>
+      ` : `
+        <div style="flex:1;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:0.65rem;color:#ccc">미작성</span>
+        </div>
+      `}
+    </div>`;
+  }).join('');
+}
+
+async function openPpDayModal(date) {
+  if (!authedPp) return;
+  // plannerDate를 해당 날짜로 설정하고 모달 열기
+  document.getElementById('plannerDate').value = date;
+  openPlannerModal(authedPp.num, authedPp.name);
+  // 모달 닫힌 후 주간 뷰 새로고침을 위해 콜백 설정
+  window._ppReloadOnClose = true;
 }
   // ════════════ 홈 플래너 패널 ════════════
 let authedHp = null;   // 작성 패널 인증
