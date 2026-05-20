@@ -981,7 +981,7 @@
   </div>
   <div class="dday-strip">
     <div class="dday-card"><div class="emoji">🎓</div><div class="label">수능</div><div class="days" id="ddaySuneung">—</div><div class="date">2028-11-17</div></div>
-    <div class="dday-card"><div class="emoji">📝</div><div class="label">중간고사</div><div class="days" id="ddayMidterm">—</div><div class="date">2026-04-27</div></div>
+    <div class="dday-card"><div class="emoji">📝</div><div class="label" id="ddayExamLabel">시험</div><div class="days" id="ddayMidterm">—</div><div class="date" id="ddayExamDate">—</div></div>
     <div class="dday-card"><div class="emoji">☀️</div><div class="label">오늘</div><div class="days" id="todayDate">—</div><div class="date" id="todayDay">—</div></div>
   </div>
 <!-- 홈 플래너 패널 -->
@@ -1807,19 +1807,41 @@ function showPage(name) {
     if (drop && !drop.contains(e.target)) drop.classList.remove('open');
   });
 
-  // ── D-DAY ──
+// ── D-DAY ──
   function calcDday(target) {
     const today = new Date(); today.setHours(0,0,0,0);
     const t = new Date(target + 'T00:00:00'); t.setHours(0,0,0,0);
     const diff = Math.ceil((t - today) / 86400000);
     return diff === 0 ? 'D-Day' : diff > 0 ? 'D-' + diff : 'D+' + Math.abs(diff);
   }
+
+  async function updateExamDday() {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await sb.from('events')
+      .select('title, date')
+      .eq('type', '고사')
+      .gte('date', today)
+      .order('date', { ascending: true })
+      .limit(1);
+
+    if (error || !data || !data.length) {
+      document.getElementById('ddayExamLabel').textContent = '다음 고사';
+      document.getElementById('ddayMidterm').textContent = '—';
+      document.getElementById('ddayExamDate').textContent = '예정 없음';
+      return;
+    }
+    const exam = data[0];
+    document.getElementById('ddayExamLabel').textContent = exam.title;
+    document.getElementById('ddayMidterm').textContent = calcDday(exam.date);
+    document.getElementById('ddayExamDate').textContent = exam.date;
+  }
+
   (function() {
     document.getElementById('ddaySuneung').textContent = calcDday('2028-11-17');
-    document.getElementById('ddayMidterm').textContent = calcDday('2026-04-27');
     const now = new Date();
     document.getElementById('todayDate').textContent = (now.getMonth()+1) + '/' + now.getDate();
     document.getElementById('todayDay').textContent = ['일','월','화','수','목','금','토'][now.getDay()] + '요일';
+    updateExamDday();
   })();
 
   // ════════════ SCHEDULE ════════════
