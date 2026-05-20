@@ -1750,10 +1750,17 @@
   );
 
   // ── UTILS ──
-  function showToast(msg) {
+function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
+  }
+  function maskName(name) {
+    if (!name) return '';
+    if (name.length === 2) return name[0] + '*';
+    if (name.length === 3) return name[0] + '*' + name[2];
+    if (name.length >= 4) return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
+    return name;
   }
   function openModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1994,10 +2001,11 @@ function showPage(name) {
       const d = new Date(date + 'T00:00:00');
       const label = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
       const cards = slots.map(s => {
-        if (s.booked_by) {
+    if (s.booked_by) {
           return `<div class="slot-card booked">
             <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
             ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
+            <div class="slot-booker">🙋 ${maskName(s.booked_by)}</div>
             <span class="slot-booked-tag">예약 완료</span>
           </div>`;
         }
