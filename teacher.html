@@ -400,6 +400,7 @@
     <button class="nav-tab" id="tab-planner" onclick="showTab('planner')">📓 플래너</button>
     <button class="nav-tab" id="tab-classics" onclick="showTab('classics')">📖 고전깊이읽기</button> 
     <button class="nav-tab" id="tab-stats" onclick="showTab('stats')">📊 통계</button>
+    <button class="nav-tab" id="tab-settings" onclick="showTab('settings')">🖼️ 사이트 설정</button>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
   </div>
 </nav>
@@ -627,6 +628,20 @@
       </div>
     </div>
 
+    <!-- 사이트 설정 탭 -->
+    <div class="page-content" id="page-settings">
+      <div class="page-fullwrap">
+        <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:20px">🖼️ 대문 사진 설정</h3>
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);max-width:500px">
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:16px">홈 화면 맨 위 대문 배경 사진을 바꿀 수 있어요. 업로드하면 바로 학생들 화면에 반영돼요.</p>
+          <img id="coverPreview" src="" style="display:none;width:100%;border-radius:12px;margin-bottom:14px;max-height:220px;object-fit:cover" />
+          <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCoverPhoto(this.files[0])" />
+          <button class="refresh-btn" style="width:100%;justify-content:center" onclick="document.getElementById('coverInput').click()">📷 대문 사진 업로드</button>
+          <div id="coverUploadStatus" style="font-size:0.82rem;color:var(--text-muted);margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- end content-area -->
 </div>
 
@@ -725,6 +740,9 @@
     }
     if (name === 'classics') {
       loadClassicsAdmin();
+    }
+    if (name === 'settings') {
+      loadCoverPreview();
     }
     if (name === 'dashboard') {
       sidebar.classList.add('visible');
@@ -1926,6 +1944,34 @@ async function loadClassicsSubmissions() {
       </div>`;
     }).join('')}`;
 } 
+
+// ── 사이트 설정: 대문 사진 ──
+async function loadCoverPreview() {
+  const { data } = await sb.from('site_settings').select('cover_url').eq('id', 1).single();
+  const img = document.getElementById('coverPreview');
+  if (data && data.cover_url) {
+    img.src = data.cover_url;
+    img.style.display = 'block';
+  } else {
+    img.style.display = 'none';
+  }
+}
+
+async function uploadCoverPhoto(file) {
+  if (!file) return;
+  const status = document.getElementById('coverUploadStatus');
+  status.textContent = '업로드 중...';
+  const fname = `cover/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')}`;
+  const { error: upErr } = await sb.storage.from('activity-images').upload(fname, file, { upsert: false });
+  if (upErr) { status.textContent = '❗ 업로드 실패: ' + upErr.message; return; }
+  const url = sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl;
+  const { error: dbErr } = await sb.from('site_settings')
+    .update({ cover_url: url, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+  if (dbErr) { status.textContent = '❗ 저장 실패: ' + dbErr.message; return; }
+  status.textContent = '✅ 대문 사진이 바뀌었어요!';
+  loadCoverPreview();
+}
 </script>
 </body>
 </html>
