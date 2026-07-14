@@ -635,6 +635,12 @@
         <div style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);max-width:500px">
           <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:16px">홈 화면 맨 위 대문 배경 사진을 바꿀 수 있어요. 업로드하면 바로 학생들 화면에 반영돼요.</p>
           <img id="coverPreview" src="" style="display:none;width:100%;border-radius:12px;margin-bottom:14px;max-height:220px;object-fit:cover" />
+          <div id="coverPositionWrap" style="display:none;margin-bottom:14px">
+            <label style="font-size:0.82rem;color:var(--text-muted);display:flex;justify-content:space-between">
+              <span>사진 위치 조정 (위 ↔ 아래)</span><span id="coverPositionVal">50%</span>
+            </label>
+            <input type="range" id="coverPositionSlider" min="0" max="100" value="50" style="width:100%" oninput="previewCoverPosition(this.value)" onchange="saveCoverPosition(this.value)" />
+          </div>
           <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCoverPhoto(this.files[0])" />
           <button class="refresh-btn" style="width:100%;justify-content:center" onclick="document.getElementById('coverInput').click()">📷 대문 사진 업로드</button>
           <div id="coverUploadStatus" style="font-size:0.82rem;color:var(--text-muted);margin-top:10px"></div>
@@ -1947,14 +1953,34 @@ async function loadClassicsSubmissions() {
 
 // ── 사이트 설정: 대문 사진 ──
 async function loadCoverPreview() {
-  const { data } = await sb.from('site_settings').select('cover_url').eq('id', 1).single();
+  const { data } = await sb.from('site_settings').select('cover_url, cover_position').eq('id', 1).single();
   const img = document.getElementById('coverPreview');
+  const posWrap = document.getElementById('coverPositionWrap');
   if (data && data.cover_url) {
     img.src = data.cover_url;
     img.style.display = 'block';
+    const pos = data.cover_position ?? 50;
+    img.style.objectPosition = `center ${pos}%`;
+    document.getElementById('coverPositionSlider').value = pos;
+    document.getElementById('coverPositionVal').textContent = pos + '%';
+    posWrap.style.display = 'block';
   } else {
     img.style.display = 'none';
+    posWrap.style.display = 'none';
   }
+}
+
+function previewCoverPosition(val) {
+  document.getElementById('coverPreview').style.objectPosition = `center ${val}%`;
+  document.getElementById('coverPositionVal').textContent = val + '%';
+}
+
+async function saveCoverPosition(val) {
+  const status = document.getElementById('coverUploadStatus');
+  const { error } = await sb.from('site_settings')
+    .update({ cover_position: parseInt(val, 10), updated_at: new Date().toISOString() })
+    .eq('id', 1);
+  status.textContent = error ? '❗ 위치 저장 실패: ' + error.message : '✅ 사진 위치가 저장됐어요!';
 }
 
 async function uploadCoverPhoto(file) {
@@ -1966,10 +1992,10 @@ async function uploadCoverPhoto(file) {
   if (upErr) { status.textContent = '❗ 업로드 실패: ' + upErr.message; return; }
   const url = sb.storage.from('activity-images').getPublicUrl(fname).data.publicUrl;
   const { error: dbErr } = await sb.from('site_settings')
-    .update({ cover_url: url, updated_at: new Date().toISOString() })
+    .update({ cover_url: url, cover_position: 50, updated_at: new Date().toISOString() })
     .eq('id', 1);
   if (dbErr) { status.textContent = '❗ 저장 실패: ' + dbErr.message; return; }
-  status.textContent = '✅ 대문 사진이 바뀌었어요!';
+  status.textContent = '✅ 대문 사진이 바뀌었어요! 아래 슬라이더로 위치도 조정해보세요.';
   loadCoverPreview();
 }
 </script>
