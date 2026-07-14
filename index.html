@@ -43,16 +43,30 @@
     .page.active { display: block; }
 
     /* ── HERO ── */
-    .hero { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #52b788 100%); padding: 80px 32px 60px; text-align: center; color: white; position: relative; overflow: hidden; }
+    .hero {
+      background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #52b788 100%);
+      min-height: clamp(320px, 40vw, 440px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 32px; text-align: center; color: white; position: relative; overflow: hidden;
+    }
     .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
-    .hero-badge { display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 30px; padding: 6px 20px; font-size: 0.85rem; margin-bottom: 20px; }
+    .hero-badge { display: inline-block; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 30px; padding: 6px 20px; font-size: 0.85rem; font-weight: 600; letter-spacing: .2px; margin-bottom: 20px; }
     .hero h1 { font-size: clamp(2rem,5vw,3.2rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 12px; position: relative; }
-    .hero p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 32px; }
-    .hero-motto { display: inline-block; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 14px; padding: 16px 32px; font-family: 'Gowun Dodum', sans-serif; font-size: 1.3rem; }
-    .hero-motto small { display: block; font-size: 0.78rem; opacity: 0.75; margin-bottom: 4px; }
-    .hero.has-cover { background-size: cover; background-position: center; }
-    .hero.has-cover::before { background: linear-gradient(135deg, rgba(27,67,50,0.78), rgba(45,106,79,0.55), rgba(82,183,136,0.4)); }
+    .hero p { font-size: 1.05rem; opacity: 0.88; margin-bottom: 28px; }
+    .hero-motto { position: relative; display: inline-block; background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.32); border-radius: 16px; padding: 16px 32px 16px 40px; font-family: 'Gowun Dodum', sans-serif; font-size: 1.25rem; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+    .hero-motto::before { content: ''; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 4px; height: 60%; border-radius: 4px; background: linear-gradient(180deg, #95d5b2, #40916c); }
+    .hero-motto small { display: block; font-size: 0.78rem; opacity: 0.78; margin-bottom: 4px; margin-left: 2px; }
+    .hero.has-cover { background-size: cover; }
+    .hero.has-cover::before { background: linear-gradient(180deg, rgba(15,36,28,0.72) 0%, rgba(15,36,28,0.32) 45%, rgba(15,36,28,0.72) 100%); }
+    .hero.has-cover h1, .hero.has-cover p { text-shadow: 0 2px 14px rgba(0,0,0,0.35); }
     .hero-badge, .hero h1, .hero p, .hero-motto { position: relative; z-index: 1; }
+    @keyframes heroFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .hero-badge { animation: heroFadeUp .6s ease both; }
+    .hero h1 { animation: heroFadeUp .6s ease .08s both; }
+    .hero p { animation: heroFadeUp .6s ease .16s both; }
+    .hero-motto { animation: heroFadeUp .6s ease .24s both; }
+    @media (prefers-reduced-motion: reduce) { .hero-badge, .hero h1, .hero p, .hero-motto { animation: none; } }
+
 
     /* ── D-DAY ── */
     .dday-strip { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 32px 24px; background: white; border-bottom: 1.5px solid var(--border); }
@@ -657,7 +671,7 @@
       .page { padding-top: 56px; }
 
       /* 히어로 */
-      .hero { padding: 40px 20px 32px; }
+      .hero { padding: 40px 20px 32px; min-height: clamp(260px, 78vw, 340px); }
       .hero-badge { font-size: 0.72rem; padding: 5px 14px; margin-bottom: 14px; }
       .hero h1 { font-size: 1.7rem; margin-bottom: 8px; }
       .hero p { font-size: 0.88rem; margin-bottom: 20px; }
