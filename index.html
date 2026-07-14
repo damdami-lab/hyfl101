@@ -1850,10 +1850,11 @@ function showPage(name) {
 
   // ── 대문 사진 ──
   async function loadCoverPhoto() {
-    const { data, error } = await sb.from('site_settings').select('cover_url').eq('id', 1).single();
+    const { data, error } = await sb.from('site_settings').select('cover_url, cover_position').eq('id', 1).single();
     if (error || !data || !data.cover_url) return;
     const hero = document.getElementById('heroSection');
     hero.style.backgroundImage = `url('${data.cover_url}')`;
+    hero.style.backgroundPosition = `center ${data.cover_position ?? 50}%`;
     hero.classList.add('has-cover');
   }
 
