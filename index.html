@@ -50,6 +50,9 @@
     .hero p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 32px; }
     .hero-motto { display: inline-block; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 14px; padding: 16px 32px; font-family: 'Gowun Dodum', sans-serif; font-size: 1.3rem; }
     .hero-motto small { display: block; font-size: 0.78rem; opacity: 0.75; margin-bottom: 4px; }
+    .hero.has-cover { background-size: cover; background-position: center; }
+    .hero.has-cover::before { background: linear-gradient(135deg, rgba(27,67,50,0.78), rgba(45,106,79,0.55), rgba(82,183,136,0.4)); }
+    .hero-badge, .hero h1, .hero p, .hero-motto { position: relative; z-index: 1; }
 
     /* ── D-DAY ── */
     .dday-strip { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 32px 24px; background: white; border-bottom: 1.5px solid var(--border); }
@@ -974,7 +977,7 @@
 
 <!-- ════════════ HOME ════════════ -->
 <div class="page active" id="page-home">
-  <div class="hero">
+  <div class="hero" id="heroSection">
     <div class="hero-badge">🏫 한영외국어고등학교 2026학년도</div>
     <h1>1학년 1반 🌱</h1>
     <p>함께 성장하는 우리들의 공간</p>
@@ -1842,7 +1845,17 @@ function showPage(name) {
     document.getElementById('todayDate').textContent = (now.getMonth()+1) + '/' + now.getDate();
     document.getElementById('todayDay').textContent = ['일','월','화','수','목','금','토'][now.getDay()] + '요일';
     updateExamDday();
+    loadCoverPhoto();
   })();
+
+  // ── 대문 사진 ──
+  async function loadCoverPhoto() {
+    const { data, error } = await sb.from('site_settings').select('cover_url').eq('id', 1).single();
+    if (error || !data || !data.cover_url) return;
+    const hero = document.getElementById('heroSection');
+    hero.style.backgroundImage = `url('${data.cover_url}')`;
+    hero.classList.add('has-cover');
+  }
 
   // ════════════ SCHEDULE ════════════
   let allEvents = [];
