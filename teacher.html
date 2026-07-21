@@ -460,10 +460,12 @@
         <div class="slot-form-card">
           <div class="slot-form-row">
             <div class="slot-form-group"><label>날짜</label><input type="date" id="newSlotDate" class="slot-input" /></div>
-            <div class="slot-form-group"><label>시간</label><input type="time" id="newSlotTime" class="slot-input" /></div>
+            <div class="slot-form-group"><label>시작 시간</label><input type="time" id="newSlotTime" class="slot-input" step="1800" /></div>
+            <div class="slot-form-group"><label>종료 시간 (선택)</label><input type="time" id="newSlotEndTime" class="slot-input" step="1800" /></div>
             <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
             <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
           </div>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px">💡 종료 시간을 입력하면 시작~종료 사이 <strong>30분 간격</strong>으로 상담 시간이 한 번에 여러 개 등록돼요. 종료 시간을 비워두면 시작 시간 1개만 등록돼요.</p>
         </div>
         <div class="section-top" style="margin-top:28px;">
           <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 상담 시간 <span class="count-badge" id="slotCount"></span></h3>
@@ -1463,20 +1465,40 @@
   // ── 슬롯 관리 ──
   let allSlots = [];
 
+  // 상담 시간이 이미 지났는지 확인
+  function isSlotPast(s) {
+    return new Date(`${s.slot_date}T${s.slot_time}`) < new Date();
+  }
+
+  // 다가오는 상담은 이른 순으로 위에, 지난 상담은 최근 순으로 맨 아래에
+  function sortSlotsUpcomingFirst(arr) {
+    const key = s => s.slot_date + s.slot_time;
+    const upcoming = arr.filter(s => !isSlotPast(s)).sort((a, b) => key(a).localeCompare(key(b)));
+    const past = arr.filter(s => isSlotPast(s)).sort((a, b) => key(b).localeCompare(key(a)));
+    return [...upcoming, ...past];
+  }
+
   async function loadSlots() {
     document.getElementById('slotManageList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     const { data, error } = await sb.from('counsel_slots').select('*').order('slot_date').order('slot_time');
-    allSlots = data || [];
+    allSlots = sortSlotsUpcomingFirst(data || []);
     document.getElementById('slotCount').textContent = `(${allSlots.length}개)`;
     if (error || !allSlots.length) {
       document.getElementById('slotManageList').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>등록된 상담 시간이 없어요</p></div>'; return;
     }
     const dayNames = ['일','월','화','수','목','금','토'];
+    let pastDividerShown = false;
     document.getElementById('slotManageList').innerHTML = `<div class="slot-manage-list">` + allSlots.map(s => {
       const d = new Date(s.slot_date + 'T00:00:00');
       const dateLabel = `${d.getMonth()+1}/${d.getDate()}(${dayNames[d.getDay()]})`;
       const isBooked = !!s.booked_by;
-      return `<div class="slot-manage-item">
+      const isPast = isSlotPast(s);
+      let divider = '';
+      if (isPast && !pastDividerShown) {
+        divider = `<div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:14px 0 4px 4px">🕓 지난 상담</div>`;
+        pastDividerShown = true;
+      }
+      return `${divider}<div class="slot-manage-item" style="${isPast ? 'opacity:0.55' : ''}">
         <span class="smi-date">${dateLabel}</span>
         <span class="smi-time">🕐 ${s.slot_time.slice(0,5)}</span>
         ${s.label ? `<span class="smi-label">${s.label}</span>` : ''}
@@ -1491,17 +1513,35 @@
   async function addSlot() {
     const date = document.getElementById('newSlotDate').value;
     const time = document.getElementById('newSlotTime').value;
+    const endTime = document.getElementById('newSlotEndTime').value;
     const label = document.getElementById('newSlotLabel').value.trim();
-    if (!date || !time) { showToast('❗ 날짜와 시간을 입력해주세요'); return; }
+    if (!date || !time) { showToast('❗ 날짜와 시작 시간을 입력해주세요'); return; }
+
+    // 종료 시간이 있으면 시작~종료 사이를 30분 간격으로 자동 생성
+    const times = [];
+    if (endTime && endTime > time) {
+      let [h, m] = time.split(':').map(Number);
+      const [eh, em] = endTime.split(':').map(Number);
+      while (h < eh || (h === eh && m < em)) {
+        times.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+        m += 30;
+        if (m >= 60) { m -= 60; h += 1; }
+      }
+    } else {
+      times.push(time);
+    }
+
     const btn = document.querySelector('.slot-add-btn');
     btn.disabled = true;
-    const { error } = await sb.from('counsel_slots').insert([{ slot_date: date, slot_time: time, label: label || null }]);
+    const rows = times.map(t => ({ slot_date: date, slot_time: t, label: label || null }));
+    const { error } = await sb.from('counsel_slots').insert(rows);
     btn.disabled = false;
     if (error) { showToast('❗ 추가 실패: ' + error.message); return; }
     document.getElementById('newSlotDate').value = '';
     document.getElementById('newSlotTime').value = '';
+    document.getElementById('newSlotEndTime').value = '';
     document.getElementById('newSlotLabel').value = '';
-    showToast('✅ 상담 시간이 등록됐어요!');
+    showToast(`✅ 상담 시간이 ${times.length}개 등록됐어요!`);
     await loadSlots();
   }
 
@@ -1533,15 +1573,23 @@
       if (statusF === 'empty' && s.booked_by) return false;
       return true;
     });
+    filtered = sortSlotsUpcomingFirst(filtered);
     document.getElementById('counselCount').textContent = `(${filtered.length}개)`;
     const body = document.getElementById('counselBody');
     if (!filtered.length) {
       body.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div><p>해당하는 내역이 없어요</p></div></td></tr>'; return;
     }
+    let pastDividerShown = false;
     body.innerHTML = filtered.map(s => {
       const d = new Date(s.slot_date + 'T00:00:00');
       const dateLabel = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
-      return `<tr ${s.booked_by ? `onclick="openPanel(${s.id})"` : ''} style="${s.booked_by ? 'cursor:pointer' : ''}">
+      const isPast = isSlotPast(s);
+      let divider = '';
+      if (isPast && !pastDividerShown) {
+        divider = `<tr><td colspan="6" style="font-size:0.78rem;font-weight:700;color:var(--text-muted);background:var(--bg)">🕓 지난 상담</td></tr>`;
+        pastDividerShown = true;
+      }
+      return `${divider}<tr ${s.booked_by ? `onclick="openPanel(${s.id})"` : ''} style="${s.booked_by ? 'cursor:pointer;' : ''}${isPast ? 'opacity:0.55' : ''}">
         <td>${dateLabel}</td>
         <td><strong>${s.slot_time.slice(0,5)}</strong></td>
         <td>${s.label || '<span style="color:#ccc">—</span>'}</td>
