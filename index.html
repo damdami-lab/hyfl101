@@ -640,10 +640,14 @@
     .photo-delete { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; }
     .photo-card:hover .photo-delete { display: flex; }
     .photo-delete:hover { background: #e63946; }
+    .photo-download { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .photo-download:hover { background: var(--primary); }
     .photo-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 400; display: none; align-items: center; justify-content: center; padding: 24px; }
     .photo-lightbox.open { display: flex; }
     .photo-lightbox img { max-width: 100%; max-height: 90vh; border-radius: 12px; object-fit: contain; }
     .lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+    .lightbox-download { position: absolute; top: 24px; left: 24px; background: rgba(255,255,255,0.15); color: white; border: none; border-radius: 20px; padding: 8px 18px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .lightbox-download:hover { background: rgba(255,255,255,0.3); }
     .upload-progress { background: var(--primary-pale); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: none; }
     .upload-progress p { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
     .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
@@ -1478,6 +1482,7 @@
 <!-- 라이트박스 -->
 <div class="photo-lightbox" id="photoLightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-download" id="lightboxDownloadBtn" onclick="event.stopPropagation()">⬇️ 다운로드</button>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
 </div>
 <!-- ════════════ PLANNER ════════════ -->
@@ -2847,12 +2852,14 @@ function showPage(name) {
     grid.innerHTML = photos.map(f => {
       const url = sb.storage.from(BUCKET).getPublicUrl(f.name).data.publicUrl;
       const date = f.created_at ? f.created_at.slice(0,10) : '';
-      return `<div class="photo-card" onclick="openLightbox('${url}')">
+      const displayName = f.name.replace(/^\d+_/, '');
+      return `<div class="photo-card" onclick="openLightbox('${url}','${displayName.replace(/'/g,"\\'")}')">
         <img src="${url}" alt="${f.name}" loading="lazy" />
         <div class="photo-info">
-          <div class="photo-name">${f.name.replace(/^\d+_/, '')}</div>
+          <div class="photo-name">${displayName}</div>
           <div class="photo-date">${date}</div>
         </div>
+        <button class="photo-download" onclick="downloadPhoto('${url}','${displayName.replace(/'/g,"\\'")}', event)" title="다운로드">⬇️</button>
         <button class="photo-delete" onclick="deletePhoto('${f.name}', event)" title="삭제">✕</button>
       </div>`;
     }).join('');
@@ -2891,9 +2898,30 @@ function showPage(name) {
     showToast('🗑️ 사진이 삭제됐어요');
   }
 
-  function openLightbox(url) {
+  async function downloadPhoto(url, name, e) {
+    if (e) e.stopPropagation();
+    try {
+      showToast('⬇️ 다운로드 준비 중...');
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = name || 'photo.jpg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      showToast('❗ 다운로드 실패. 새 탭에서 열어 저장해주세요');
+      window.open(url, '_blank');
+    }
+  }
+
+  function openLightbox(url, name) {
     document.getElementById('lightboxImg').src = url;
     document.getElementById('photoLightbox').classList.add('open');
+    document.getElementById('lightboxDownloadBtn').onclick = (e) => downloadPhoto(url, name, e);
     document.body.style.overflow = 'hidden';
   }
   function closeLightbox() {
