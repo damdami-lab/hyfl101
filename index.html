@@ -1017,13 +1017,6 @@
             <div class="student-dropdown" id="hpStudentDropdown"></div>
           </div>
           <div id="hpSelectedBadge" style="display:none;margin-bottom:8px"></div>
-          <div style="display:flex;gap:8px">
-            <input class="auth-pw-input" type="password" id="hpPwInput"
-              placeholder="비밀번호" style="flex:1;font-size:0.85rem;padding:9px 12px;letter-spacing:2px"
-              onkeydown="if(event.key==='Enter') authHomePlanner()" />
-            <button class="auth-confirm-btn" onclick="authHomePlanner()"
-              style="padding:9px 14px;font-size:0.82rem">확인</button>
-          </div>
         </div>
         <div id="homePlannerWriteArea" style="display:none">
           <div class="auth-logged-in" style="padding:10px 14px;margin-bottom:12px">
@@ -1059,13 +1052,6 @@
             <div class="student-dropdown" id="hcStudentDropdown"></div>
           </div>
           <div id="hcSelectedBadge" style="display:none;margin-bottom:8px"></div>
-          <div style="display:flex;gap:8px">
-            <input class="auth-pw-input" type="password" id="hcPwInput"
-              placeholder="비밀번호" style="flex:1;font-size:0.85rem;padding:9px 12px;letter-spacing:2px"
-              onkeydown="if(event.key==='Enter') authHomeCheck()" />
-            <button class="auth-confirm-btn" onclick="authHomeCheck()"
-              style="padding:9px 14px;font-size:0.82rem">확인</button>
-          </div>
         </div>
         <div id="homePlannerCheckArea" style="display:none">
           <div class="auth-logged-in" style="padding:10px 14px;margin-bottom:12px">
@@ -1503,7 +1489,7 @@
     <div id="plannerPersonalAuthWrap" style="margin-bottom:28px">
       <div class="auth-card" id="plannerPersonalAuthCard">
         <h3>🔐 본인 확인</h3>
-        <p class="auth-desc">내 주간 플래너를 확인하려면 본인 인증을 해주세요.<br/>초기 비밀번호는 <strong>1234</strong>예요.</p>
+        <p class="auth-desc">내 주간 플래너를 확인하려면 이름을 선택해주세요.</p>
         <div class="form-group">
           <label>학생 선택</label>
           <div class="student-search-wrap">
@@ -1512,14 +1498,6 @@
             <div class="student-dropdown" id="ppStudentDropdown"></div>
           </div>
           <div id="ppSelectedBadge" style="display:none"></div>
-        </div>
-        <div class="form-group">
-          <label>비밀번호</label>
-          <div class="auth-pw-row">
-            <input class="auth-pw-input" type="password" id="ppPwInput" placeholder="••••"
-              onkeydown="if(event.key==='Enter') authPlannerPersonal()" />
-            <button class="auth-confirm-btn" onclick="authPlannerPersonal()">확인</button>
-          </div>
         </div>
       </div>
       <!-- 인증 후 주간 플래너 -->
@@ -1565,16 +1543,7 @@
         </div>
         <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
 
-          <!-- 비번 인증 -->
-          <div id="plannerModalAuth">
-            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px">비밀번호를 입력해주세요 (초기: 1234)</div>
-            <div style="display:flex;gap:8px">
-              <input class="auth-pw-input" type="password" id="plannerModalPw" placeholder="••••" style="flex:1" onkeydown="if(event.key==='Enter') verifyPlannerPw()" />
-              <button class="auth-confirm-btn" onclick="verifyPlannerPw()">확인</button>
-            </div>
-          </div>
-
-          <!-- 플래너 작성 (인증 후) -->
+          <!-- 플래너 작성 -->
           <div id="plannerModalWrite" style="display:none">
             <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">📝 오늘의 할 일</div>
             <div id="plannerItemList" style="margin-bottom:16px"></div>
@@ -2040,8 +2009,15 @@ function showPage(name) {
       list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
       return;
     }
+    // 이미 시간이 지난 슬롯(예약 완료된 상담이 끝났거나, 지나버린 빈 슬롯)은 학생 화면에서 자동으로 숨김
+    const now = new Date();
+    const upcoming = data.filter(s => new Date(`${s.slot_date}T${s.slot_time}`) >= now);
+    if (!upcoming.length) {
+      list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
+      return;
+    }
     const groups = {};
-    data.forEach(s => {
+    upcoming.forEach(s => {
       const key = s.slot_date;
       if (!groups[key]) groups[key] = [];
       groups[key].push(s);
@@ -2731,6 +2707,11 @@ function showPage(name) {
     const badge = document.getElementById(prefix + 'SelectedBadge');
     badge.style.display = 'block';
     badge.innerHTML = `<div class="selected-student-badge">✅ ${num} ${name} <button onclick="clearSelectedStudent('${prefix}')">✕</button></div>`;
+
+    // 플래너는 비밀번호 없이 이름 선택만으로 바로 진행
+    if (prefix === 'hp') authHomePlanner();
+    else if (prefix === 'hc') authHomeCheck();
+    else if (prefix === 'pp') authPlannerPersonal();
   }
 
   function clearSelectedStudent(prefix) {
@@ -3059,22 +3040,28 @@ async function loadPlannerPage() {
   }).join('');
 }
 
-function openPlannerModal(num, name) {
-  authedPlanner = null;
+async function openPlannerModal(num, name) {
+  authedPlanner = { num, name };
   plannerItems = [];
   document.getElementById('plannerModalName').textContent = name;
   const date = document.getElementById('plannerDate').value;
   const d = new Date(date + 'T00:00:00');
   const days = ['일','월','화','수','목','금','토'];
   document.getElementById('plannerModalDate').textContent = `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-  document.getElementById('plannerModalPw').value = '';
-  document.getElementById('plannerModalAuth').style.display = 'block';
-  document.getElementById('plannerModalWrite').style.display = 'none';
+  document.getElementById('plannerModalWrite').style.display = 'block';
   document.getElementById('plannerModal').style.display = 'flex';
   document.getElementById('plannerModal').dataset.num = num;
   document.getElementById('plannerModal').dataset.name = name;
   document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('plannerModalPw').focus(), 100);
+
+  // 기존 플래너 불러오기
+  const { data: existing } = await sb.from('planners').select('*').eq('student_num', num).eq('plan_date', date).maybeSingle();
+  if (existing && existing.items) {
+    try { plannerItems = JSON.parse(existing.items); } catch { plannerItems = []; }
+  } else {
+    plannerItems = [];
+  }
+  renderPlannerItems();
 }
 
 function closePlannerModal() {
@@ -3088,36 +3075,6 @@ function closePlannerModal() {
     loadWeekPlanner();
   }
 }
-async function verifyPlannerPw() {
-  const num = document.getElementById('plannerModal').dataset.num;
-  const name = document.getElementById('plannerModal').dataset.name;
-  const pw = document.getElementById('plannerModalPw').value;
-  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
-
-  const { data, error } = await sb.from('students').select('password').eq('student_num', num).maybeSingle();
-  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
-  if (data.password !== pw) {
-    const input = document.getElementById('plannerModalPw');
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 1000);
-    showToast('❗ 비밀번호가 틀렸어요'); return;
-  }
-
-  authedPlanner = { num, name };
-  document.getElementById('plannerModalAuth').style.display = 'none';
-  document.getElementById('plannerModalWrite').style.display = 'block';
-
-  // 기존 플래너 불러오기
-  const date = document.getElementById('plannerDate').value;
-  const { data: existing } = await sb.from('planners').select('*').eq('student_num', num).eq('plan_date', date).maybeSingle();
-  if (existing && existing.items) {
-    try { plannerItems = JSON.parse(existing.items); } catch { plannerItems = []; }
-  } else {
-    plannerItems = [];
-  }
-  renderPlannerItems();
-}
-
 function renderPlannerItems() {
   const list = document.getElementById('plannerItemList');
   if (!list) return;
@@ -3258,18 +3215,7 @@ function formatWeekLabel(dates) {
 async function authPlannerPersonal() {
   const student = selectedStudentTemp['pp'];
   if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
-  const pw = document.getElementById('ppPwInput').value;
-  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
-  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
-  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
-  if (data.password !== pw) {
-    const input = document.getElementById('ppPwInput');
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 1000);
-    showToast('❗ 비밀번호가 틀렸어요'); return;
-  }
   authedPp = { num: student.num, name: student.name };
-  document.getElementById('ppPwInput').value = '';
   document.getElementById('plannerPersonalAuthCard').style.display = 'none';
   document.getElementById('plannerPersonalWeekWrap').style.display = 'block';
   document.getElementById('ppLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
@@ -3283,7 +3229,6 @@ function logoutPlannerPersonal() {
   selectedStudentTemp['pp'] = null;
   document.getElementById('ppSelectedBadge').style.display = 'none';
   document.getElementById('ppStudentSearch').value = '';
-  document.getElementById('ppPwInput').value = '';
   document.getElementById('plannerPersonalAuthCard').style.display = 'block';
   document.getElementById('plannerPersonalWeekWrap').style.display = 'none';
 }
@@ -3386,18 +3331,7 @@ function getTodayStr() {
 async function authHomePlanner() {
   const student = selectedStudentTemp['hp'];
   if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
-  const pw = document.getElementById('hpPwInput').value;
-  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
-  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
-  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
-  if (data.password !== pw) {
-    const input = document.getElementById('hpPwInput');
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 1000);
-    showToast('❗ 비밀번호가 틀렸어요'); return;
-  }
   authedHp = { num: student.num, name: student.name };
-  document.getElementById('hpPwInput').value = '';
   document.getElementById('homePlannerAuthArea').style.display = 'none';
   document.getElementById('homePlannerWriteArea').style.display = 'block';
   document.getElementById('hpLoggedInInfo').textContent = `${student.name} (${student.num})`;
@@ -3414,7 +3348,6 @@ function logoutHomePlanner() {
   selectedStudentTemp['hp'] = null;
   document.getElementById('hpSelectedBadge').style.display = 'none';
   document.getElementById('hpStudentSearch').value = '';
-  document.getElementById('hpPwInput').value = '';
   document.getElementById('homePlannerAuthArea').style.display = 'block';
   document.getElementById('homePlannerWriteArea').style.display = 'none';
 }
@@ -3491,18 +3424,7 @@ async function saveHomePlanner() {
 async function authHomeCheck() {
   const student = selectedStudentTemp['hc'];
   if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
-  const pw = document.getElementById('hcPwInput').value;
-  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
-  const { data, error } = await sb.from('students').select('password').eq('student_num', student.num).maybeSingle();
-  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
-  if (data.password !== pw) {
-    const input = document.getElementById('hcPwInput');
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 1000);
-    showToast('❗ 비밀번호가 틀렸어요'); return;
-  }
   authedHc = { num: student.num, name: student.name };
-  document.getElementById('hcPwInput').value = '';
   document.getElementById('homePlannerCheckAuthArea').style.display = 'none';
   document.getElementById('homePlannerCheckArea').style.display = 'block';
   document.getElementById('hcLoggedInInfo').textContent = `${student.name} (${student.num})`;
@@ -3532,7 +3454,6 @@ function logoutHomeCheck() {
   selectedStudentTemp['hc'] = null;
   document.getElementById('hcSelectedBadge').style.display = 'none';
   document.getElementById('hcStudentSearch').value = '';
-  document.getElementById('hcPwInput').value = '';
   document.getElementById('homePlannerCheckAuthArea').style.display = 'block';
   document.getElementById('homePlannerCheckArea').style.display = 'none';
 }
