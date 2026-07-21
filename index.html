@@ -544,6 +544,33 @@
     .slot-booked-tag { display: inline-block; background: #f0f0f0; color: #aaa; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; margin-top: 6px; }
     .slot-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .slot-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    /* ── 상담 예약 달력 ── */
+    .cnsl-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .cnsl-cal-header h3 { font-size: 1.05rem; font-weight: 700; }
+    .cnsl-cal-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 4px; margin-bottom: 24px; }
+    .cnsl-cal-daylabel { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 6px 0; }
+    .cnsl-cal-cell { min-height: 90px; border-radius: 10px; padding: 6px; background: var(--card); border: 1.5px solid var(--border); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 3px; overflow: hidden; box-sizing: border-box; }
+    .cnsl-cal-cell:hover { border-color: var(--primary-light); background: var(--primary-pale); }
+    .cnsl-cal-cell.empty-cell { background: transparent; border-color: transparent; cursor: default; }
+    .cnsl-cal-cell.empty-cell:hover { background: transparent; }
+    .cnsl-cal-cell.today { border-color: var(--primary); }
+    .cnsl-cal-cell.selected { border-color: var(--primary); background: var(--primary-pale); box-shadow: 0 0 0 2px var(--primary-light) inset; }
+    .cnsl-cal-cell.no-slots { opacity: 0.5; cursor: default; }
+    .cnsl-cal-cell.no-slots:hover { background: var(--card); border-color: var(--border); }
+    .cnsl-cal-date { font-size: 0.78rem; font-weight: 700; }
+    .cnsl-cal-cell.today .cnsl-cal-date { background: var(--primary); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+    .cnsl-chip { font-size: 0.62rem; font-weight: 700; border-radius: 4px; padding: 1px 5px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.5; box-sizing: border-box; }
+    .cnsl-chip.avail { background: var(--primary-pale); color: var(--primary); }
+    .cnsl-chip.booked { background: #f0f0f0; color: #aaa; }
+    .cnsl-chip.more { background: var(--bg); color: var(--text-muted); }
+    .cnsl-cal-summary { display: none; font-size: 0.68rem; font-weight: 700; color: var(--primary); }
+    .slot-day-detail { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .slot-day-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--primary); color: white; font-size: 1rem; font-weight: 700; }
+    .slot-day-detail-close { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 20px; padding: 6px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; cursor: pointer; }
+    .slot-day-detail-close:hover { background: rgba(255,255,255,0.35); }
+    .slot-day-detail .slot-cards { padding: 18px 20px; margin: 0; }
+    .slot-day-detail-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem; grid-column: 1/-1; }
     .booking-slot-info { background: var(--primary-pale); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 700; }
 
     .roles-semester-tab { display: flex; gap: 8px; margin-bottom: 20px; background: var(--primary-pale); border-radius: 14px; padding: 6px; max-width: 240px; }
@@ -842,6 +869,12 @@
       .slot-card .slot-label { font-size: 0.7rem; }
       .slot-available-tag, .slot-booked-tag { font-size: 0.68rem; }
       .booking-slot-info { font-size: 0.85rem; padding: 10px 14px; }
+      .cnsl-cal-grid { gap: 2px; }
+      .cnsl-cal-cell { min-height: 54px; padding: 4px; border-radius: 8px; }
+      .cnsl-cal-date { font-size: 0.68rem; }
+      .cnsl-chip { display: none; }
+      .cnsl-cal-summary { display: block; }
+      .cnsl-cal-header h3 { font-size: 0.92rem; }
 
       /* 건의사항 */
       .auth-card { padding: 24px 18px; }
@@ -1325,10 +1358,22 @@
   <div class="counsel-wrap">
     <div class="slot-info-box">
       <span class="slot-info-icon">📌</span>
-      <p>원하는 시간을 클릭하면 예약할 수 있어요. 상담 내용은 선생님께만 보여요 🔒</p>
+      <p>날짜를 클릭하면 그날 상담 가능한 시간이 보여요. 원하는 시간을 클릭하면 예약할 수 있어요. 상담 내용은 선생님께만 보여요 🔒</p>
     </div>
-    <div class="slot-list" id="slotList">
-      <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+    <div class="cnsl-cal-header">
+      <button class="cal-nav" onclick="changeCounselMonth(-1)">‹</button>
+      <h3 id="counselCalTitle"></h3>
+      <button class="cal-nav" onclick="changeCounselMonth(1)">›</button>
+    </div>
+    <div class="cnsl-cal-grid" id="counselCalGrid">
+      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>
+    </div>
+    <div class="slot-day-detail" id="counselDayDetail" style="display:none">
+      <div class="slot-day-detail-header">
+        <span id="counselDayDetailTitle"></span>
+        <button class="slot-day-detail-close" onclick="closeCounselDayDetail()">✕ 닫기</button>
+      </div>
+      <div class="slot-cards" id="counselDayDetailList"></div>
     </div>
   </div>
 </div>
@@ -2005,34 +2050,130 @@ function showPage(name) {
 
   // ════════════ 상담 슬롯 예약 ════════════
   let currentSlotId = null;
+  let allCounselSlots = [];
+  let counselCalYear, counselCalMonth, counselSelectedDate = null;
+  (() => {
+    const now = new Date();
+    counselCalYear = now.getFullYear();
+    counselCalMonth = now.getMonth();
+  })();
 
   async function loadCounseling() {
-    const list = document.getElementById('slotList');
-    list.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+    const grid = document.getElementById('counselCalGrid');
+    grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
     const { data, error } = await sb.from('counsel_slots').select('*').order('slot_date').order('slot_time');
-    if (error || !data || !data.length) {
-      list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
+    if (error) {
+      grid.innerHTML = '<div class="slot-empty" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>상담 시간을 불러오지 못했어요.</p></div>';
       return;
     }
     // 이미 시간이 지난 슬롯(예약 완료된 상담이 끝났거나, 지나버린 빈 슬롯)은 학생 화면에서 자동으로 숨김
     const now = new Date();
-    const upcoming = data.filter(s => new Date(`${s.slot_date}T${s.slot_time}`) >= now);
-    if (!upcoming.length) {
-      list.innerHTML = '<div class="slot-empty"><div class="empty-icon">📭</div><p>아직 열린 상담 시간이 없어요.<br/>선생님께서 곧 등록해 주실 거예요!</p></div>';
+    allCounselSlots = (data || []).filter(s => new Date(`${s.slot_date}T${s.slot_time}`) >= now);
+    renderCounselCalendar();
+  }
+
+  function changeCounselMonth(dir) {
+    counselCalMonth += dir;
+    if (counselCalMonth > 11) { counselCalMonth = 0; counselCalYear++; }
+    else if (counselCalMonth < 0) { counselCalMonth = 11; counselCalYear--; }
+    renderCounselCalendar();
+  }
+
+  function renderCounselCalendar() {
+    document.getElementById('counselCalTitle').textContent = `${counselCalYear}년 ${counselCalMonth+1}월`;
+    const grid = document.getElementById('counselCalGrid');
+    grid.innerHTML = '';
+    const dayNames = ['월','화','수','목','금'];
+    dayNames.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cnsl-cal-daylabel';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    const lastDate = new Date(counselCalYear, counselCalMonth+1, 0).getDate();
+    const today = new Date();
+
+    // 평일(월~금)만 모아서, 주말은 아예 표시하지 않음
+    const weekdayEntries = [];
+    for (let d = 1; d <= lastDate; d++) {
+      const dow = new Date(counselCalYear, counselCalMonth, d).getDay();
+      if (dow === 0 || dow === 6) continue;
+      weekdayEntries.push({ d, dow });
+    }
+    if (weekdayEntries.length) {
+      const leading = weekdayEntries[0].dow - 1; // 월=1 → 0칸
+      for (let i = 0; i < leading; i++) {
+        const el = document.createElement('div');
+        el.className = 'cnsl-cal-cell empty-cell';
+        grid.appendChild(el);
+      }
+    }
+
+    weekdayEntries.forEach(({ d }) => {
+      const dateStr = `${counselCalYear}-${String(counselCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = today.getFullYear()===counselCalYear && today.getMonth()===counselCalMonth && today.getDate()===d;
+      const isSelected = counselSelectedDate === dateStr;
+      const daySlots = allCounselSlots.filter(s => s.slot_date === dateStr).sort((a,b) => a.slot_time.localeCompare(b.slot_time));
+
+      const cell = document.createElement('div');
+      cell.className = 'cnsl-cal-cell' + (isToday?' today':'') + (isSelected?' selected':'') + (!daySlots.length?' no-slots':'');
+      if (daySlots.length) cell.onclick = () => selectCounselDay(dateStr);
+
+      const dateEl = document.createElement('div');
+      dateEl.className = 'cnsl-cal-date';
+      dateEl.textContent = d;
+      cell.appendChild(dateEl);
+
+      daySlots.slice(0, 3).forEach(s => {
+        const chip = document.createElement('div');
+        chip.className = 'cnsl-chip ' + (s.booked_by ? 'booked' : 'avail');
+        chip.textContent = `${s.slot_time.slice(0,5)} ${s.booked_by ? '마감' : '가능'}`;
+        cell.appendChild(chip);
+      });
+      if (daySlots.length > 3) {
+        const more = document.createElement('div');
+        more.className = 'cnsl-chip more';
+        more.textContent = `+${daySlots.length - 3}개 더`;
+        cell.appendChild(more);
+      }
+      if (daySlots.length) {
+        const availCount = daySlots.filter(s => !s.booked_by).length;
+        const summary = document.createElement('div');
+        summary.className = 'cnsl-cal-summary';
+        summary.textContent = availCount > 0 ? `🟢${availCount}` : '마감';
+        cell.appendChild(summary);
+      }
+
+      grid.appendChild(cell);
+    });
+
+    if (counselSelectedDate) renderCounselDayDetail(counselSelectedDate);
+  }
+
+  function selectCounselDay(dateStr) {
+    if (counselSelectedDate === dateStr) {
+      closeCounselDayDetail();
       return;
     }
-    const groups = {};
-    upcoming.forEach(s => {
-      const key = s.slot_date;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(s);
-    });
+    counselSelectedDate = dateStr;
+    renderCounselCalendar();
+    setTimeout(() => document.getElementById('counselDayDetail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+
+  function renderCounselDayDetail(dateStr) {
+    const panel = document.getElementById('counselDayDetail');
+    const d = new Date(dateStr + 'T00:00:00');
     const dayNames = ['일','월','화','수','목','금','토'];
-    list.innerHTML = Object.entries(groups).map(([date, slots]) => {
-      const d = new Date(date + 'T00:00:00');
-      const label = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
-      const cards = slots.map(s => {
-    if (s.booked_by) {
+    document.getElementById('counselDayDetailTitle').textContent = `📅 ${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
+
+    const daySlots = allCounselSlots.filter(s => s.slot_date === dateStr).sort((a,b) => a.slot_time.localeCompare(b.slot_time));
+    const list = document.getElementById('counselDayDetailList');
+    if (!daySlots.length) {
+      list.innerHTML = '<div class="slot-day-detail-empty">📭 이 날은 상담 가능한 시간이 없어요</div>';
+    } else {
+      list.innerHTML = daySlots.map(s => {
+        if (s.booked_by) {
           return `<div class="slot-card booked">
             <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
             ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
@@ -2040,17 +2181,20 @@ function showPage(name) {
             <span class="slot-booked-tag">예약 완료</span>
           </div>`;
         }
-        return `<div class="slot-card" onclick="openBookingModal(${s.id}, '${date}', '${s.slot_time}', '${(s.label||'').replace(/'/g,"\'")}')">
+        return `<div class="slot-card" onclick="openBookingModal(${s.id}, '${dateStr}', '${s.slot_time}', '${(s.label||'').replace(/'/g,"\\'")}')">
           <div class="slot-time">🕐 ${s.slot_time.slice(0,5)}</div>
           ${s.label ? `<div class="slot-label">${s.label}</div>` : ''}
           <span class="slot-available-tag">예약 가능</span>
         </div>`;
       }).join('');
-      return `<div class="slot-date-group">
-        <div class="slot-date-label">📅 ${label}</div>
-        <div class="slot-cards">${cards}</div>
-      </div>`;
-    }).join('');
+    }
+    panel.style.display = 'block';
+  }
+
+  function closeCounselDayDetail() {
+    counselSelectedDate = null;
+    document.getElementById('counselDayDetail').style.display = 'none';
+    renderCounselCalendar();
   }
 
   function openBookingModal(slotId, date, time, label) {
