@@ -300,6 +300,8 @@
     .cnsl-day-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--primary); color: white; font-size: 1rem; font-weight: 700; }
     .cnsl-day-detail-header button { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 20px; padding: 6px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; cursor: pointer; }
     .cnsl-day-detail-header button:hover { background: rgba(255,255,255,0.35); }
+    .cnsl-add-form { padding: 16px 20px; background: var(--bg); border-bottom: 1.5px solid var(--border); }
+    .cnsl-add-form .slot-form-row { align-items: flex-end; }
     .cnsl-day-detail-list { padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
     .cnsl-day-detail-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem; grid-column: 1/-1; }
 
@@ -486,22 +488,11 @@
     <!-- 상담 관리 탭 -->
     <div class="page-content" id="page-slots">
       <div class="page-fullwrap">
-        <h3 style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:20px">🗓️ 상담 가능 시간 등록</h3>
-        <div class="slot-form-card">
-          <div class="slot-form-row">
-            <div class="slot-form-group"><label>날짜</label><input type="date" id="newSlotDate" class="slot-input" /></div>
-            <div class="slot-form-group"><label>시작 시간</label><input type="time" id="newSlotTime" class="slot-input" step="1800" /></div>
-            <div class="slot-form-group"><label>종료 시간 (선택)</label><input type="time" id="newSlotEndTime" class="slot-input" step="1800" /></div>
-            <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
-            <button class="slot-add-btn" onclick="addSlot()">+ 추가</button>
-          </div>
-          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px">💡 종료 시간을 입력하면 시작~종료 사이 <strong>30분 간격</strong>으로 상담 시간이 한 번에 여러 개 등록돼요. 종료 시간을 비워두면 시작 시간 1개만 등록돼요.</p>
-        </div>
-        <div class="section-top" style="margin-top:28px;">
+        <div class="section-top">
           <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">📆 상담 달력 <span class="count-badge" id="slotCount"></span></h3>
           <button class="refresh-btn" onclick="loadSlots()">🔄 새로고침</button>
         </div>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">날짜를 클릭하면 그날 등록된 상담 시간과 예약 현황을 한눈에 볼 수 있어요.</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">날짜를 클릭하면 그날 등록된 상담 시간과 예약 현황이 보이고, 거기서 바로 시간을 추가할 수 있어요.</p>
         <div class="cnsl-cal-wrap">
           <div class="cnsl-cal-header">
             <button class="cal-nav" onclick="changeCnslMonth(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:1rem">‹</button>
@@ -513,7 +504,19 @@
         <div class="cnsl-day-detail" id="cnslDayDetail" style="display:none">
           <div class="cnsl-day-detail-header">
             <span id="cnslDayDetailTitle"></span>
-            <button onclick="closeCnslDayDetail()">✕ 닫기</button>
+            <div style="display:flex;gap:8px">
+              <button onclick="toggleCnslAddForm()" id="cnslAddToggleBtn">+ 시간 추가</button>
+              <button onclick="closeCnslDayDetail()">✕ 닫기</button>
+            </div>
+          </div>
+          <div class="cnsl-add-form" id="cnslAddForm" style="display:none">
+            <div class="slot-form-row">
+              <div class="slot-form-group"><label>시작 시간</label><input type="time" id="newSlotTime" class="slot-input" step="600" /></div>
+              <div class="slot-form-group"><label>종료 시간 (선택)</label><input type="time" id="newSlotEndTime" class="slot-input" step="600" /></div>
+              <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
+              <button class="slot-add-btn" onclick="addSlot()">저장</button>
+            </div>
+            <p style="font-size:0.76rem;color:var(--text-muted);margin-top:8px">💡 종료 시간까지 입력하면 시작~종료 사이 <strong>10분 간격</strong>으로 여러 개가 한 번에 등록돼요. 종료 시간을 비워두면 시작 시간 1개만 등록돼요.</p>
           </div>
           <div class="cnsl-day-detail-list" id="cnslDayDetailList"></div>
         </div>
@@ -1510,41 +1513,49 @@
   }
 
   async function addSlot() {
-    const date = document.getElementById('newSlotDate').value;
+    const date = cnslSelectedDate;
     const time = document.getElementById('newSlotTime').value;
     const endTime = document.getElementById('newSlotEndTime').value;
     const label = document.getElementById('newSlotLabel').value.trim();
-    if (!date || !time) { showToast('❗ 날짜와 시작 시간을 입력해주세요'); return; }
+    if (!date) { showToast('❗ 먼저 달력에서 날짜를 선택해주세요'); return; }
+    if (!time) { showToast('❗ 시작 시간을 입력해주세요'); return; }
     const dow = new Date(date + 'T00:00:00').getDay();
     if (dow === 0 || dow === 6) { showToast('❗ 상담 달력은 평일(월~금)만 표시돼요. 주말 날짜는 등록할 수 없어요'); return; }
 
-    // 종료 시간이 있으면 시작~종료 사이를 30분 간격으로 자동 생성
+    // 종료 시간이 있으면 시작~종료 사이를 10분 간격으로 자동 생성
     const times = [];
     if (endTime && endTime > time) {
       let [h, m] = time.split(':').map(Number);
       const [eh, em] = endTime.split(':').map(Number);
       while (h < eh || (h === eh && m < em)) {
         times.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-        m += 30;
+        m += 10;
         if (m >= 60) { m -= 60; h += 1; }
       }
     } else {
       times.push(time);
     }
 
-    const btn = document.querySelector('.slot-add-btn');
+    const btn = document.querySelector('#cnslAddForm .slot-add-btn');
     btn.disabled = true;
     const rows = times.map(t => ({ slot_date: date, slot_time: t, label: label || null }));
     const { error } = await sb.from('counsel_slots').insert(rows);
     btn.disabled = false;
     if (error) { showToast('❗ 추가 실패: ' + error.message); return; }
-    document.getElementById('newSlotDate').value = '';
     document.getElementById('newSlotTime').value = '';
     document.getElementById('newSlotEndTime').value = '';
     document.getElementById('newSlotLabel').value = '';
+    document.getElementById('cnslAddForm').style.display = 'none';
     showToast(`✅ 상담 시간이 ${times.length}개 등록됐어요!`);
-    cnslSelectedDate = date;
     await loadSlots();
+  }
+
+  function toggleCnslAddForm() {
+    const form = document.getElementById('cnslAddForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    if (form.style.display === 'block') {
+      setTimeout(() => document.getElementById('newSlotTime').focus(), 50);
+    }
   }
 
   async function deleteSlot(id, isBooked) {
@@ -1646,11 +1657,15 @@
     const d = new Date(dateStr + 'T00:00:00');
     const dayNames = ['일','월','화','수','목','금','토'];
     document.getElementById('cnslDayDetailTitle').textContent = `📅 ${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
+    document.getElementById('cnslAddForm').style.display = 'none';
+    document.getElementById('newSlotTime').value = '';
+    document.getElementById('newSlotEndTime').value = '';
+    document.getElementById('newSlotLabel').value = '';
 
     const daySlots = allSlots.filter(s => s.slot_date === dateStr).sort((a,b) => a.slot_time.localeCompare(b.slot_time));
     const list = document.getElementById('cnslDayDetailList');
     if (!daySlots.length) {
-      list.innerHTML = '<div class="cnsl-day-detail-empty">📭 이 날은 등록된 상담 시간이 없어요</div>';
+      list.innerHTML = '<div class="cnsl-day-detail-empty">📭 이 날은 등록된 상담 시간이 없어요. 위 "+ 시간 추가"로 등록해보세요!</div>';
     } else {
       list.innerHTML = daySlots.map(s => {
         const isBooked = !!s.booked_by;
