@@ -278,7 +278,7 @@
     .cnsl-cal-wrap { margin-top: 8px; }
     .cnsl-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .cnsl-cal-header h3 { font-size: 1.05rem; font-weight: 700; }
-    .cnsl-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cnsl-cal-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 4px; }
     .cnsl-cal-daylabel { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); padding: 6px 0; }
     .cnsl-cal-daylabel.sun { color: #e63946; }
     .cnsl-cal-daylabel.sat { color: #457b9d; }
@@ -1515,6 +1515,8 @@
     const endTime = document.getElementById('newSlotEndTime').value;
     const label = document.getElementById('newSlotLabel').value.trim();
     if (!date || !time) { showToast('❗ 날짜와 시작 시간을 입력해주세요'); return; }
+    const dow = new Date(date + 'T00:00:00').getDay();
+    if (dow === 0 || dow === 6) { showToast('❗ 상담 달력은 평일(월~금)만 표시돼요. 주말 날짜는 등록할 수 없어요'); return; }
 
     // 종료 시간이 있으면 시작~종료 사이를 30분 간격으로 자동 생성
     const times = [];
@@ -1566,32 +1568,40 @@
     document.getElementById('cnslCalTitle').textContent = `${cnslCalYear}년 ${cnslCalMonth+1}월`;
     const grid = document.getElementById('cnslCalGrid');
     grid.innerHTML = '';
-    const dayNames = ['일','월','화','수','목','금','토'];
-    dayNames.forEach((d, i) => {
+    const dayNames = ['월','화','수','목','금'];
+    dayNames.forEach(d => {
       const el = document.createElement('div');
-      el.className = 'cnsl-cal-daylabel' + (i===0?' sun':i===6?' sat':'');
+      el.className = 'cnsl-cal-daylabel';
       el.textContent = d;
       grid.appendChild(el);
     });
 
-    const first = new Date(cnslCalYear, cnslCalMonth, 1).getDay();
     const last = new Date(cnslCalYear, cnslCalMonth+1, 0).getDate();
     const today = new Date();
 
-    for (let i = 0; i < first; i++) {
-      const el = document.createElement('div');
-      el.className = 'cnsl-cal-cell empty-cell';
-      grid.appendChild(el);
+    // 평일(월~금)만 모아서, 주말은 아예 표시하지 않음
+    const weekdayEntries = [];
+    for (let d = 1; d <= last; d++) {
+      const dow = new Date(cnslCalYear, cnslCalMonth, d).getDay();
+      if (dow === 0 || dow === 6) continue;
+      weekdayEntries.push({ d, dow });
+    }
+    if (weekdayEntries.length) {
+      const leading = weekdayEntries[0].dow - 1; // 월=1 → 0칸
+      for (let i = 0; i < leading; i++) {
+        const el = document.createElement('div');
+        el.className = 'cnsl-cal-cell empty-cell';
+        grid.appendChild(el);
+      }
     }
 
-    for (let d = 1; d <= last; d++) {
-      const dow = (first + d - 1) % 7;
+    weekdayEntries.forEach(({ d }) => {
       const dateStr = `${cnslCalYear}-${String(cnslCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isToday = today.getFullYear()===cnslCalYear && today.getMonth()===cnslCalMonth && today.getDate()===d;
       const isSelected = cnslSelectedDate === dateStr;
 
       const cell = document.createElement('div');
-      cell.className = 'cnsl-cal-cell' + (dow===0?' sun':dow===6?' sat':'') + (isToday?' today':'') + (isSelected?' selected':'');
+      cell.className = 'cnsl-cal-cell' + (isToday?' today':'') + (isSelected?' selected':'');
       cell.onclick = () => selectCnslDay(dateStr);
 
       const dateEl = document.createElement('div');
@@ -1617,7 +1627,7 @@
       }
 
       grid.appendChild(cell);
-    }
+    });
 
     if (cnslSelectedDate) renderCnslDayDetail(cnslSelectedDate);
   }
