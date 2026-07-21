@@ -262,15 +262,15 @@
     .slot-input:focus { border-color: var(--primary-light); }
     .slot-add-btn { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 10px 22px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; align-self: flex-end; }
     .slot-add-btn:hover { background: #1b4332; }
-    .slot-manage-list { display: flex; flex-direction: column; gap: 10px; }
-    .slot-manage-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); flex-wrap: wrap; }
-    .smi-date { font-weight: 700; font-size: 0.9rem; color: var(--primary); min-width: 80px; }
-    .smi-time { font-size: 1rem; font-weight: 900; }
-    .smi-label { font-size: 0.82rem; color: var(--text-muted); }
-    .smi-status-empty { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
-    .smi-status-booked { background: #ffeaea; color: #e63946; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 700; }
-    .smi-booker { font-size: 0.88rem; font-weight: 700; margin-left: auto; }
-    .smi-delete { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.78rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+    .slot-manage-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .slot-manage-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; box-shadow: var(--shadow); }
+    .smi-date { font-weight: 700; font-size: 0.78rem; color: var(--primary); }
+    .smi-time { font-size: 0.95rem; font-weight: 900; }
+    .smi-label { font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .smi-status-empty { background: var(--primary-pale); color: var(--primary); border-radius: 20px; padding: 2px 9px; font-size: 0.68rem; font-weight: 700; align-self: flex-start; }
+    .smi-status-booked { background: #ffeaea; color: #e63946; border-radius: 20px; padding: 2px 9px; font-size: 0.68rem; font-weight: 700; align-self: flex-start; }
+    .smi-booker { font-size: 0.75rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .smi-delete { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 0; width: 100%; font-family: 'Noto Sans KR', sans-serif; font-size: 0.74rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; margin-top: 2px; }
     .smi-delete:hover { background: #fff0f0; border-color: #e63946; color: #e63946; }
 
     /* ── 학생 상세 패널 ── */
@@ -1495,16 +1495,17 @@
       const isPast = isSlotPast(s);
       let divider = '';
       if (isPast && !pastDividerShown) {
-        divider = `<div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:14px 0 4px 4px">🕓 지난 상담</div>`;
+        divider = `<div style="grid-column:1/-1;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:14px 0 4px 4px">🕓 지난 상담</div>`;
         pastDividerShown = true;
       }
       return `${divider}<div class="slot-manage-item" style="${isPast ? 'opacity:0.55' : ''}">
-        <span class="smi-date">${dateLabel}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+          <span class="smi-date">${dateLabel}</span>
+          ${isBooked ? `<span class="smi-status-booked">예약됨</span>` : `<span class="smi-status-empty">비어있음</span>`}
+        </div>
         <span class="smi-time">🕐 ${s.slot_time.slice(0,5)}</span>
         ${s.label ? `<span class="smi-label">${s.label}</span>` : ''}
-        ${isBooked
-          ? `<span class="smi-status-booked">예약됨</span><span class="smi-booker">👤 ${s.booked_by}</span>`
-          : `<span class="smi-status-empty">비어있음</span><span class="smi-booker" style="color:transparent">—</span>`}
+        ${isBooked ? `<span class="smi-booker">👤 ${s.booked_by}</span>` : ''}
         <button class="smi-delete" onclick="deleteSlot(${s.id}, ${isBooked})">${isBooked ? '예약 취소' : '삭제'}</button>
       </div>`;
     }).join('') + `</div>`;
