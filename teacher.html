@@ -511,12 +511,17 @@
           </div>
           <div class="cnsl-add-form" id="cnslAddForm" style="display:none">
             <div class="slot-form-row">
-              <div class="slot-form-group"><label>시작 시간</label><input type="time" id="newSlotTime" class="slot-input" step="600" /></div>
-              <div class="slot-form-group"><label>종료 시간 (선택)</label><input type="time" id="newSlotEndTime" class="slot-input" step="600" /></div>
+              <div class="slot-form-group">
+                <label>시작 시간</label>
+                <div style="display:flex;gap:4px">
+                  <select id="newSlotTimeH" class="slot-input" style="padding:10px 6px"></select>
+                  <select id="newSlotTimeM" class="slot-input" style="padding:10px 6px"></select>
+                </div>
+              </div>
               <div class="slot-form-group" style="flex:2"><label>메모 (선택)</label><input type="text" id="newSlotLabel" class="slot-input" placeholder="예: 점심시간, 방과 후 등" /></div>
               <button class="slot-add-btn" onclick="addSlot()">저장</button>
             </div>
-            <p style="font-size:0.76rem;color:var(--text-muted);margin-top:8px">💡 종료 시간까지 입력하면 시작~종료 사이 <strong>10분 간격</strong>으로 여러 개가 한 번에 등록돼요. 종료 시간을 비워두면 시작 시간 1개만 등록돼요.</p>
+            <p style="font-size:0.76rem;color:var(--text-muted);margin-top:8px">💡 시작 시간을 고르고 저장하면 그 시간에 상담 슬롯 1개가 등록돼요.</p>
           </div>
           <div class="cnsl-day-detail-list" id="cnslDayDetailList"></div>
         </div>
@@ -1512,41 +1517,34 @@
     renderCnslCalendar();
   }
 
+  // 시작 시간 select를 채움 (분은 00,10,20,30,40,50만)
+  function resetCnslTimeSelects() {
+    const hours = Array.from({length:24}, (_,i) => String(i).padStart(2,'0'));
+    const mins = ['00','10','20','30','40','50'];
+    const hourOpts = hours.map(h => `<option value="${h}">${h}시</option>`).join('');
+    const minOpts = mins.map(m => `<option value="${m}">${m}분</option>`).join('');
+
+    document.getElementById('newSlotTimeH').innerHTML = hourOpts;
+    document.getElementById('newSlotTimeM').innerHTML = minOpts;
+  }
+
   async function addSlot() {
     const date = cnslSelectedDate;
-    const time = document.getElementById('newSlotTime').value;
-    const endTime = document.getElementById('newSlotEndTime').value;
+    const time = `${document.getElementById('newSlotTimeH').value}:${document.getElementById('newSlotTimeM').value}`;
     const label = document.getElementById('newSlotLabel').value.trim();
     if (!date) { showToast('❗ 먼저 달력에서 날짜를 선택해주세요'); return; }
-    if (!time) { showToast('❗ 시작 시간을 입력해주세요'); return; }
     const dow = new Date(date + 'T00:00:00').getDay();
     if (dow === 0 || dow === 6) { showToast('❗ 상담 달력은 평일(월~금)만 표시돼요. 주말 날짜는 등록할 수 없어요'); return; }
 
-    // 종료 시간이 있으면 시작~종료 사이를 10분 간격으로 자동 생성
-    const times = [];
-    if (endTime && endTime > time) {
-      let [h, m] = time.split(':').map(Number);
-      const [eh, em] = endTime.split(':').map(Number);
-      while (h < eh || (h === eh && m < em)) {
-        times.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-        m += 10;
-        if (m >= 60) { m -= 60; h += 1; }
-      }
-    } else {
-      times.push(time);
-    }
-
     const btn = document.querySelector('#cnslAddForm .slot-add-btn');
     btn.disabled = true;
-    const rows = times.map(t => ({ slot_date: date, slot_time: t, label: label || null }));
-    const { error } = await sb.from('counsel_slots').insert(rows);
+    const { error } = await sb.from('counsel_slots').insert([{ slot_date: date, slot_time: time, label: label || null }]);
     btn.disabled = false;
     if (error) { showToast('❗ 추가 실패: ' + error.message); return; }
-    document.getElementById('newSlotTime').value = '';
-    document.getElementById('newSlotEndTime').value = '';
+    resetCnslTimeSelects();
     document.getElementById('newSlotLabel').value = '';
     document.getElementById('cnslAddForm').style.display = 'none';
-    showToast(`✅ 상담 시간이 ${times.length}개 등록됐어요!`);
+    showToast('✅ 상담 시간이 등록됐어요!');
     await loadSlots();
   }
 
@@ -1554,7 +1552,7 @@
     const form = document.getElementById('cnslAddForm');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
     if (form.style.display === 'block') {
-      setTimeout(() => document.getElementById('newSlotTime').focus(), 50);
+      setTimeout(() => document.getElementById('newSlotTimeH').focus(), 50);
     }
   }
 
@@ -1658,8 +1656,7 @@
     const dayNames = ['일','월','화','수','목','금','토'];
     document.getElementById('cnslDayDetailTitle').textContent = `📅 ${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
     document.getElementById('cnslAddForm').style.display = 'none';
-    document.getElementById('newSlotTime').value = '';
-    document.getElementById('newSlotEndTime').value = '';
+    resetCnslTimeSelects();
     document.getElementById('newSlotLabel').value = '';
 
     const daySlots = allSlots.filter(s => s.slot_date === dateStr).sort((a,b) => a.slot_time.localeCompare(b.slot_time));
