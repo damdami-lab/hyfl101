@@ -1532,85 +1532,97 @@
 </div>
 <!-- ════════════ PLANNER ════════════ -->
 <div class="page" id="page-planner">
-  <div class="page-header"><h2>📓 플래너</h2><p>오늘의 계획을 작성하고 달성률을 기록해요</p></div>
-  <div class="counsel-wrap" style="max-width:860px">
+  <div class="page-header"><h2>📓 데일리 플래너</h2><p>오늘 하루 계획을 세우고 체크해봐요</p></div>
+  <div class="counsel-wrap" style="max-width:600px">
 
     <!-- 본인 인증 -->
-    <div id="plannerPersonalAuthWrap" style="margin-bottom:28px">
-      <div class="auth-card" id="plannerPersonalAuthCard">
+    <div id="dpAuthWrap">
+      <div class="auth-card" id="dpAuthCard">
         <h3>🔐 본인 확인</h3>
-        <p class="auth-desc">내 주간 플래너를 확인하려면 이름을 선택해주세요.</p>
+        <p class="auth-desc">이름과 비밀번호를 입력하면 나만의 플래너를 쓸 수 있어요. 다른 친구들의 플래너는 보이지 않으니 편하게 써도 돼요!</p>
         <div class="form-group">
           <label>학생 선택</label>
           <div class="student-search-wrap">
-            <input class="student-search-input" type="text" id="ppStudentSearch"
-              placeholder="이름 또는 학번 입력..." oninput="searchStudents('pp')" autocomplete="off" />
-            <div class="student-dropdown" id="ppStudentDropdown"></div>
+            <input class="student-search-input" type="text" id="dpStudentSearch"
+              placeholder="이름 또는 학번 입력..." oninput="searchStudents('dp')" autocomplete="off" />
+            <div class="student-dropdown" id="dpStudentDropdown"></div>
           </div>
-          <div id="ppSelectedBadge" style="display:none"></div>
+          <div id="dpSelectedBadge" style="display:none;margin-top:8px"></div>
         </div>
-      </div>
-      <!-- 인증 후 주간 플래너 -->
-      <div id="plannerPersonalWeekWrap" style="display:none">
-        <div class="auth-logged-in" style="margin-bottom:20px">
-          <div class="auth-logged-in-info" id="ppLoggedInInfo"></div>
-          <button class="auth-logout-btn" onclick="logoutPlannerPersonal()">다른 학생으로</button>
+        <div class="form-group">
+          <label>비밀번호</label>
+          <div class="auth-pw-row">
+            <input class="auth-pw-input" type="password" id="dpPwInput" placeholder="••••" maxlength="12"
+              onkeydown="if(event.key==='Enter') authDailyPlanner()" />
+            <button class="auth-confirm-btn" onclick="authDailyPlanner()">확인</button>
+          </div>
         </div>
-        <!-- 주간 네비게이션 -->
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
-          <button class="cal-nav" onclick="changeWeek(-1)">‹</button>
-          <span id="weekRangeLabel" style="font-size:0.95rem;font-weight:700;color:var(--primary)"></span>
-          <button class="cal-nav" onclick="changeWeek(1)">›</button>
-          <button class="tab-btn" onclick="goThisWeek()" style="margin-left:auto;font-size:0.82rem;padding:6px 16px">이번 주</button>
-        </div>
-        <!-- 주간 카드 그리드 -->
-        <div id="plannerWeekGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:32px"></div>
       </div>
     </div>
 
-    <hr style="border:none;border-top:1.5px solid var(--border);margin-bottom:28px" />
+    <!-- 인증 후: 데일리 플래너 -->
+    <div id="dpMainWrap" style="display:none">
+      <div class="auth-logged-in" style="margin-bottom:20px">
+        <div class="auth-logged-in-info" id="dpLoggedInInfo"></div>
+        <button class="auth-logout-btn" onclick="logoutDailyPlanner()">다른 학생으로</button>
+      </div>
 
-    <!-- 날짜 선택 -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
-      <button class="cal-nav" onclick="changePlannerDate(-1)">‹</button>
-      <input type="date" id="plannerDate" style="border:1.5px solid var(--border);border-radius:10px;padding:10px 16px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;font-weight:700;outline:none;background:white" onchange="loadPlannerPage()" />
-      <button class="cal-nav" onclick="changePlannerDate(1)">›</button>
-      <button class="tab-btn" onclick="setTodayPlanner()" style="margin-left:auto">오늘</button>
-    </div>
+      <!-- 날짜 네비게이션 (좌우로 넘기거나 스와이프해서 이동) -->
+      <div id="dpDateNav" style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px;user-select:none">
+        <button class="cal-nav" onclick="changeDpDate(-1)">‹</button>
+        <div style="text-align:center;min-width:170px">
+          <div style="font-size:1.15rem;font-weight:900;color:var(--primary)" id="dpDateLabel">—</div>
+          <div style="font-size:0.76rem;color:var(--text-muted);margin-top:2px" id="dpDdayLabel">—</div>
+        </div>
+        <button class="cal-nav" onclick="changeDpDate(1)">›</button>
+      </div>
+      <div style="text-align:center;margin-bottom:22px">
+        <button class="tab-btn" onclick="goDpToday()" id="dpTodayBtn" style="font-size:0.78rem;padding:5px 16px">오늘로</button>
+      </div>
 
-    <!-- 학생 목록 + 현황 -->
-    <div id="plannerStudentGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px"></div>
-
-    <!-- 플래너 작성 모달 -->
-    <div id="plannerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;align-items:center;justify-content:center;padding:24px">
-      <div style="background:white;border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:slideUp 0.25s ease">
-        <div style="position:sticky;top:0;background:white;border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+      <!-- 공부 시간 카드 -->
+      <div class="today-card" style="margin-bottom:16px">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:14px">⏱️ 공부 시간</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div>
-            <div style="font-size:1rem;font-weight:900;color:var(--primary)" id="plannerModalName"></div>
-            <div style="font-size:0.78rem;color:var(--text-muted)" id="plannerModalDate"></div>
-          </div>
-          <button onclick="closePlannerModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted)">✕</button>
-        </div>
-        <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
-
-          <!-- 플래너 작성 -->
-          <div id="plannerModalWrite" style="display:none">
-            <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">📝 오늘의 할 일</div>
-            <div id="plannerItemList" style="margin-bottom:16px"></div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;gap:8px">
-                <input type="text" id="plannerItemInput"
-                  placeholder="할 일 입력..."
-                  style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;outline:none;background:var(--bg);min-width:0"
-                  onkeydown="if(event.key==='Enter') addPlannerItem()"
-                  onfocus="this.style.borderColor='var(--primary-light)'"
-                  onblur="this.style.borderColor='var(--border)'" />
-                <button onclick="addPlannerItem()" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0">+</button>
-              </div>
+            <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;font-weight:700">🎯 목표 시간</label>
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+              <input type="number" id="dpTargetH" min="0" max="24" placeholder="0"
+                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+              <span style="font-size:0.8rem;color:var(--text-muted)">시간</span>
+              <input type="number" id="dpTargetM" min="0" max="59" placeholder="0"
+                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+              <span style="font-size:0.8rem;color:var(--text-muted)">분</span>
             </div>
-            <button class="submit-btn" id="plannerSaveBtn" onclick="savePlanner()" style="margin-top:16px">💾 저장하기</button>
+          </div>
+          <div>
+            <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;font-weight:700">✅ 실제 공부 시간</label>
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+              <input type="number" id="dpActualH" min="0" max="24" placeholder="0"
+                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+              <span style="font-size:0.8rem;color:var(--text-muted)">시간</span>
+              <input type="number" id="dpActualM" min="0" max="59" placeholder="0"
+                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+              <span style="font-size:0.8rem;color:var(--text-muted)">분</span>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- 체크리스트 카드 -->
+      <div class="today-card">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:12px">📝 오늘의 할 일</div>
+        <div id="dpAchievementDisplay" style="margin-bottom:14px"></div>
+        <div id="dpItemList" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="dpItemInput" placeholder="할 일 입력..."
+            style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;outline:none;background:var(--bg);min-width:0"
+            onkeydown="if(event.key==='Enter') addDpItem()"
+            onfocus="this.style.borderColor='var(--primary-light)'"
+            onblur="this.style.borderColor='var(--border)'" />
+          <button onclick="addDpItem()" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0">+</button>
+        </div>
+        <button class="submit-btn" id="dpSaveBtn" onclick="saveDailyPlanner()" style="margin-top:18px">💾 저장하기</button>
       </div>
     </div>
 
@@ -2852,7 +2864,7 @@ function showPage(name) {
   ];
 
   let authedStudent = { sg: null, bk: null };
-  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null, hp: null, hc: null, pp: null };
+  let selectedStudentTemp = { sg: null, bk: null, nt: null, bw: null, cmt: null, cl: null, hp: null, hc: null, pp: null, dp: null };
 
   function searchStudents(prefix) {
     const q = document.getElementById(prefix + 'StudentSearch').value.trim().toLowerCase();
@@ -2880,7 +2892,6 @@ function showPage(name) {
     // 플래너는 비밀번호 없이 이름 선택만으로 바로 진행
     if (prefix === 'hp') authHomePlanner();
     else if (prefix === 'hc') authHomeCheck();
-    else if (prefix === 'pp') authPlannerPersonal();
   }
 
   function clearSelectedStudent(prefix) {
@@ -2953,7 +2964,7 @@ function showPage(name) {
   }
 
   document.addEventListener('click', e => {
-    ['sg','bk','bw','cmt','cl','hp','hc','pp'].forEach(p => {
+    ['sg','bk','bw','cmt','cl','hp','hc','pp','dp'].forEach(p => {
       const wrap = document.getElementById(p + 'StudentSearch');
       const drop = document.getElementById(p + 'StudentDropdown');
       if (wrap && drop && !wrap.contains(e.target) && !drop.contains(e.target)) {
@@ -3178,337 +3189,214 @@ function showPage(name) {
         </table>
       </div>`;
   }
-// ════════════ 플래너 ════════════
-let authedPlanner = null;
-let selectedAchievement = 0;
-let plannerItems = [];
+// ════════════ 데일리 플래너 ════════════
+let authedDp = null;
+let dpDate = new Date().toISOString().slice(0, 10);
+let dpItems = [];
+let dpLoadToken = 0;
 
-function setTodayPlanner() {
-  document.getElementById('plannerDate').value = new Date().toISOString().slice(0, 10);
-  loadPlannerPage();
-}
-
-function changePlannerDate(dir) {
-  const input = document.getElementById('plannerDate');
-  const parts = input.value.split('-');
-  const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-  d.setDate(d.getDate() + dir);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  input.value = `${y}-${m}-${day}`;
-  loadPlannerPage();
-}
-
-async function loadPlannerPage() {
-  const dateInput = document.getElementById('plannerDate');
-  if (!dateInput || !dateInput.value) return;
-  const date = dateInput.value;
-  const grid = document.getElementById('plannerStudentGrid');
-  if (!grid) return;
-  grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
-
-  const { data } = await sb.from('planners').select('student_num,achievement,items').eq('plan_date', date);
-  const written = {};
-  (data || []).forEach(p => { written[p.student_num] = p; });
-
-  grid.innerHTML = STUDENTS.filter(s => s.num !== '10130').map(s => {
-    const p = written[s.num];
-    const hasWritten = !!p;
-    const pct = hasWritten ? (p.achievement || 0) : null;
-    const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
-    return `<div onclick="openPlannerModal('${s.num}','${s.name}')" style="background:white;border:1.5px solid ${hasWritten ? 'var(--primary-light)' : 'var(--border)'};border-radius:16px;padding:16px;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span style="font-weight:900;font-size:0.95rem;color:var(--primary)">${s.name}</span>
-        <span style="font-size:0.75rem;font-weight:700;background:${hasWritten ? 'var(--primary-pale)' : '#f5f5f5'};color:${hasWritten ? 'var(--primary)' : '#aaa'};border-radius:20px;padding:2px 8px">${hasWritten ? '✅ 작성' : '❌ 미작성'}</span>
-      </div>
-      ${hasWritten ? `
-        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px">
-          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width 0.4s ease"></div>
-        </div>
-        <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-align:right">${pct}%</div>
-      ` : `<div style="height:6px;background:#f0f0f0;border-radius:3px"></div><div style="font-size:0.78rem;color:#ccc;text-align:right;margin-top:6px">—</div>`}
-    </div>`;
-  }).join('');
-}
-
-async function openPlannerModal(num, name) {
-  authedPlanner = { num, name };
-  plannerItems = [];
-  document.getElementById('plannerModalName').textContent = name;
-  const date = document.getElementById('plannerDate').value;
-  const d = new Date(date + 'T00:00:00');
+function fmtDpDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
   const days = ['일','월','화','수','목','금','토'];
-  document.getElementById('plannerModalDate').textContent = `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-  document.getElementById('plannerModalWrite').style.display = 'block';
-  document.getElementById('plannerModal').style.display = 'flex';
-  document.getElementById('plannerModal').dataset.num = num;
-  document.getElementById('plannerModal').dataset.name = name;
-  document.body.style.overflow = 'hidden';
-
-  // 기존 플래너 불러오기
-  const { data: existing } = await sb.from('planners').select('*').eq('student_num', num).eq('plan_date', date).maybeSingle();
-  if (existing && existing.items) {
-    try { plannerItems = JSON.parse(existing.items); } catch { plannerItems = []; }
-  } else {
-    plannerItems = [];
-  }
-  renderPlannerItems();
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
 }
 
-function closePlannerModal() {
-  document.getElementById('plannerModal').style.display = 'none';
-  document.body.style.overflow = '';
-  authedPlanner = null;
-  plannerItems = [];
-  // 주간 뷰가 열려있으면 새로고침
-  if (window._ppReloadOnClose && authedPp) {
-    window._ppReloadOnClose = false;
-    loadWeekPlanner();
-  }
-}
-function renderPlannerItems() {
-  const list = document.getElementById('plannerItemList');
-  if (!list) return;
-  if (!plannerItems.length) {
-    list.innerHTML = '<div style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:16px 0">아직 할 일이 없어요. 아래에서 추가해요!</div>';
-    updateAchievementDisplay();
+async function authDailyPlanner() {
+  const student = selectedStudentTemp['dp'];
+  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
+  const pw = document.getElementById('dpPwInput').value;
+  if (!pw) { showToast('❗ 비밀번호를 입력해주세요'); return; }
+
+  const { data, error } = await sb.from('students').select('*').eq('student_num', student.num).maybeSingle();
+  if (error || !data) { showToast('❗ 학생 정보를 불러오지 못했어요'); return; }
+  if (data.password !== pw) {
+    const input = document.getElementById('dpPwInput');
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 1000);
+    showToast('❗ 비밀번호가 틀렸어요');
     return;
   }
-  list.innerHTML = plannerItems.map((item, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px;transition:background 0.2s">
+
+  authedDp = { num: student.num, name: student.name };
+  document.getElementById('dpPwInput').value = '';
+  document.getElementById('dpAuthWrap').style.display = 'none';
+  document.getElementById('dpMainWrap').style.display = 'block';
+  document.getElementById('dpLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
+
+  dpDate = new Date().toISOString().slice(0, 10);
+  await loadDailyPlannerDay();
+  setupDpSwipe();
+}
+
+function logoutDailyPlanner() {
+  authedDp = null;
+  dpItems = [];
+  selectedStudentTemp['dp'] = null;
+  document.getElementById('dpSelectedBadge').style.display = 'none';
+  document.getElementById('dpStudentSearch').value = '';
+  document.getElementById('dpPwInput').value = '';
+  document.getElementById('dpAuthWrap').style.display = 'block';
+  document.getElementById('dpMainWrap').style.display = 'none';
+}
+
+function goDpToday() {
+  dpDate = new Date().toISOString().slice(0, 10);
+  loadDailyPlannerDay();
+}
+
+function changeDpDate(dir) {
+  const d = new Date(dpDate + 'T00:00:00');
+  d.setDate(d.getDate() + dir);
+  dpDate = d.toISOString().slice(0, 10);
+  loadDailyPlannerDay();
+}
+
+async function loadDailyPlannerDay() {
+  if (!authedDp) return;
+  const token = ++dpLoadToken;
+
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('dpDateLabel').textContent =
+    fmtDpDate(dpDate) + (dpDate === today ? ' · 오늘' : '');
+  document.getElementById('dpDdayLabel').textContent = '수능 ' + calcDday('2028-11-17');
+
+  document.getElementById('dpItemList').innerHTML = '<div class="loading" style="padding:20px"><div class="spinner"></div></div>';
+
+  const { data: existing } = await sb.from('planners')
+    .select('*').eq('student_num', authedDp.num).eq('plan_date', dpDate).maybeSingle();
+
+  if (token !== dpLoadToken) return; // 날짜를 빠르게 넘기다 이전 요청이 늦게 도착한 경우 무시
+
+  if (existing && existing.items) {
+    try { dpItems = JSON.parse(existing.items); } catch { dpItems = []; }
+  } else {
+    dpItems = [];
+  }
+  document.getElementById('dpTargetH').value = existing?.target_hours ?? '';
+  document.getElementById('dpTargetM').value = existing?.target_minutes ?? '';
+  document.getElementById('dpActualH').value = existing?.actual_hours ?? '';
+  document.getElementById('dpActualM').value = existing?.actual_minutes ?? '';
+
+  renderDpItems();
+}
+
+function renderDpItems() {
+  const list = document.getElementById('dpItemList');
+  if (!dpItems.length) {
+    list.innerHTML = '<div style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:16px 0">아직 할 일이 없어요. 아래에서 추가해봐요!</div>';
+    updateDpAchievementDisplay();
+    return;
+  }
+  list.innerHTML = dpItems.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:8px">
       <input type="checkbox" ${item.checked ? 'checked' : ''}
         style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary);flex-shrink:0"
-        onchange="togglePlannerCheck(${i}, this.checked)" />
+        onchange="toggleDpCheck(${i}, this.checked)" />
       <span style="flex:1;font-size:0.9rem;color:var(--text);${item.checked ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${item.text}</span>
-      <button onclick="removePlannerItem(${i})" style="background:none;border:none;cursor:pointer;font-size:0.85rem;color:var(--text-muted);opacity:0.5;padding:2px 6px;border-radius:4px;transition:all 0.2s" onmouseover="this.style.opacity=1;this.style.color='#e63946'" onmouseout="this.style.opacity=0.5;this.style.color='var(--text-muted)'">✕</button>
+      <button onclick="removeDpItem(${i})" style="background:none;border:none;cursor:pointer;font-size:0.85rem;color:var(--text-muted);opacity:0.5;padding:2px 6px;border-radius:4px;transition:all 0.2s"
+        onmouseover="this.style.opacity=1;this.style.color='#e63946'" onmouseout="this.style.opacity=0.5;this.style.color='var(--text-muted)'">✕</button>
     </div>`).join('');
-  updateAchievementDisplay();
-}
-  function togglePlannerCheck(i, checked) {
-  plannerItems[i].checked = checked;
-  const rows = document.getElementById('plannerItemList').children;
-  const span = rows[i]?.querySelector('span');
-  if (span) {
-    span.style.textDecoration = checked ? 'line-through' : '';
-    span.style.color = checked ? 'var(--text-muted)' : 'var(--text)';
-  }
-  updateAchievementDisplay();
+  updateDpAchievementDisplay();
 }
 
-function updateAchievementDisplay() {
-  const total = plannerItems.length;
-  const checked = plannerItems.filter(i => i.checked).length;
+function toggleDpCheck(i, checked) {
+  dpItems[i].checked = checked;
+  renderDpItems();
+}
+
+function updateDpAchievementDisplay() {
+  const total = dpItems.length;
+  const checked = dpItems.filter(i => i.checked).length;
   const pct = total === 0 ? 0 : Math.round(checked / total * 100);
-
-  let el = document.getElementById('plannerAchievementDisplay');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'plannerAchievementDisplay';
-    el.style.cssText = 'margin-bottom:12px;padding:12px 16px;background:var(--primary-pale);border-radius:12px;display:flex;align-items:center;gap:12px';
-    const writeArea = document.getElementById('plannerModalWrite');
-    const itemList = document.getElementById('plannerItemList');
-    if (writeArea && itemList) writeArea.insertBefore(el, itemList);
-  }
   const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
-  el.innerHTML = `
-    <span style="font-size:0.82rem;font-weight:700;color:var(--primary);white-space:nowrap">달성률</span>
-    <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-      <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div>
-    </div>
-    <span style="font-size:0.9rem;font-weight:900;color:var(--primary);min-width:36px;text-align:right">${pct}%</span>
-    <span style="font-size:0.78rem;color:var(--text-muted)">(${checked}/${total})</span>`;
+  document.getElementById('dpAchievementDisplay').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--primary-pale);border-radius:12px">
+      <span style="font-size:0.82rem;font-weight:700;color:var(--primary);white-space:nowrap">달성률</span>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width 0.3s ease"></div>
+      </div>
+      <span style="font-size:0.9rem;font-weight:900;color:var(--primary);min-width:36px;text-align:right">${pct}%</span>
+      <span style="font-size:0.78rem;color:var(--text-muted)">(${checked}/${total})</span>
+    </div>`;
 }
 
-function addPlannerItem() {
-  const input = document.getElementById('plannerItemInput');
+function addDpItem() {
+  const input = document.getElementById('dpItemInput');
   const text = input.value.trim();
   if (!text) { showToast('❗ 할 일을 입력해주세요'); return; }
-  plannerItems.push({ text, checked: false });
+  dpItems.push({ text, checked: false });
   input.value = '';
-  renderPlannerItems();
+  renderDpItems();
   input.focus();
 }
 
-function removePlannerItem(i) {
-  plannerItems.splice(i, 1);
-  renderPlannerItems();
+function removeDpItem(i) {
+  dpItems.splice(i, 1);
+  renderDpItems();
 }
 
-async function savePlanner() {
-  if (!authedPlanner) return;
-
-  const date = document.getElementById('plannerDate').value;
-  const btn = document.getElementById('plannerSaveBtn');
+async function saveDailyPlanner() {
+  if (!authedDp) return;
+  const btn = document.getElementById('dpSaveBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
 
-  // 할 일이 하나도 없으면 DB 행 삭제 → 미작성으로 복귀
-  if (!plannerItems.length) {
-    await sb.from('planners')
-      .delete()
-      .eq('student_num', authedPlanner.num)
-      .eq('plan_date', date);
+  const targetH = parseInt(document.getElementById('dpTargetH').value) || 0;
+  const targetM = parseInt(document.getElementById('dpTargetM').value) || 0;
+  const actualH = parseInt(document.getElementById('dpActualH').value) || 0;
+  const actualM = parseInt(document.getElementById('dpActualM').value) || 0;
+
+  // 할 일도 없고 시간 기록도 없으면 행 삭제 → 미작성 상태로
+  if (!dpItems.length && !targetH && !targetM && !actualH && !actualM) {
+    await sb.from('planners').delete().eq('student_num', authedDp.num).eq('plan_date', dpDate);
     btn.disabled = false; btn.textContent = '💾 저장하기';
-    showToast('🗑️ 플래너가 삭제됐어요 (미작성으로 변경)');
-    closePlannerModal();
-    await loadPlannerPage();
+    showToast('🗑️ 플래너가 비워졌어요');
     return;
   }
 
-  const checkedCount = plannerItems.filter(i => i.checked).length;
-  const achievement = Math.round(checkedCount / plannerItems.length * 100);
+  const checkedCount = dpItems.filter(i => i.checked).length;
+  const achievement = dpItems.length ? Math.round(checkedCount / dpItems.length * 100) : 0;
 
   const { error } = await sb.from('planners').upsert({
-    student_num: authedPlanner.num,
-    student_name: authedPlanner.name,
-    plan_date: date,
-    content: plannerItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
-    items: JSON.stringify(plannerItems),
+    student_num: authedDp.num,
+    student_name: authedDp.name,
+    plan_date: dpDate,
+    content: dpItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
+    items: JSON.stringify(dpItems),
     achievement,
+    target_hours: targetH, target_minutes: targetM,
+    actual_hours: actualH, actual_minutes: actualM,
     updated_at: new Date().toISOString()
   }, { onConflict: 'student_num,plan_date' });
 
   btn.disabled = false; btn.textContent = '💾 저장하기';
   if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
   showToast('✅ 플래너가 저장됐어요!');
-  closePlannerModal();
-  await loadPlannerPage();
 }
 
 function loadPlanner() {
-  const input = document.getElementById('plannerDate');
-  if (!input.value) input.value = new Date().toISOString().slice(0, 10);
-  loadPlannerPage();
-}
-// ════════════ 주간 개인 플래너 ════════════
-let authedPp = null;
-let ppWeekOffset = 0; // 0=이번주, -1=지난주, 1=다음주
-
-function getWeekDates(offset) {
-  const today = new Date();
-  const dow = today.getDay(); // 0=일
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    days.push(d.toISOString().slice(0, 10));
-  }
-  return days;
+  if (authedDp) loadDailyPlannerDay();
 }
 
-function formatWeekLabel(dates) {
-  const s = new Date(dates[0] + 'T00:00:00');
-  const e = new Date(dates[6] + 'T00:00:00');
-  return `${s.getMonth()+1}월 ${s.getDate()}일 — ${e.getMonth()+1}월 ${e.getDate()}일`;
+// 좌우 스와이프로 날짜 이동 (모바일)
+function setupDpSwipe() {
+  const el = document.getElementById('dpMainWrap');
+  if (!el || el.dataset.swipeBound) return;
+  el.dataset.swipeBound = '1';
+  let startX = 0, startY = 0;
+  el.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      changeDpDate(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
 }
 
-async function authPlannerPersonal() {
-  const student = selectedStudentTemp['pp'];
-  if (!student) { showToast('❗ 학생을 먼저 선택해주세요'); return; }
-  authedPp = { num: student.num, name: student.name };
-  document.getElementById('plannerPersonalAuthCard').style.display = 'none';
-  document.getElementById('plannerPersonalWeekWrap').style.display = 'block';
-  document.getElementById('ppLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
-  ppWeekOffset = 0;
-  await loadWeekPlanner();
-}
-
-function logoutPlannerPersonal() {
-  authedPp = null;
-  ppWeekOffset = 0;
-  selectedStudentTemp['pp'] = null;
-  document.getElementById('ppSelectedBadge').style.display = 'none';
-  document.getElementById('ppStudentSearch').value = '';
-  document.getElementById('plannerPersonalAuthCard').style.display = 'block';
-  document.getElementById('plannerPersonalWeekWrap').style.display = 'none';
-}
-
-function changeWeek(dir) {
-  ppWeekOffset += dir;
-  loadWeekPlanner();
-}
-
-function goThisWeek() {
-  ppWeekOffset = 0;
-  loadWeekPlanner();
-}
-
-async function loadWeekPlanner() {
-  if (!authedPp) return;
-  const dates = getWeekDates(ppWeekOffset);
-  document.getElementById('weekRangeLabel').textContent = formatWeekLabel(dates);
-
-  const grid = document.getElementById('plannerWeekGrid');
-  grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div> 불러오는 중...</div>';
-
-  const [planRes, fbRes] = await Promise.all([
-    sb.from('planners').select('*').eq('student_num', authedPp.num).in('plan_date', dates),
-    sb.from('planner_feedbacks').select('*').eq('student_num', authedPp.num).in('plan_date', dates)
-  ]);
-
-  const planMap = {};
-  (planRes.data || []).forEach(p => { planMap[p.plan_date] = p; });
-
-  const fbMap = {};
-  (fbRes.data || []).forEach(f => { fbMap[f.plan_date] = f; });
-
-  const today = new Date().toISOString().slice(0, 10);
-  const dayNames = ['월','화','수','목','금','토','일'];
-
-  grid.innerHTML = dates.map((date, idx) => {
-    const p = planMap[date];
-    const hasData = !!p;
-    const pct = hasData ? (p.achievement || 0) : null;
-    const barColor = pct >= 75 ? '#52b788' : pct >= 50 ? '#f4a261' : pct >= 25 ? '#ffd166' : '#d0d0d0';
-    const isToday = date === today;
-    const items = hasData && p.items ? (() => { try { return JSON.parse(p.items); } catch { return []; } })() : [];
-
-    return `<div onclick="openPpDayModal('${date}')"
-      style="background:white;border:2px solid ${isToday ? 'var(--primary)' : hasData ? 'var(--primary-light)' : 'var(--border)'};border-radius:14px;padding:12px 10px;cursor:pointer;transition:all 0.2s;min-height:140px;display:flex;flex-direction:column;gap:6px"
-      onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(45,106,79,0.15)'"
-      onmouseout="this.style.transform='';this.style.boxShadow=''">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:0.72rem;font-weight:700;color:${isToday ? 'var(--primary)' : 'var(--text-muted)'}">${dayNames[idx]}</span>
-        ${isToday ? '<span style="font-size:0.6rem;background:var(--primary);color:white;border-radius:10px;padding:1px 6px">오늘</span>' : ''}
-      </div>
-      <div style="font-size:1rem;font-weight:900;color:${isToday ? 'var(--primary)' : 'var(--text)'}">${new Date(date + 'T00:00:00').getDate()}</div>
-      ${hasData ? `
-        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:2px">
-          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width 0.4s ease"></div>
-        </div>
-        <div style="font-size:0.72rem;font-weight:700;color:var(--primary)">${pct}%</div>
-        <div style="flex:1;overflow:hidden">
-          ${items.slice(0,3).map(item => `
-            <div style="font-size:0.65rem;color:${item.checked ? 'var(--text-muted)' : 'var(--text)'};text-decoration:${item.checked ? 'line-through' : 'none'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 0">
-              ${item.checked ? '✓' : '·'} ${item.text}
-            </div>`).join('')}
-          ${items.length > 3 ? `<div style="font-size:0.6rem;color:var(--text-muted);margin-top:2px">+${items.length - 3}개 더</div>` : ''}
-        </div>
-     ` : `
-        <div style="flex:1;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:0.65rem;color:#ccc">미작성</span>
-        </div>
-      `}
-      ${fbMap[date] ? `
-        <div style="border-top:1px dashed var(--border);margin-top:6px;padding-top:6px">
-          <div style="font-size:0.6rem;font-weight:700;color:var(--primary);margin-bottom:2px">💬 선생님</div>
-          <div style="font-size:0.62rem;color:var(--text);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${fbMap[date].feedback}</div>
-        </div>
-      ` : ''}
-    </div>`;
-  }).join('');
-}
-
-async function openPpDayModal(date) {
-  if (!authedPp) return;
-  // plannerDate를 해당 날짜로 설정하고 모달 열기
-  document.getElementById('plannerDate').value = date;
-  openPlannerModal(authedPp.num, authedPp.name);
-  // 모달 닫힌 후 주간 뷰 새로고침을 위해 콜백 설정
-  window._ppReloadOnClose = true;
-}
   // ════════════ 홈 플래너 패널 ════════════
 let authedHp = null;   // 작성 패널 인증
 let authedHc = null;   // 체크 패널 인증
