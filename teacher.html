@@ -428,6 +428,7 @@
     <button class="nav-tab active" id="tab-dashboard" onclick="showTab('dashboard')">👥 학생 현황</button>
     <button class="nav-tab" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
     <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 공지</button>
+    <button class="nav-tab" id="tab-actassign" onclick="showTab('actassign')">📝 자율활동 과제</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
     <button class="nav-tab" id="tab-planner" onclick="showTab('planner')">📓 플래너</button>
     <button class="nav-tab" id="tab-classics" onclick="showTab('classics')">📖 고전깊이읽기</button> 
@@ -627,6 +628,67 @@
 
   </div>
 </div>
+
+<!-- 자율활동 과제 관리 탭 -->
+<div class="page-content" id="page-actassign">
+  <div class="page-fullwrap">
+    <div class="section-top">
+      <h3>📝 자율활동 과제 관리</h3>
+      <button class="refresh-btn" onclick="loadActAssignAdmin()">🔄 새로고침</button>
+    </div>
+
+    <!-- 과제 등록 폼 -->
+    <div class="slot-form-card" style="margin-bottom:28px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="slot-form-group" style="min-width:140px">
+            <label>과제 유형</label>
+            <select id="aaAdminType" class="slot-input">
+              <option value="group">👥 조별 과제</option>
+              <option value="individual">🙋 개별 과제</option>
+            </select>
+          </div>
+          <div class="slot-form-group" style="flex:2">
+            <label>과제 제목</label>
+            <input type="text" id="aaAdminTitle" class="slot-input" placeholder="예: 우리 동네 문제 찾기 보고서" />
+          </div>
+          <div class="slot-form-group" style="min-width:140px">
+            <label>마감일 (선택)</label>
+            <input type="date" id="aaAdminDueDate" class="slot-input" />
+          </div>
+        </div>
+        <div class="slot-form-group">
+          <label>과제 설명 (선택)</label>
+          <textarea id="aaAdminDescription" class="slot-input" placeholder="학생들에게 안내할 내용을 입력해주세요" style="min-height:70px;resize:vertical"></textarea>
+        </div>
+        <button class="slot-add-btn" style="align-self:flex-start" onclick="addActAssignment()">+ 과제 등록</button>
+      </div>
+    </div>
+
+    <!-- 등록된 과제 목록 -->
+    <div class="section-top" style="margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 과제 <span class="count-badge" id="aaAdminAssignmentCount"></span></h3>
+    </div>
+    <div id="aaAdminAssignmentList" style="margin-bottom:36px">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 제출 현황 -->
+    <div class="section-top" style="margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">📋 제출 현황</h3>
+      <button class="refresh-btn" onclick="loadActAssignSubmissions()">🔄 새로고침</button>
+    </div>
+
+    <!-- 과제 선택 탭 -->
+    <div id="aaAdminSessionTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
+
+    <!-- 제출 목록 -->
+    <div id="aaAdminSubmissionList">
+      <div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>
+    </div>
+
+  </div>
+</div>
     
 <!-- 플래너 탭 -->
 <div class="page-content" id="page-planner">
@@ -782,6 +844,9 @@
     }
     if (name === 'classics') {
       loadClassicsAdmin();
+    }
+    if (name === 'actassign') {
+      loadActAssignAdmin();
     }
     if (name === 'settings') {
       loadCoverPreview();
@@ -2084,6 +2149,223 @@ async function loadClassicsSubmissions() {
       </div>`;
     }).join('')}`;
 } 
+
+// ════════════ 자율활동 과제 관리 ════════════
+const ACT_GROUPS = [
+  {num:1, members:'곽승민·백세영·이연우·조시현'},
+  {num:2, members:'김효정·염서윤·주여원·허은'},
+  {num:3, members:'김나후·양연우·이율리'},
+  {num:4, members:'구민기·이규준·이재후'},
+  {num:5, members:'김나경·이예은·정예현'},
+  {num:6, members:'심연경·이나율·한윤화'},
+  {num:7, members:'김연우·이선준·최주은'}
+];
+
+let aaAdminAssignments = [];
+let currentAaAdminId = null;
+
+async function loadActAssignAdmin() {
+  await loadAaAdminAssignments();
+  await loadActAssignSubmissions();
+}
+
+async function loadAaAdminAssignments() {
+  const el = document.getElementById('aaAdminAssignmentList');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const { data, error } = await sb.from('activity_assignments')
+    .select('*').order('created_at', { ascending: false });
+  aaAdminAssignments = data || [];
+  document.getElementById('aaAdminAssignmentCount').textContent = `(${aaAdminAssignments.length}개)`;
+  if (error || !aaAdminAssignments.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>등록된 과제가 없어요</p></div>';
+    renderAaAdminTabs();
+    return;
+  }
+  el.innerHTML = aaAdminAssignments.map(a => `
+    <div class="slot-manage-item" id="aa-item-${a.id}">
+      <span class="smi-date">${a.assignment_type === 'group' ? '👥 조별' : '🙋 개별'}</span>
+      <span class="smi-time" style="font-size:0.9rem">${a.title}</span>
+      ${a.due_date ? `<span class="smi-label">📅 ${a.due_date}</span>` : ''}
+      ${a.description ? `<span class="smi-label" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.description}</span>` : ''}
+      <button class="smi-delete" style="border-color:var(--primary-light);color:var(--primary)" onclick="openEditAaAssignment(${a.id})">✏️ 수정</button>
+      <button class="smi-delete" onclick="deleteAaAssignment(${a.id})">삭제</button>
+    </div>
+    <div class="slot-form-card" id="aa-edit-${a.id}" style="display:none;margin-bottom:8px">
+      <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:12px">✏️ 과제 수정</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="slot-form-group" style="min-width:140px">
+          <label>과제 유형</label>
+          <select id="aa-edit-type-${a.id}" class="slot-input">
+            <option value="group" ${a.assignment_type === 'group' ? 'selected' : ''}>👥 조별 과제</option>
+            <option value="individual" ${a.assignment_type === 'individual' ? 'selected' : ''}>🙋 개별 과제</option>
+          </select>
+        </div>
+        <div class="slot-form-group" style="flex:2">
+          <label>과제 제목</label>
+          <input type="text" id="aa-edit-title-${a.id}" class="slot-input" value="${a.title.replace(/"/g,'&quot;')}" />
+        </div>
+        <div class="slot-form-group" style="min-width:140px">
+          <label>마감일</label>
+          <input type="date" id="aa-edit-due-${a.id}" class="slot-input" value="${a.due_date || ''}" />
+        </div>
+      </div>
+      <div class="slot-form-group" style="margin-bottom:12px">
+        <label>과제 설명</label>
+        <textarea id="aa-edit-desc-${a.id}" class="slot-input" style="min-height:60px;resize:vertical">${a.description || ''}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="slot-add-btn" onclick="saveEditAaAssignment(${a.id})">💾 저장</button>
+        <button onclick="closeEditAaAssignment(${a.id})" style="background:none;border:1.5px solid var(--border);border-radius:10px;padding:10px 18px;font-family:'Noto Sans KR',sans-serif;font-size:0.9rem;cursor:pointer;color:var(--text-muted)">취소</button>
+      </div>
+    </div>`).join('');
+
+  renderAaAdminTabs();
+}
+
+function renderAaAdminTabs() {
+  const tabsEl = document.getElementById('aaAdminSessionTabs');
+  if (!tabsEl) return;
+  if (!aaAdminAssignments.length) { tabsEl.innerHTML = ''; return; }
+  tabsEl.innerHTML = aaAdminAssignments.map(a =>
+    `<button class="cl-session-tab ${currentAaAdminId === a.id ? 'active' : ''}"
+      onclick="selectAaAdminAssignment(${a.id})">${a.assignment_type === 'group' ? '👥' : '🙋'} ${a.title}</button>`
+  ).join('');
+}
+
+async function addActAssignment() {
+  const type = document.getElementById('aaAdminType').value;
+  const title = document.getElementById('aaAdminTitle').value.trim();
+  const description = document.getElementById('aaAdminDescription').value.trim();
+  const dueDate = document.getElementById('aaAdminDueDate').value;
+  if (!title) { showToast('❗ 과제 제목을 입력해주세요'); return; }
+  const btn = document.querySelector('#page-actassign .slot-add-btn');
+  btn.disabled = true; btn.textContent = '등록 중...';
+  const { error } = await sb.from('activity_assignments').insert([{
+    assignment_type: type,
+    title,
+    description: description || null,
+    due_date: dueDate || null
+  }]);
+  btn.disabled = false; btn.textContent = '+ 과제 등록';
+  if (error) { showToast('❗ 등록 실패: ' + error.message); return; }
+  document.getElementById('aaAdminTitle').value = '';
+  document.getElementById('aaAdminDescription').value = '';
+  document.getElementById('aaAdminDueDate').value = '';
+  showToast('✅ 과제가 등록됐어요!');
+  await loadAaAdminAssignments();
+}
+
+async function deleteAaAssignment(id) {
+  if (!confirm('이 과제를 삭제할까요? 학생/조 제출물도 함께 삭제됩니다.')) return;
+  await sb.from('activity_submissions').delete().eq('assignment_id', id);
+  await sb.from('activity_assignments').delete().eq('id', id);
+  if (currentAaAdminId === id) {
+    currentAaAdminId = null;
+    document.getElementById('aaAdminSubmissionList').innerHTML =
+      '<div class="empty"><div class="empty-icon">📝</div><p>과제를 선택해주세요</p></div>';
+  }
+  showToast('🗑️ 삭제됐어요');
+  await loadAaAdminAssignments();
+}
+
+function openEditAaAssignment(id) {
+  aaAdminAssignments.forEach(a => { if (a.id !== id) closeEditAaAssignment(a.id); });
+  document.getElementById(`aa-edit-${id}`).style.display = 'block';
+  document.getElementById(`aa-item-${id}`).style.display = 'none';
+}
+
+function closeEditAaAssignment(id) {
+  const edit = document.getElementById(`aa-edit-${id}`);
+  const item = document.getElementById(`aa-item-${id}`);
+  if (edit) edit.style.display = 'none';
+  if (item) item.style.display = 'flex';
+}
+
+async function saveEditAaAssignment(id) {
+  const type = document.getElementById(`aa-edit-type-${id}`).value;
+  const title = document.getElementById(`aa-edit-title-${id}`).value.trim();
+  const description = document.getElementById(`aa-edit-desc-${id}`).value.trim();
+  const dueDate = document.getElementById(`aa-edit-due-${id}`).value;
+  if (!title) { showToast('❗ 과제 제목을 입력해주세요'); return; }
+  const btn = document.querySelector(`#aa-edit-${id} .slot-add-btn`);
+  btn.disabled = true; btn.textContent = '저장 중...';
+  const { error } = await sb.from('activity_assignments').update({
+    assignment_type: type,
+    title,
+    description: description || null,
+    due_date: dueDate || null
+  }).eq('id', id);
+  btn.disabled = false; btn.textContent = '💾 저장';
+  if (error) { showToast('❗ 저장 실패: ' + error.message); return; }
+  showToast('✅ 과제가 수정됐어요!');
+  await loadAaAdminAssignments();
+}
+
+async function selectAaAdminAssignment(id) {
+  currentAaAdminId = id;
+  renderAaAdminTabs();
+  await loadActAssignSubmissions();
+}
+
+async function loadActAssignSubmissions() {
+  const el = document.getElementById('aaAdminSubmissionList');
+  if (!el) return;
+  if (!currentAaAdminId) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>';
+    return;
+  }
+  const assignment = aaAdminAssignments.find(a => a.id === currentAaAdminId);
+  if (!assignment) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+  const { data: submissions } = await sb.from('activity_submissions')
+    .select('*').eq('assignment_id', currentAaAdminId);
+  const subMap = {};
+  (submissions || []).forEach(s => { subMap[s.owner_key] = s; });
+
+  const isGroup = assignment.assignment_type === 'group';
+  const roster = isGroup
+    ? ACT_GROUPS.map(g => ({ key: 'g' + g.num, label: g.num + '조', sub: g.members }))
+    : CL_STUDENTS.map(s => ({ key: s.num, label: s.name, sub: s.num }));
+
+  const submittedCount = roster.filter(r => subMap[r.key]).length;
+  const total = roster.length;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:0.88rem;color:var(--text-muted)">제출 현황</span>
+      <span style="font-size:1rem;font-weight:900;color:var(--primary)">${submittedCount}${isGroup ? '개 조' : '명'}</span>
+      <span style="font-size:0.88rem;color:var(--text-muted)">/ ${total}${isGroup ? '개 조' : '명'}</span>
+      <div style="flex:1;min-width:100px;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(submittedCount/total*100)}%;background:var(--primary-light);border-radius:4px;transition:width 0.4s ease"></div>
+      </div>
+      <span style="font-size:0.85rem;font-weight:700;color:var(--primary)">${Math.round(submittedCount/total*100)}%</span>
+    </div>
+    ${roster.map(r => {
+      const sub = subMap[r.key];
+      const submitted = !!sub;
+      const imgs = sub?.image_urls ? JSON.parse(sub.image_urls) : [];
+      return `<div class="cl-submission-card ${submitted ? '' : 'not-submitted'}" ${submitted ? `onclick="this.classList.toggle('open')"` : ''}>
+        <div class="cl-sub-header">
+          <span class="cl-sub-name">${r.label}</span>
+          <span style="font-size:0.75rem;color:var(--text-muted)">${r.sub}</span>
+          ${submitted
+            ? `<span class="cl-sub-status-ok">✅ 제출완료</span>`
+            : `<span class="cl-sub-status-no">❌ 미제출</span>`}
+          ${submitted && isGroup && sub.submitted_by_name ? `<span style="font-size:0.72rem;color:var(--text-muted)">✍️ ${sub.submitted_by_name}</span>` : ''}
+          ${submitted ? `<span class="cl-sub-date">${sub.updated_at ? sub.updated_at.slice(0,16).replace('T',' ') : ''}</span>` : ''}
+          ${submitted ? `<span style="font-size:0.75rem;color:var(--text-muted);margin-left:4px">▼ 클릭해서 보기</span>` : ''}
+        </div>
+        ${submitted ? `
+          <div class="cl-sub-content">
+            <div style="font-size:0.88rem;line-height:1.7;white-space:pre-wrap">${sub.content || ''}</div>
+            ${imgs.length ? `<div class="cl-sub-imgs">${imgs.map(u =>
+              `<img src="${u}" onclick="event.stopPropagation();openGradeLightbox('${u}')" />`
+            ).join('')}</div>` : ''}
+          </div>` : ''}
+      </div>`;
+    }).join('')}`;
+}
 
 // ── 사이트 설정: 대문 사진 ──
 async function loadCoverPreview() {
