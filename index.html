@@ -2197,8 +2197,11 @@ function showPage(name) {
     renderCounselCalendar();
   }
 
+  let currentSlotInfo = null;
+
   function openBookingModal(slotId, date, time, label) {
     currentSlotId = slotId;
+    currentSlotInfo = { date, time, label };
     const d = new Date(date + 'T00:00:00');
     const dayNames = ['일','월','화','수','목','금','토'];
     const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일 (${dayNames[d.getDay()]}) ${time.slice(0,5)}`;
@@ -2215,6 +2218,7 @@ function showPage(name) {
   function closeBookingModal() {
     document.getElementById('bookingOverlay').style.display = 'none';
     currentSlotId = null;
+    currentSlotInfo = null;
   }
 
   async function submitBooking() {
@@ -2238,12 +2242,28 @@ function showPage(name) {
     }
 
     btn.textContent = '예약 중...';
+    const bookedContent = document.getElementById('bkContent').value.trim();
     const { error: bookErr } = await sb.from('counsel_slots').update({
       booked_by: student.name,
-      booked_content: document.getElementById('bkContent').value.trim() || null
+      booked_content: bookedContent || null
     }).eq('id', currentSlotId).is('booked_by', null);
     btn.disabled = false; btn.textContent = '📨 예약하기';
     if (bookErr) { showToast('❗ 예약 실패: ' + bookErr.message); return; }
+
+    // 담임 대시보드의 학생별 상담기록에 예약 내역을 자동으로 남김
+    if (currentSlotInfo) {
+      const timeLabel = currentSlotInfo.time.slice(0,5);
+      const noteContent = `📌 상담 예약이 접수됐어요 (아직 진행 전)\n🕐 시간: ${timeLabel}${currentSlotInfo.label ? ' · ' + currentSlotInfo.label : ''}` +
+        (bookedContent ? `\n✏️ 학생이 남긴 메모: ${bookedContent}` : '');
+      await sb.from('student_notes').insert([{
+        student_num: student.num,
+        student_name: student.name,
+        content: noteContent,
+        counsel_date: currentSlotInfo.date,
+        is_first: false
+      }]);
+    }
+
     closeBookingModal();
     showToast('✅ 상담이 예약됐어요!');
     await loadCounseling();
