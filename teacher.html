@@ -427,8 +427,7 @@
   <div class="nav-right">
     <button class="nav-tab active" id="tab-dashboard" onclick="showTab('dashboard')">👥 학생 현황</button>
     <button class="nav-tab" id="tab-suggest" onclick="showTab('suggest')">💡 건의사항</button>
-    <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 공지</button>
-    <button class="nav-tab" id="tab-actassign" onclick="showTab('actassign')">📝 자율활동 과제</button>
+    <button class="nav-tab" id="tab-activity" onclick="showTab('activity')">🌱 자율활동 관리</button>
     <button class="nav-tab" id="tab-slots" onclick="showTab('slots')">🗓️ 상담 관리</button>
     <button class="nav-tab" id="tab-planner" onclick="showTab('planner')">📓 플래너</button>
     <button class="nav-tab" id="tab-classics" onclick="showTab('classics')">📖 고전깊이읽기</button> 
@@ -529,22 +528,25 @@
       </div>
     </div>
 
-    <!-- 자율활동 공지 탭 -->
+    <!-- 자율활동 관리 탭 -->
     <div class="page-content" id="page-activity">
       <div class="page-fullwrap">
         <div class="section-top">
-          <h3>🌱 자율활동 공지 관리</h3>
+          <h3>🌱 자율활동 관리</h3>
         </div>
-        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:24px">학생 페이지의 각 활동 탭 상단에 공지와 파일이 표시돼요.</p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:24px">활동별로 공지와 과제를 함께 관리해요.</p>
 
         <!-- 활동 선택 탭 -->
-        <div style="display:flex;gap:8px;margin-bottom:24px;border-bottom:2px solid var(--border)">
+        <div style="display:flex;gap:8px;margin-bottom:28px;border-bottom:2px solid var(--border)">
           <button class="dtab-btn active" id="actNoticeTab-change" onclick="switchActNoticeTab('change')">🔥 체인지 메이커</button>
           <button class="dtab-btn" id="actNoticeTab-journal" onclick="switchActNoticeTab('journal')">📰 클래스 저널</button>
         </div>
 
-        <!-- 공지 작성 폼 -->
-        <div class="slot-form-card" style="margin-bottom:24px">
+        <!-- ── 공지 ── -->
+        <div class="section-top" style="margin-bottom:14px">
+          <h3 style="font-size:1.02rem;font-weight:900;color:var(--primary)">📢 공지</h3>
+        </div>
+        <div class="slot-form-card" style="margin-bottom:20px">
           <div style="display:flex;flex-direction:column;gap:12px">
             <div class="slot-form-group" style="flex:1">
               <label>공지 제목</label>
@@ -558,18 +560,78 @@
               <label>파일 첨부 <span style="font-weight:400;color:var(--text-muted)">(선택 · PDF, 이미지, 문서 등)</span></label>
               <input type="file" id="actNoticeFile" class="slot-input" style="padding:8px" multiple />
             </div>
-            <button class="slot-add-btn" style="align-self:flex-start" onclick="saveActNotice()">📢 공지 올리기</button>
+            <button class="slot-add-btn" id="actNoticeAddBtn" style="align-self:flex-start" onclick="saveActNotice()">📢 공지 올리기</button>
           </div>
         </div>
 
-        <!-- 등록된 공지 목록 -->
-        <div class="section-top">
-          <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 공지 <span class="count-badge" id="actNoticeCount"></span></h3>
+        <div class="section-top" style="margin-bottom:16px">
+          <h3 style="font-size:0.92rem;font-weight:700;color:var(--text)">등록된 공지 <span class="count-badge" id="actNoticeCount"></span></h3>
           <button class="refresh-btn" onclick="loadActNotices()">🔄 새로고침</button>
         </div>
-        <div id="actNoticeList"><div class="loading"><div class="spinner"></div></div></div>
+        <div id="actNoticeList" style="margin-bottom:44px"><div class="loading"><div class="spinner"></div></div></div>
+
+        <!-- ── 과제 ── -->
+        <div class="section-top" style="margin-bottom:14px">
+          <h3 style="font-size:1.02rem;font-weight:900;color:var(--primary)">📝 과제</h3>
+        </div>
+        <div class="slot-form-card" style="margin-bottom:20px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div class="slot-form-group" style="min-width:140px">
+                <label>과제 유형</label>
+                <select id="aaAdminType" class="slot-input">
+                  <option value="group">👥 조별 과제</option>
+                  <option value="individual">🙋 개별 과제</option>
+                </select>
+              </div>
+              <div class="slot-form-group" style="flex:2">
+                <label>과제 제목</label>
+                <input type="text" id="aaAdminTitle" class="slot-input" placeholder="예: 우리 동네 문제 찾기 보고서" />
+              </div>
+              <div class="slot-form-group" style="min-width:140px">
+                <label>마감일 (선택)</label>
+                <input type="date" id="aaAdminDueDate" class="slot-input" />
+              </div>
+            </div>
+            <div class="slot-form-group">
+              <label>과제 설명 (선택)</label>
+              <textarea id="aaAdminDescription" class="slot-input" placeholder="학생들에게 안내할 내용을 입력해주세요" style="min-height:70px;resize:vertical"></textarea>
+            </div>
+            <button class="slot-add-btn" id="aaAdminAddBtn" style="align-self:flex-start" onclick="addActAssignment()">+ 과제 등록</button>
+          </div>
+        </div>
+
+        <div class="section-top" style="margin-bottom:16px">
+          <h3 style="font-size:0.92rem;font-weight:700;color:var(--text)">등록된 과제 <span class="count-badge" id="aaAdminAssignmentCount"></span></h3>
+        </div>
+        <div id="aaAdminAssignmentList" style="margin-bottom:32px">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+
+        <!-- 제출 현황 (그리드) -->
+        <div class="section-top" style="margin-bottom:16px">
+          <h3 style="font-size:0.92rem;font-weight:700;color:var(--text)">📋 제출 현황</h3>
+          <button class="refresh-btn" onclick="loadActAssignSubmissions()">🔄 새로고침</button>
+        </div>
+        <div id="aaAdminSessionTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
+        <div id="aaAdminSubmissionGrid">
+          <div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>
+        </div>
+
       </div>
     </div>
+
+<!-- 과제 제출 상세보기 모달 -->
+<div class="modal-overlay" id="aaSubDetailModal" onclick="if(event.target===this)closeAaSubDetailModal()">
+  <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
+    <div class="modal-header"><h3 id="aaSubDetailTitle">제출 내용</h3><button class="modal-close" onclick="closeAaSubDetailModal()">✕</button></div>
+    <div class="modal-body">
+      <div id="aaSubDetailMeta" style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px"></div>
+      <div id="aaSubDetailContent" style="font-size:0.92rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px"></div>
+      <div id="aaSubDetailImgs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+  </div>
+</div>
 
 <!-- 고전깊이읽기 탭 -->
 <div class="page-content" id="page-classics">
@@ -629,67 +691,6 @@
   </div>
 </div>
 
-<!-- 자율활동 과제 관리 탭 -->
-<div class="page-content" id="page-actassign">
-  <div class="page-fullwrap">
-    <div class="section-top">
-      <h3>📝 자율활동 과제 관리</h3>
-      <button class="refresh-btn" onclick="loadActAssignAdmin()">🔄 새로고침</button>
-    </div>
-
-    <!-- 과제 등록 폼 -->
-    <div class="slot-form-card" style="margin-bottom:28px">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <div class="slot-form-group" style="min-width:140px">
-            <label>과제 유형</label>
-            <select id="aaAdminType" class="slot-input">
-              <option value="group">👥 조별 과제</option>
-              <option value="individual">🙋 개별 과제</option>
-            </select>
-          </div>
-          <div class="slot-form-group" style="flex:2">
-            <label>과제 제목</label>
-            <input type="text" id="aaAdminTitle" class="slot-input" placeholder="예: 우리 동네 문제 찾기 보고서" />
-          </div>
-          <div class="slot-form-group" style="min-width:140px">
-            <label>마감일 (선택)</label>
-            <input type="date" id="aaAdminDueDate" class="slot-input" />
-          </div>
-        </div>
-        <div class="slot-form-group">
-          <label>과제 설명 (선택)</label>
-          <textarea id="aaAdminDescription" class="slot-input" placeholder="학생들에게 안내할 내용을 입력해주세요" style="min-height:70px;resize:vertical"></textarea>
-        </div>
-        <button class="slot-add-btn" style="align-self:flex-start" onclick="addActAssignment()">+ 과제 등록</button>
-      </div>
-    </div>
-
-    <!-- 등록된 과제 목록 -->
-    <div class="section-top" style="margin-bottom:16px">
-      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">등록된 과제 <span class="count-badge" id="aaAdminAssignmentCount"></span></h3>
-    </div>
-    <div id="aaAdminAssignmentList" style="margin-bottom:36px">
-      <div class="loading"><div class="spinner"></div></div>
-    </div>
-
-    <!-- 제출 현황 -->
-    <div class="section-top" style="margin-bottom:16px">
-      <h3 style="font-size:1rem;font-weight:700;color:var(--primary)">📋 제출 현황</h3>
-      <button class="refresh-btn" onclick="loadActAssignSubmissions()">🔄 새로고침</button>
-    </div>
-
-    <!-- 과제 선택 탭 -->
-    <div id="aaAdminSessionTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
-
-    <!-- 제출 목록 -->
-    <div id="aaAdminSubmissionList">
-      <div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>
-    </div>
-
-  </div>
-</div>
-    
 <!-- 플래너 탭 -->
 <div class="page-content" id="page-planner">
   <div class="page-fullwrap">
@@ -845,8 +846,8 @@
     if (name === 'classics') {
       loadClassicsAdmin();
     }
-    if (name === 'actassign') {
-      loadActAssignAdmin();
+    if (name === 'activity') {
+      switchActNoticeTab(currentActNoticeTab);
     }
     if (name === 'settings') {
       loadCoverPreview();
@@ -1441,6 +1442,7 @@
       document.getElementById('actNoticeTab-' + t)?.classList.toggle('active', t === tab);
     });
     loadActNotices();
+    loadAaAdminAssignments();
   }
 
   async function loadActNotices() {
@@ -1476,7 +1478,7 @@
     if (!title) { showToast('❗ 제목을 입력해주세요'); return; }
     const content = document.getElementById('actNoticeContent').value.trim();
     const fileInput = document.getElementById('actNoticeFile');
-    const btn = document.querySelector('#page-activity .slot-add-btn');
+    const btn = document.getElementById('actNoticeAddBtn');
     btn.disabled = true; btn.textContent = '올리는 중...';
 
     // 파일 업로드
@@ -2163,20 +2165,19 @@ const ACT_GROUPS = [
 
 let aaAdminAssignments = [];
 let currentAaAdminId = null;
-
-async function loadActAssignAdmin() {
-  await loadAaAdminAssignments();
-  await loadActAssignSubmissions();
-}
+let aaCurrentSubMap = {};
 
 async function loadAaAdminAssignments() {
   const el = document.getElementById('aaAdminAssignmentList');
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   const { data, error } = await sb.from('activity_assignments')
-    .select('*').order('created_at', { ascending: false });
+    .select('*').eq('activity_type', currentActNoticeTab).order('created_at', { ascending: false });
   aaAdminAssignments = data || [];
   document.getElementById('aaAdminAssignmentCount').textContent = `(${aaAdminAssignments.length}개)`;
+  currentAaAdminId = null;
+  document.getElementById('aaAdminSubmissionGrid').innerHTML =
+    '<div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>';
   if (error || !aaAdminAssignments.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>등록된 과제가 없어요</p></div>';
     renderAaAdminTabs();
@@ -2239,9 +2240,10 @@ async function addActAssignment() {
   const description = document.getElementById('aaAdminDescription').value.trim();
   const dueDate = document.getElementById('aaAdminDueDate').value;
   if (!title) { showToast('❗ 과제 제목을 입력해주세요'); return; }
-  const btn = document.querySelector('#page-actassign .slot-add-btn');
+  const btn = document.getElementById('aaAdminAddBtn');
   btn.disabled = true; btn.textContent = '등록 중...';
   const { error } = await sb.from('activity_assignments').insert([{
+    activity_type: currentActNoticeTab,
     assignment_type: type,
     title,
     description: description || null,
@@ -2262,7 +2264,7 @@ async function deleteAaAssignment(id) {
   await sb.from('activity_assignments').delete().eq('id', id);
   if (currentAaAdminId === id) {
     currentAaAdminId = null;
-    document.getElementById('aaAdminSubmissionList').innerHTML =
+    document.getElementById('aaAdminSubmissionGrid').innerHTML =
       '<div class="empty"><div class="empty-icon">📝</div><p>과제를 선택해주세요</p></div>';
   }
   showToast('🗑️ 삭제됐어요');
@@ -2309,7 +2311,7 @@ async function selectAaAdminAssignment(id) {
 }
 
 async function loadActAssignSubmissions() {
-  const el = document.getElementById('aaAdminSubmissionList');
+  const el = document.getElementById('aaAdminSubmissionGrid');
   if (!el) return;
   if (!currentAaAdminId) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>위에서 과제를 선택해주세요</p></div>';
@@ -2320,51 +2322,61 @@ async function loadActAssignSubmissions() {
   el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
   const { data: submissions } = await sb.from('activity_submissions')
     .select('*').eq('assignment_id', currentAaAdminId);
-  const subMap = {};
-  (submissions || []).forEach(s => { subMap[s.owner_key] = s; });
+  aaCurrentSubMap = {};
+  (submissions || []).forEach(s => { aaCurrentSubMap[s.owner_key] = s; });
 
   const isGroup = assignment.assignment_type === 'group';
   const roster = isGroup
     ? ACT_GROUPS.map(g => ({ key: 'g' + g.num, label: g.num + '조', sub: g.members }))
     : CL_STUDENTS.map(s => ({ key: s.num, label: s.name, sub: s.num }));
 
-  const submittedCount = roster.filter(r => subMap[r.key]).length;
+  const submittedCount = roster.filter(r => aaCurrentSubMap[r.key]).length;
   const total = roster.length;
+  const unit = isGroup ? '개 조' : '명';
 
   el.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
       <span style="font-size:0.88rem;color:var(--text-muted)">제출 현황</span>
-      <span style="font-size:1rem;font-weight:900;color:var(--primary)">${submittedCount}${isGroup ? '개 조' : '명'}</span>
-      <span style="font-size:0.88rem;color:var(--text-muted)">/ ${total}${isGroup ? '개 조' : '명'}</span>
+      <span style="font-size:1rem;font-weight:900;color:var(--primary)">${submittedCount}${unit}</span>
+      <span style="font-size:0.88rem;color:var(--text-muted)">/ ${total}${unit}</span>
       <div style="flex:1;min-width:100px;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
         <div style="height:100%;width:${Math.round(submittedCount/total*100)}%;background:var(--primary-light);border-radius:4px;transition:width 0.4s ease"></div>
       </div>
       <span style="font-size:0.85rem;font-weight:700;color:var(--primary)">${Math.round(submittedCount/total*100)}%</span>
     </div>
-    ${roster.map(r => {
-      const sub = subMap[r.key];
-      const submitted = !!sub;
-      const imgs = sub?.image_urls ? JSON.parse(sub.image_urls) : [];
-      return `<div class="cl-submission-card ${submitted ? '' : 'not-submitted'}" ${submitted ? `onclick="this.classList.toggle('open')"` : ''}>
-        <div class="cl-sub-header">
-          <span class="cl-sub-name">${r.label}</span>
-          <span style="font-size:0.75rem;color:var(--text-muted)">${r.sub}</span>
-          ${submitted
-            ? `<span class="cl-sub-status-ok">✅ 제출완료</span>`
-            : `<span class="cl-sub-status-no">❌ 미제출</span>`}
-          ${submitted && isGroup && sub.submitted_by_name ? `<span style="font-size:0.72rem;color:var(--text-muted)">✍️ ${sub.submitted_by_name}</span>` : ''}
-          ${submitted ? `<span class="cl-sub-date">${sub.updated_at ? sub.updated_at.slice(0,16).replace('T',' ') : ''}</span>` : ''}
-          ${submitted ? `<span style="font-size:0.75rem;color:var(--text-muted);margin-left:4px">▼ 클릭해서 보기</span>` : ''}
-        </div>
-        ${submitted ? `
-          <div class="cl-sub-content">
-            <div style="font-size:0.88rem;line-height:1.7;white-space:pre-wrap">${sub.content || ''}</div>
-            ${imgs.length ? `<div class="cl-sub-imgs">${imgs.map(u =>
-              `<img src="${u}" onclick="event.stopPropagation();openGradeLightbox('${u}')" />`
-            ).join('')}</div>` : ''}
-          </div>` : ''}
-      </div>`;
-    }).join('')}`;
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+      ${roster.map(r => {
+        const sub = aaCurrentSubMap[r.key];
+        const submitted = !!sub;
+        return `<div ${submitted ? `onclick="openAaSubDetail('${r.key}','${r.label.replace(/'/g,"\\'")}')"` : ''}
+          style="background:white;border:1.5px solid ${submitted ? 'var(--primary-light)' : 'var(--border)'};border-radius:14px;padding:14px;cursor:${submitted ? 'pointer' : 'default'};transition:all 0.2s;text-align:center;box-shadow:var(--shadow)"
+          ${submitted ? `onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''"` : ''}>
+          <div style="font-weight:900;font-size:0.95rem;color:${submitted ? 'var(--primary)' : 'var(--text)'};margin-bottom:6px">${r.label}</div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.sub}</div>
+          <span style="font-size:0.72rem;font-weight:700;border-radius:20px;padding:3px 10px;background:${submitted ? 'var(--primary-pale)' : '#f5f5f5'};color:${submitted ? 'var(--primary)' : '#aaa'}">${submitted ? '✅ 제출' : '❌ 미제출'}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function openAaSubDetail(key, label) {
+  const sub = aaCurrentSubMap[key];
+  if (!sub) return;
+  document.getElementById('aaSubDetailTitle').textContent = `📄 ${label} 제출 내용`;
+  const meta = [];
+  if (sub.submitted_by_name) meta.push(`✍️ 작성: ${sub.submitted_by_name}`);
+  if (sub.updated_at) meta.push(`🕐 ${sub.updated_at.slice(0,16).replace('T',' ')}`);
+  document.getElementById('aaSubDetailMeta').textContent = meta.join(' · ');
+  document.getElementById('aaSubDetailContent').textContent = sub.content || '';
+  const imgs = sub.image_urls ? JSON.parse(sub.image_urls) : [];
+  document.getElementById('aaSubDetailImgs').innerHTML = imgs.map(u =>
+    `<img src="${u}" onclick="openGradeLightbox('${u}')" style="width:90px;height:90px;object-fit:cover;border-radius:8px;cursor:pointer;border:1.5px solid var(--border)" />`
+  ).join('');
+  document.getElementById('aaSubDetailModal').classList.add('open');
+}
+
+function closeAaSubDetailModal() {
+  document.getElementById('aaSubDetailModal').classList.remove('open');
 }
 
 // ── 사이트 설정: 대문 사진 ──
