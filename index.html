@@ -1582,30 +1582,14 @@
 
       <!-- 공부 시간 카드 -->
       <div class="today-card" style="margin-bottom:16px">
-        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:14px">⏱️ 공부 시간</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;font-weight:700">🎯 목표 시간</label>
-            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-              <input type="number" id="dpTargetH" min="0" max="24" placeholder="0"
-                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
-              <span style="font-size:0.8rem;color:var(--text-muted)">시간</span>
-              <input type="number" id="dpTargetM" min="0" max="59" placeholder="0"
-                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
-              <span style="font-size:0.8rem;color:var(--text-muted)">분</span>
-            </div>
-          </div>
-          <div>
-            <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;font-weight:700">✅ 실제 공부 시간</label>
-            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-              <input type="number" id="dpActualH" min="0" max="24" placeholder="0"
-                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
-              <span style="font-size:0.8rem;color:var(--text-muted)">시간</span>
-              <input type="number" id="dpActualM" min="0" max="59" placeholder="0"
-                style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
-              <span style="font-size:0.8rem;color:var(--text-muted)">분</span>
-            </div>
-          </div>
+        <div style="font-size:0.88rem;font-weight:700;color:var(--primary);margin-bottom:14px">⏱️ 오늘 공부한 시간</div>
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+          <input type="number" id="dpActualH" min="0" max="24" placeholder="0"
+            style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+          <span style="font-size:0.8rem;color:var(--text-muted)">시간</span>
+          <input type="number" id="dpActualM" min="0" max="59" placeholder="0"
+            style="width:52px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:9px 4px;font-family:'Noto Sans KR',sans-serif;font-size:0.95rem;background:var(--bg);outline:none" />
+          <span style="font-size:0.8rem;color:var(--text-muted)">분</span>
         </div>
       </div>
 
@@ -3191,7 +3175,22 @@ function showPage(name) {
   }
 // ════════════ 데일리 플래너 ════════════
 let authedDp = null;
-let dpDate = new Date().toISOString().slice(0, 10);
+function dpTodayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function dpAddDays(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+let dpDate = dpTodayStr();
 let dpItems = [];
 let dpLoadToken = 0;
 
@@ -3224,7 +3223,7 @@ async function authDailyPlanner() {
   document.getElementById('dpMainWrap').style.display = 'block';
   document.getElementById('dpLoggedInInfo').innerHTML = `${student.name} <span>(${student.num})</span>`;
 
-  dpDate = new Date().toISOString().slice(0, 10);
+  dpDate = dpTodayStr();
   await loadDailyPlannerDay();
   setupDpSwipe();
 }
@@ -3241,14 +3240,12 @@ function logoutDailyPlanner() {
 }
 
 function goDpToday() {
-  dpDate = new Date().toISOString().slice(0, 10);
+  dpDate = dpTodayStr();
   loadDailyPlannerDay();
 }
 
 function changeDpDate(dir) {
-  const d = new Date(dpDate + 'T00:00:00');
-  d.setDate(d.getDate() + dir);
-  dpDate = d.toISOString().slice(0, 10);
+  dpDate = dpAddDays(dpDate, dir);
   loadDailyPlannerDay();
 }
 
@@ -3256,7 +3253,7 @@ async function loadDailyPlannerDay() {
   if (!authedDp) return;
   const token = ++dpLoadToken;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = dpTodayStr();
   document.getElementById('dpDateLabel').textContent =
     fmtDpDate(dpDate) + (dpDate === today ? ' · 오늘' : '');
   document.getElementById('dpDdayLabel').textContent = '수능 ' + calcDday('2028-11-17');
@@ -3273,8 +3270,6 @@ async function loadDailyPlannerDay() {
   } else {
     dpItems = [];
   }
-  document.getElementById('dpTargetH').value = existing?.target_hours ?? '';
-  document.getElementById('dpTargetM').value = existing?.target_minutes ?? '';
   document.getElementById('dpActualH').value = existing?.actual_hours ?? '';
   document.getElementById('dpActualM').value = existing?.actual_minutes ?? '';
 
@@ -3341,13 +3336,11 @@ async function saveDailyPlanner() {
   const btn = document.getElementById('dpSaveBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
 
-  const targetH = parseInt(document.getElementById('dpTargetH').value) || 0;
-  const targetM = parseInt(document.getElementById('dpTargetM').value) || 0;
   const actualH = parseInt(document.getElementById('dpActualH').value) || 0;
   const actualM = parseInt(document.getElementById('dpActualM').value) || 0;
 
   // 할 일도 없고 시간 기록도 없으면 행 삭제 → 미작성 상태로
-  if (!dpItems.length && !targetH && !targetM && !actualH && !actualM) {
+  if (!dpItems.length && !actualH && !actualM) {
     await sb.from('planners').delete().eq('student_num', authedDp.num).eq('plan_date', dpDate);
     btn.disabled = false; btn.textContent = '💾 저장하기';
     showToast('🗑️ 플래너가 비워졌어요');
@@ -3364,7 +3357,6 @@ async function saveDailyPlanner() {
     content: dpItems.map(i => (i.checked ? '[v] ' : '[ ] ') + i.text).join('\n'),
     items: JSON.stringify(dpItems),
     achievement,
-    target_hours: targetH, target_minutes: targetM,
     actual_hours: actualH, actual_minutes: actualM,
     updated_at: new Date().toISOString()
   }, { onConflict: 'student_num,plan_date' });
